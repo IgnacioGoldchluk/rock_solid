@@ -3,6 +3,8 @@ defmodule RockSolid.StrategyTest do
   use ExUnitProperties
 
   describe "from_json_schema/1" do
+    # Unskip when JSV releases new version
+    @tag :skip
     property "number with decimal multipleOf saves rounding errors" do
       check_schema(%{"type" => "number", "multipleOf" => 0.1})
     end

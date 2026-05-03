@@ -46,7 +46,7 @@ defmodule RockSolid.MixProject do
   defp deps do
     [
       {:zoi, "~> 0.17"},
-      {:jsv, git: "https://github.com/lud/jsv.git"},
+      {:jsv, "~> 0.18.3"},
       {:pythonx, "~> 0.4.0"},
       {:nimble_options, "~> 1.1"},
       {:req, "~> 0.5.0", only: [:dev, :test]},
