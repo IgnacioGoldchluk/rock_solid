@@ -26,4 +26,4 @@ rock_solid-*.tar
 /tmp/
 
 # Schema store
-/test/support/schemastore/*.json
+# /test/support/schemastore/*.json
