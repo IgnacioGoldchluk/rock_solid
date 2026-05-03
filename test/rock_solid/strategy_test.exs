@@ -48,6 +48,40 @@ defmodule RockSolid.StrategyTest do
       })
     end
 
+    property "additionalProperties with minProperties" do
+      check_schema(%{
+        "type" => "object",
+        "additionalProperties" => %{"type" => "string"},
+        "minProperties" => 10
+      })
+    end
+
+    property "array with minItems and maxItems" do
+      check_schema(%{
+        "type" => "array",
+        "items" => %{"type" => "string"},
+        "minItems" => 1,
+        "maxItems" => 2
+      })
+    end
+
+    property "patternProperties with minProperties" do
+      check_schema(%{
+        "type" => "object",
+        "additionalProperties" => false,
+        "minProperties" => 10,
+        "patternProperties" => %{"^[a-z]{3}$" => %{"type" => "integer"}}
+      })
+    end
+
+    property "items with minItems" do
+      check_schema(%{
+        "type" => "array",
+        "items" => %{"type" => "string", "format" => "email"},
+        "minItems" => 10
+      })
+    end
+
     property "generates from basic schema" do
       check_schema(%{
         "type" => "object",

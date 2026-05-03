@@ -2,7 +2,7 @@ defmodule RockSolid.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/IgnacioGoldchluk/rock_solid"
-  @version "0.0.1"
+  @version "0.0.2"
 
   def project do
     [

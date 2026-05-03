@@ -207,30 +207,25 @@ defmodule RockSolid.Strategy do
 
   defp array_gen(%{"items" => items, "uniqueItems" => true} = array) do
     if Map.has_key?(array, "minItems") and array["minItems"] > 0 do
-      StreamData.uniq_list_of(
-        from_json_schema(items),
-        to_keyword(array, min_length: "minItems", max_length: "maxItems")
-      )
-      |> scale_log()
+      length_opts = to_keyword(array, min_length: "minItems", max_length: "maxItems")
+
+      StreamData.uniq_list_of(from_json_schema(items), length_opts)
+      |> scale_log(length_opts)
     else
       # This is to avoid the "TooManyDuplicatesError" from StreamData.
       # If there is no `minItems` constraint then create a list and then
       # keep only the unique ones
-      StreamData.list_of(
-        from_json_schema(items),
-        to_keyword(array, max_length: "maxItems")
-      )
+      StreamData.list_of(from_json_schema(items), to_keyword(array, max_length: "maxItems"))
       |> scale_log()
       |> StreamData.map(&Enum.uniq/1)
     end
   end
 
   defp array_gen(%{"items" => items} = array) do
-    StreamData.list_of(
-      from_json_schema(items),
-      to_keyword(array, min_length: "minItems", max_length: "maxItems")
-    )
-    |> scale_log()
+    length_opts = to_keyword(array, min_length: "minItems", max_length: "maxItems")
+
+    StreamData.list_of(from_json_schema(items), length_opts)
+    |> scale_log(length_opts)
   end
 
   # No items, default to random integers for now
@@ -311,7 +306,7 @@ defmodule RockSolid.Strategy do
         StreamData.uniq_list_of(pattern_props_gen, opts_with_uniq_fun)
       end
     end)
-    |> scale_log()
+    |> scale_log(opts)
     |> StreamData.map(fn key_value_pairs -> Map.merge(Map.new(key_value_pairs), current_gen) end)
   end
 
@@ -400,7 +395,7 @@ defmodule RockSolid.Strategy do
       from_json_schema(additional_props),
       length_opts
     )
-    |> scale_log()
+    |> scale_log(length_opts)
     |> StreamData.map(fn additional_props -> Map.merge(additional_props, current_gen) end)
   end
 
@@ -450,10 +445,16 @@ defmodule RockSolid.Strategy do
     |> StreamData.resize(2)
   end
 
-  defp scale_log(gen) do
-    StreamData.scale(gen, fn
-      0 -> 0
-      size -> ceil(:math.log(size))
+  defp scale_log(gen, length_opts \\ []) do
+    min_length = Keyword.get(length_opts, :min_length, 0)
+    max_length = Keyword.get(length_opts, :max_length, nil)
+
+    StreamData.scale(gen, fn size ->
+      case {size, min_length, max_length} do
+        {0, min, nil} -> min
+        {size, min, nil} -> ceil(:math.log(size)) + min
+        {size, min, max} -> min(ceil(:math.log(size)) + min, max)
+      end
     end)
   end
 end
