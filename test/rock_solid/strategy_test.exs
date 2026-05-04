@@ -48,6 +48,14 @@ defmodule RockSolid.StrategyTest do
       })
     end
 
+    property "catch-all patternProperties and propertyNames" do
+      check_schema(%{
+        "patternProperties" => %{".*" => %{"type" => ["number", "string", "boolean"]}},
+        "propertyNames" => %{"pattern" => "^[A-Za-z0-9_.-]+$"},
+        "type" => "object"
+      })
+    end
+
     property "additionalProperties with minProperties" do
       check_schema(%{
         "type" => "object",

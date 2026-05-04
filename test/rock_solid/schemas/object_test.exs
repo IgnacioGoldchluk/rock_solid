@@ -4,6 +4,25 @@ defmodule RockSolid.Schemas.ObjectTest do
   alias RockSolid.Schemas.Object
 
   describe "new/1" do
+    test "propertyNames and patternProperties intersect each other" do
+      schema = %{
+        "patternProperties" => %{".*" => %{"type" => "string"}},
+        "propertyNames" => %{"pattern" => "^[A-Za-z0-9_.-]+$"},
+        "type" => "object"
+      }
+
+      expected = %{
+        "additionalProperties" => false,
+        "patternProperties" => %{
+          "^[A-Za-z0-9_.-]+$" => %{"type" => "string"}
+        },
+        "propertyNames" => %{"pattern" => "^[A-Za-z0-9_.-]+$", "type" => "string"},
+        "type" => "object"
+      }
+
+      assert {:ok, expected} == Object.new(schema)
+    end
+
     test "minProperties > maxProperties is invalid" do
       assert {:error, [%Zoi.Error{message: msg}]} =
                Object.new(%{

@@ -3,20 +3,13 @@ defmodule RockSolid.Intersection.Pattern do
   Performs the regex intersection between two patterns
   """
 
-  alias RockSolid.Context
+  # Can't believe it returns empty here
+  @catchalls [".", "^.+$", "^.*$", ".*", ".+", "^(.*)$"]
+
+  def intersection(r1, r2) when r1 in @catchalls, do: {:ok, r2}
+  def intersection(r1, r2) when r2 in @catchalls, do: {:ok, r1}
 
   def intersection(r1, r2) when is_binary(r1) and is_binary(r2) do
-    case Context.get_intersection(r1, r2) do
-      nil ->
-        Context.store_intersection(r1, r2, intersect(r1, r2))
-        intersection(r1, r2)
-
-      value ->
-        value
-    end
-  end
-
-  def intersect(r1, r2) when is_binary(r1) and is_binary(r2) do
     {result, _globals} =
       Pythonx.eval(
         """

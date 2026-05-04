@@ -54,7 +54,8 @@ defmodule RockSolid.Schemas.Object do
       &properties_and_pattern_properties/1,
       &min_properties_required/1,
       &enforce_property_names_type/1,
-      &catchall_pattern_properties/1
+      &catchall_pattern_properties/1,
+      &intersect_property_names_pattern_properties/1
     ]
   end
 
@@ -213,13 +214,40 @@ defmodule RockSolid.Schemas.Object do
     Map.get(schema, "patternProperties", %{}) |> Map.values() |> Enum.all?(&(&1 == false))
   end
 
+  defp intersect_property_names_pattern_properties(
+         %{
+           "patternProperties" => pattern_props,
+           "propertyNames" => %{"pattern" => property_names_pattern}
+         } =
+           schema
+       ) do
+    # `patternProperties` are guaranteed to be mutually exclusive
+    # however it can happen that patternProperties and propertyNames are not mutually exclusive
+    # In that case we have to overlap all `patternProperties` with `propertyNames`
+    property_names = %{"type" => "string", "pattern" => property_names_pattern}
+
+    new_props =
+      Enum.reduce(pattern_props, %{}, fn {pattern_prop, subschema}, new_props ->
+        as_subschema = %{"type" => "string", "pattern" => pattern_prop}
+
+        case Intersection.safe_intersection(as_subschema, property_names) do
+          false -> new_props
+          %{"pattern" => new_pattern} -> Map.put(new_props, new_pattern, subschema)
+        end
+      end)
+
+    Map.put(schema, "patternProperties", new_props)
+  end
+
+  defp intersect_property_names_pattern_properties(schema), do: schema
+
   # Some people man...
   defp catchall_pattern_properties(schema) do
     pattern_props = Map.get(schema, "patternProperties", %{})
     catch_all_props = [".", "^.+$", "^.*$", ".*", ".+", "^(.*)$"]
 
     if Enum.any?(catch_all_props, &Map.has_key?(pattern_props, &1)) do
-      schema |> Map.put("additionalProperties", false) |> Map.delete("propertyNames")
+      Map.put(schema, "additionalProperties", false)
     else
       schema
     end
