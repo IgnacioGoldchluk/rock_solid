@@ -63,7 +63,7 @@ defmodule RockSolid.MixProject do
   defp docs do
     [
       main: "RockSolid",
-      extras: ["README.md"] ++ extras(),
+      extras: ["README.md", "CHANGELOG.md", "ROADMAP.md"] ++ extras(),
       groups_for_extras: groups_for_extras(),
       groups_for_modules: groups_for_modules(),
       filter_modules: fn module, _meta ->
@@ -85,8 +85,7 @@ defmodule RockSolid.MixProject do
   defp groups_for_extras do
     [
       Guides: ~r/guides\/.?/,
-      Readme: ~r/README/,
-      Changelog: ~r/CHANGELOG/
+      Dev: ~r/.*/
     ]
   end
 

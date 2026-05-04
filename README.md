@@ -1,4 +1,4 @@
-**This project is still in experimental stage**. See [Known bugs and issues](#knwon-bugs-and-issues)
+**This project is still in experimental stage**. See [Known bugs and issues](#knwon-bugs-and-issues) and the [roadmap](./ROADMAP.md)
 
 Data generation tool from JSON schemas.
 

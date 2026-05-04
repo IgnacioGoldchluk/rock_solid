@@ -322,10 +322,12 @@ defmodule RockSolid.Transformation do
   def one_of_to_any_of(schema) when is_map(schema), do: {:ok, true}
 
   defp to_mutually_exclusive(schema, others) do
-    Intersection.Not.add_clauses(
-      schema,
-      Enum.reject(others, &Intersection.mutually_exclusive?(&1, schema))
-    )
+    intersections =
+      others
+      |> Enum.map(&Intersection.safe_intersection(&1, schema))
+      |> Enum.reject(&(&1 == false))
+
+    Intersection.Not.add_clauses(schema, intersections)
   end
 
   @doc """

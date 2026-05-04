@@ -251,8 +251,8 @@ defmodule RockSolid.TransformationTest do
           "multipleOf" => 2,
           "not" => %{
             "anyOf" => [
-              %{"multipleOf" => 3, "type" => "number"},
-              %{"maximum" => 0, "type" => "number"}
+              %{"multipleOf" => 6, "type" => "number"},
+              %{"maximum" => 0, "type" => "number", "multipleOf" => 2}
             ]
           },
           "type" => "number"
@@ -261,8 +261,8 @@ defmodule RockSolid.TransformationTest do
           "multipleOf" => 3,
           "not" => %{
             "anyOf" => [
-              %{"multipleOf" => 2, "type" => "number"},
-              %{"maximum" => 0, "type" => "number"}
+              %{"multipleOf" => 6, "type" => "number"},
+              %{"maximum" => 0, "type" => "number", "multipleOf" => 3}
             ]
           },
           "type" => "number"
@@ -271,8 +271,8 @@ defmodule RockSolid.TransformationTest do
           "maximum" => 0,
           "not" => %{
             "anyOf" => [
-              %{"multipleOf" => 2, "type" => "number"},
-              %{"multipleOf" => 3, "type" => "number"}
+              %{"multipleOf" => 2, "type" => "number", "maximum" => 0},
+              %{"multipleOf" => 3, "type" => "number", "maximum" => 0}
             ]
           },
           "type" => "number"
@@ -292,7 +292,7 @@ defmodule RockSolid.TransformationTest do
     test "negates const" do
       schemas = [%{"type" => "boolean"}, %{"const" => true}]
 
-      assert {:ok, %{"type" => "boolean", "not" => %{"const" => true}}} ==
+      assert {:ok, %{"type" => "boolean", "not" => %{"enum" => [true]}}} ==
                Transformation.one_of_to_any_of(schemas)
     end
 
@@ -312,10 +312,15 @@ defmodule RockSolid.TransformationTest do
       assert {:ok, %{"anyOf" => results}} = Transformation.one_of_to_any_of(schemas)
 
       expected = [
-        %{"minimum" => 0, "not" => %{"multipleOf" => 2, "type" => "number"}},
+        %{"minimum" => 0, "not" => %{"minimum" => 0, "multipleOf" => 2, "type" => "number"}},
         %{
           "multipleOf" => 2,
-          "not" => %{"anyOf" => [%{"minimum" => 0}, %{"multipleOf" => 4, "type" => "number"}]},
+          "not" => %{
+            "anyOf" => [
+              %{"minimum" => 0, "multipleOf" => 2, "type" => "number"},
+              %{"multipleOf" => 4, "type" => "number"}
+            ]
+          },
           "type" => "number"
         }
       ]
@@ -336,13 +341,13 @@ defmodule RockSolid.TransformationTest do
       assert %{
                "type" => "number",
                "multipleOf" => 2,
-               "not" => %{"multipleOf" => 3, "type" => "number"}
+               "not" => %{"multipleOf" => 6, "type" => "number"}
              } in results
 
       assert %{
                "type" => "number",
                "multipleOf" => 3,
-               "not" => %{"multipleOf" => 2, "type" => "number"}
+               "not" => %{"multipleOf" => 6, "type" => "number"}
              } in results
     end
   end
