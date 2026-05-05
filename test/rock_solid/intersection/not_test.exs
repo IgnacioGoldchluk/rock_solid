@@ -38,10 +38,20 @@ defmodule RockSolid.Intersection.NotTest do
       }
 
       expected = %{
-        "properties" => %{
-          "name" => %{"enum" => ["Bob", "Charlie"]},
-          "firstName" => false
-        }
+        "anyOf" => [
+          %{
+            "properties" => %{
+              "firstName" => false,
+              "name" => %{"enum" => ["Alice", "Bob", "Charlie"]}
+            }
+          },
+          %{
+            "properties" => %{
+              "firstName" => %{"type" => "string"},
+              "name" => %{"enum" => ["Bob", "Charlie"]}
+            }
+          }
+        ]
       }
 
       assert expected == Not.add_clause(schema, clause)
@@ -52,8 +62,13 @@ defmodule RockSolid.Intersection.NotTest do
       clause = %{"properties" => %{"name" => %{"const" => "Alice"}}, "required" => ["age"]}
 
       expected = %{
-        "type" => "object",
-        "properties" => %{"name" => %{"not" => %{"enum" => ["Alice"]}}, "age" => false}
+        "anyOf" => [
+          %{"properties" => %{"age" => false}, "type" => "object"},
+          %{
+            "properties" => %{"name" => %{"not" => %{"enum" => ["Alice"]}}},
+            "type" => "object"
+          }
+        ]
       }
 
       assert expected == Not.add_clause(schema, clause)
@@ -118,10 +133,20 @@ defmodule RockSolid.Intersection.NotTest do
       }
 
       expected = %{
-        "properties" => %{
-          "name" => %{"type" => "string", "not" => %{"enum" => ["Alice"]}},
-          "age" => %{"type" => "integer", "not" => %{"enum" => [22]}}
-        }
+        "anyOf" => [
+          %{
+            "properties" => %{
+              "age" => %{"not" => %{"enum" => [22]}, "type" => "integer"},
+              "name" => %{"type" => "string"}
+            }
+          },
+          %{
+            "properties" => %{
+              "age" => %{"type" => "integer"},
+              "name" => %{"not" => %{"enum" => ["Alice"]}, "type" => "string"}
+            }
+          }
+        ]
       }
 
       assert expected == Not.add_clause(schema, clause)

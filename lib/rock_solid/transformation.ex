@@ -52,7 +52,7 @@ defmodule RockSolid.Transformation do
     end
   end
 
-  defp drop_non_keywords(schema) do
+  def drop_non_keywords(schema) do
     schema |> Map.drop(non_keywords()) |> Map.reject(&custom_key_value_pair?/1)
   end
 

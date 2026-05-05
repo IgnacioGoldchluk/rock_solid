@@ -19,11 +19,15 @@ defmodule RockSolid.Strategy do
     migrated |> Transformation.simplify() |> from_json_schema()
   end
 
-  defp from_json_schema(schema) when is_map(schema) or schema == true do
-    schema |> gen() |> filter_not(schema)
+  defp from_json_schema(true), do: json()
+
+  defp from_json_schema(schema) when is_map(schema) do
+    {not_clause, schema_without_not} = Map.pop(schema, "not", nil)
+    schema_without_not |> gen() |> filter_not(not_clause)
   end
 
   defp gen(true), do: json()
+  defp gen(s) when map_size(s) == 0, do: json()
   defp gen(%{"$ref" => pointer}), do: Context.get_ref(pointer) |> from_json_schema()
   defp gen(%{"const" => value}), do: StreamData.constant(value)
   defp gen(%{"enum" => values}) when is_list(values), do: StreamData.member_of(values)
@@ -105,12 +109,12 @@ defmodule RockSolid.Strategy do
   defp filter_value(generator, nil), do: generator
   defp filter_value(generator, value), do: StreamData.filter(generator, &(&1 != value))
 
-  defp filter_not(generator, %{"not" => clauses}) do
+  defp filter_not(generator, nil), do: generator
+
+  defp filter_not(generator, clauses) do
     not_schema = Context.build!(%{"not" => clauses})
     StreamData.filter(generator, &match?({:ok, _}, JSV.validate(&1, not_schema)))
   end
-
-  defp filter_not(generator, _schema), do: generator
 
   def to_keyword(schema, mappings) do
     mappings

@@ -14,7 +14,7 @@ defmodule RockSolid.Intersection.Not do
     |> Enum.map(fn subschema -> add_clauses(subschema, not_clauses) end)
     |> Enum.reject(&(&1 == false))
     |> case do
-      [] -> raise "Empty #{inspect(schema)} with 'not': #{inspect(not_clauses)}"
+      [] -> false
       [value] -> value
       values when is_list(values) -> %{"anyOf" => values}
     end
@@ -32,8 +32,17 @@ defmodule RockSolid.Intersection.Not do
   @doc """
   Intersects a schema with a negative clause.
   """
+  def add_clause(schema, not_clause)
+
+  def add_clause(%{"type" => "object"} = schema, %{"anyOf" => clauses} = not_clause) do
+    case Enum.find(clauses, &object_properties?/1) do
+      nil -> add_not_clause(schema, not_clause)
+      matching_clause -> apply_not_properties(schema, matching_clause)
+    end
+  end
+
   def add_clause(schema, not_clause) do
-    if object_properties?(not_clause) do
+    if object_properties?(not_clause) and is_map(schema) do
       apply_not_properties(schema, not_clause)
     else
       add_not_clause(schema, not_clause)
@@ -44,14 +53,21 @@ defmodule RockSolid.Intersection.Not do
   def add_not_clause(true, clause), do: %{"not" => clause}
 
   def add_not_clause(schema, new_clause) when is_map(schema) do
-    value =
-      if Intersection.safe_intersection(schema, new_clause) == false do
-        schema
-      else
-        do_add_clause(schema, new_clause)
-      end
+    schema = drop_meta(schema)
 
-    if Intersection.impossible?(value), do: false, else: value
+    case Intersection.safe_intersection(schema, new_clause) do
+      false -> schema
+      ^schema -> false
+      _ -> do_add_clause(schema, new_clause)
+    end
+  end
+
+  defp drop_meta(schema) do
+    schema |> Map.drop(["$id", "$schema"]) |> RockSolid.Transformation.drop_non_keywords()
+  end
+
+  defp object_properties?(%{"type" => "object"} = not_clause) do
+    object_properties?(Map.delete(not_clause, "type"))
   end
 
   defp object_properties?(not_clause) when is_map(not_clause) and map_size(not_clause) > 0 do
@@ -60,21 +76,31 @@ defmodule RockSolid.Intersection.Not do
 
   defp object_properties?(_), do: false
 
-  defp apply_not_properties(schema, not_clauses) when is_map(schema) do
-    existing_props = Map.get(schema, "properties", %{})
+  defp apply_not_properties(schema, not_clause) when is_map(schema) do
     existing_required = Map.get(schema, "required", [])
 
+    not_clause
+    |> to_override_properties(existing_required)
+    |> Enum.map(&apply_not_property(&1, schema))
+    |> case do
+      [single_schema] -> single_schema
+      schemas when is_list(schemas) and length(schemas) > 1 -> %{"anyOf" => schemas}
+    end
+  end
+
+  defp apply_not_property(kv, schema) when not is_map_key(schema, "properties") do
+    apply_not_property(kv, Map.put(schema, "properties", %{}))
+  end
+
+  defp apply_not_property({key, value}, %{"properties" => props} = schema) do
     new_props =
-      not_clauses
-      |> to_override_properties(existing_required)
-      |> Enum.reduce(existing_props, fn kv, props ->
-        case kv do
-          {key, true} -> Map.put(props, key, false)
-          {key, false} -> Map.put(props, key, false)
-          {key, %{"const" => val}} -> remove_enum(props, key, [val])
-          {key, %{"enum" => vals}} when is_list(vals) -> remove_enum(props, key, vals)
-        end
-      end)
+      case value do
+        true -> Map.put(props, key, false)
+        false -> Map.put(props, key, false)
+        %{"const" => const} -> remove_enum(props, key, [const])
+        %{"enum" => enums} -> remove_enum(props, key, enums)
+        subschema -> Map.update(props, key, %{"not" => subschema}, &add_clause(&1, subschema))
+      end
 
     Map.put(schema, "properties", new_props)
   end

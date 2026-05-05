@@ -794,6 +794,37 @@ defmodule RockSolid.TransformationTest do
   end
 
   describe "simplify/1" do
+    test "if/then without specified type" do
+      schema = %{
+        "$id" => schema_id(),
+        "if" => %{"properties" => %{"foo" => %{"const" => "bar"}}},
+        "then" => %{
+          "type" => "object",
+          "required" => ["baz"],
+          "properties" => %{"baz" => %{"type" => "integer"}}
+        }
+      }
+
+      expected = %{
+        "anyOf" => [
+          %{
+            "properties" => %{
+              "baz" => %{"type" => "integer"},
+              "foo" => %{"enum" => ["bar"]}
+            },
+            "required" => ["baz"],
+            "type" => "object"
+          },
+          %{
+            "properties" => %{"foo" => %{"not" => %{"enum" => ["bar"]}}},
+            "type" => "object"
+          }
+        ]
+      }
+
+      assert expected == Transformation.simplify(schema)
+    end
+
     test "conditionally rejected property is false" do
       # We might have to do the same with `"not": true`. Decide later
       # how to handle it
@@ -819,11 +850,10 @@ defmodule RockSolid.TransformationTest do
             "type" => "object"
           },
           %{
-            "not" => %{
-              "properties" => %{"name" => %{"enum" => ["Alice"]}},
-              "type" => "object"
+            "properties" => %{
+              "lastName" => false,
+              "name" => %{"type" => "string", "not" => %{"enum" => ["Alice"]}}
             },
-            "properties" => %{"lastName" => false, "name" => %{"type" => "string"}},
             "type" => "object"
           }
         ]
@@ -939,7 +969,7 @@ defmodule RockSolid.TransformationTest do
           },
           %{
             "type" => "object",
-            "not" => %{"type" => "object", "properties" => %{"name" => %{"enum" => ["Alice"]}}}
+            "properties" => %{"name" => %{"not" => %{"enum" => ["Alice"]}}}
           }
         ]
       }
@@ -1013,12 +1043,11 @@ defmodule RockSolid.TransformationTest do
             "type" => "object"
           },
           %{
-            "not" => %{
-              "properties" => %{"name" => %{"type" => "string"}},
-              "type" => "object"
-            },
             "properties" => %{
-              "name" => %{"anyOf" => [%{"type" => "null"}, %{"type" => "string"}]}
+              "name" => %{
+                "anyOf" => [%{"type" => "null"}, %{"type" => "string"}],
+                "not" => %{"type" => "string"}
+              }
             },
             "required" => ["name"],
             "type" => "object"
