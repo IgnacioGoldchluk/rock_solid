@@ -403,6 +403,16 @@ defmodule RockSolid.StrategyTest do
         "maxProperties" => 3
       })
     end
+
+    property "dependencies as anyOf dependentSchemas" do
+      check_schema(%{
+        "type" => "object",
+        "properties" => %{"foo" => %{"type" => "string"}},
+        "dependencies" => %{
+          "foo" => %{"anyOf" => [%{"required" => ["bar"]}, %{"required" => ["baz"]}]}
+        }
+      })
+    end
   end
 
   defp check_schema(schema) do

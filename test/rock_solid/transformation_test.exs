@@ -598,6 +598,36 @@ defmodule RockSolid.TransformationTest do
       assert equals?(expected, Transformation.expand_dependent_schemas(schema))
     end
 
+    test "dependentSchema with anyOf" do
+      schema = %{
+        "type" => "object",
+        "properties" => %{"foo" => %{"type" => "string"}},
+        "dependentSchemas" => %{
+          "foo" => %{"anyOf" => [%{"required" => ["bar"]}, %{"required" => ["baz"]}]}
+        }
+      }
+
+      expected = [
+        %{"properties" => %{"foo" => false}, "required" => [], "type" => "object"},
+        %{
+          "anyOf" => [
+            %{
+              "properties" => %{"bar" => true, "foo" => %{"type" => "string"}},
+              "required" => ["foo", "bar"],
+              "type" => "object"
+            },
+            %{
+              "properties" => %{"baz" => true, "foo" => %{"type" => "string"}},
+              "required" => ["foo", "baz"],
+              "type" => "object"
+            }
+          ]
+        }
+      ]
+
+      assert expected == Transformation.expand_dependent_schemas(schema)
+    end
+
     test "impossible dependentSchemas are excluded" do
       schema = %{
         "type" => "object",

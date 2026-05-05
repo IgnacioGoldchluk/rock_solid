@@ -289,8 +289,8 @@ defmodule RockSolid.MigrationTest do
         "type" => "object",
         "dependentRequired" => %{"name" => ["firstName", "lastName"], "pet" => ["animal"]},
         "dependentSchemas" => %{
-          "age" => %{"properties" => %{"birthDate" => %{"type" => "string"}}},
-          "address" => %{"properties" => %{"country" => %{"enum" => ["USA"]}}}
+          "age" => %{"properties" => %{"birthDate" => %{"type" => "string"}}, "type" => "object"},
+          "address" => %{"properties" => %{"country" => %{"enum" => ["USA"]}}, "type" => "object"}
         },
         "properties" => %{
           "countryObject" => %{
@@ -475,7 +475,7 @@ defmodule RockSolid.MigrationTest do
 
       {:ok, value} = Migration.migrate(schema, {DummyResolver, []})
 
-      assert value["dependentSchemas"]["$ref"] == %{"required" => []}
+      assert value["dependentSchemas"]["$ref"] == %{"required" => [], "type" => "object"}
     end
 
     test "empty enum map is kept as is" do

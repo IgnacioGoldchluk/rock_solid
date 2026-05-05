@@ -21,7 +21,7 @@ defmodule RockSolid.Transformation do
 
   def simplify(schema, rev_path) do
     cond do
-      property?(rev_path) or hd(rev_path) == "$defs" ->
+      property?(rev_path) or hd(rev_path) in ["$defs", "dependentSchemas"] ->
         Map.new(schema, fn {k, v} -> {k, simplify(v, [k | rev_path])} end)
 
       is_atomic(schema) ->
@@ -180,6 +180,8 @@ defmodule RockSolid.Transformation do
     end)
   end
 
+  # These are not part of the schemas validation module, handle separately
+  defp types("dependentSchemas", _), do: ["object"]
   defp types("type", "integer"), do: ["number"]
   defp types("type", type) when is_binary(type), do: [type]
   defp types("type", types) when is_list(types), do: Enum.flat_map(types, &types("type", &1))

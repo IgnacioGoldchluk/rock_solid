@@ -152,11 +152,17 @@ defmodule RockSolid.Migration do
     {dep_req, dep_schemas} = Enum.split_with(deps, fn {_k, v} -> is_list(v) end)
     {dep_req, dep_schemas} = {Map.new(dep_req), Map.new(dep_schemas)}
 
+    # This makes things a bit faster
+    dep_schemas =
+      Map.new(dep_schemas, fn {dep_property, value} ->
+        {dep_property, Map.put_new(value, "type", "object")}
+      end)
+
     new_schema =
-      schema
-      |> Map.delete("dependencies")
-      |> Map.put("dependentRequired", dep_req)
-      |> Map.put("dependentSchemas", dep_schemas)
+      [{"dependentRequired", dep_req}, {"dependentSchemas", dep_schemas}]
+      |> Enum.reduce(Map.delete(schema, "dependencies"), fn {dep_key, val}, new_schema ->
+        if Enum.empty?(val), do: new_schema, else: Map.put(new_schema, dep_key, val)
+      end)
 
     modified_dep_req =
       dep_req
