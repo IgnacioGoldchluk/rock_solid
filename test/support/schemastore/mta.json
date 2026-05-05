@@ -1,0 +1,324 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://json.schemastore.org/mta.json",
+  "$comment": "Based on https://github.wdf.sap.corp/mta/spec/blob/master/schemas/v3/v3.3/mta-schema.yaml",
+  "definitions": {
+    "generic-memory": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*(M|MB|G|GB|m|mb|g|gb)$"
+    },
+    "properties": {
+      "type": "object"
+    },
+    "properties-metadata": {
+      "$ref": "mtad.json#/definitions/properties-metadata"
+    },
+    "parameters": {
+      "$ref": "mtad.json#/properties/parameters"
+    },
+    "module-parameters": {
+      "$ref": "mtad.json#/definitions/module-parameters"
+    },
+    "module-requires-parameters": {
+      "$ref": "mtad.json#/definitions/module-requires-parameters"
+    },
+    "module-provides": {
+      "$ref": "mtad.json#/definitions/module-provides"
+    },
+    "module-requires": {
+      "$ref": "mtad.json#/definitions/module-requires"
+    },
+    "parameters-metadata": {
+      "$ref": "mtad.json#/definitions/properties-metadata"
+    },
+    "resource-parameters": {
+      "$ref": "mtad.json#/definitions/resource-parameters"
+    },
+    "includes": {
+      "type": "array",
+      "description": "It is possible to define parameters in external files. The \"includes\" section is used to point to those files.",
+      "items": {
+        "type": "object",
+        "required": ["name", "path"],
+        "properties": {
+          "name": {
+            "description": "The name of an \"includes\" section. This name is used by a builder to generate a parameter section in the deployment descriptor.",
+            "type": "string"
+          },
+          "path": {
+            "description": "A path pointing to a file that contains a map of parameters, either in JSON or in YAML format.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "hooks": {
+      "$ref": "mtad.json#/definitions/hooks"
+    }
+  },
+  "description": "MTA DESCRIPTOR SCHEMA",
+  "properties": {
+    "_schema-version": {
+      "description": "The schema version that is being used for authoring a descriptor. The schema version should comply with the semantic versioning standard.",
+      "type": "string"
+    },
+    "ID": {
+      "description": "An application ID, that may contain any number of unicode characters and should be unique in the target runtime environment.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+    },
+    "description": {
+      "description": "A free text describing this application.",
+      "type": "string"
+    },
+    "version": {
+      "description": "The application version that should comply with the semantic versioning standard.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\\+[0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*)?$"
+    },
+    "provider": {
+      "description": "The provider or vendor of this application.",
+      "type": "string"
+    },
+    "copyright": {
+      "description": "A copyright statement from the provider.",
+      "type": "string"
+    },
+    "modules": {
+      "description": "A list of modules.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {
+            "description": "The MTA module name which must be unique and cannot be the same as any provided property set or resource name.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "type": {
+            "description": "The module type that defines the design-time tools for the module.",
+            "type": "string"
+          },
+          "description": {
+            "description": "A free text describing this module.",
+            "type": "string"
+          },
+          "path": {
+            "description": "The path to a folder that contains the module artifacts.",
+            "type": "string"
+          },
+          "deployed-after": {
+            "description": "A list of modules that must be deployed before deploying the current module.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "properties": {
+            "$ref": "#/definitions/properties",
+            "description": "A collection of key-value pairs that are available to the module at runtime."
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the module's properties."
+          },
+          "parameters": {
+            "$ref": "#/definitions/module-parameters",
+            "description": "Configuration parameters that are used when deploying the module to the target runtime environment."
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/parameters-metadata",
+            "description": "Additional information about the module's parameters."
+          },
+          "hooks": {
+            "$ref": "#/definitions/hooks",
+            "description": "A list of hooks that will be executed for the module."
+          },
+          "build-parameters": {
+            "description": "The build parameters define how the module is built by the corresponding tool.",
+            "type": "object"
+          },
+          "includes": {
+            "type": "array",
+            "description": "It is possible to define parameters in external files. The \"includes\" section is used to point to those files.",
+            "items": {
+              "type": "object",
+              "required": ["name", "path"],
+              "properties": {
+                "name": {
+                  "description": "The name of an \"includes\" section. This name is used by a builder to generate a parameter section in the deployment descriptor.",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "A path pointing to a file that contains a map of parameters, either in JSON or in YAML format.",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "provides": {
+            "$ref": "#/definitions/module-provides",
+            "description": "List of provided names (MTA internal) to which properties can be attached"
+          },
+          "requires": {
+            "$ref": "#/definitions/module-requires",
+            "description": "List of names either matching a resource name or a name provided by another module within the same MTA that are required by this module."
+          }
+        }
+      }
+    },
+    "resources": {
+      "description": "A list of resources that are required by the modules of this MTA project.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "description": "The resource name which must be unique and cannot be the same as any provided property set or module name.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "type": {
+            "description": "A type of resource supported by deployment tools in the target environment.",
+            "type": "string"
+          },
+          "description": {
+            "description": "A free text describing this resource.",
+            "type": "string"
+          },
+          "properties": {
+            "$ref": "#/definitions/properties",
+            "description": "A collection of key-value pairs that can be required by modules and/or other resources as configuration data at runtime."
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the resource's properties."
+          },
+          "parameters": {
+            "$ref": "#/definitions/resource-parameters",
+            "description": "Configuration parameters that are used when provisioning the resource in the target runtime environment."
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/parameters-metadata",
+            "description": "Additional information about the resource's parameters."
+          },
+          "includes": {
+            "type": "array",
+            "description": "It is possible to define parameters in external files. The \"includes\" section is used to point to those files.",
+            "items": {
+              "type": "object",
+              "required": ["name", "path"],
+              "properties": {
+                "name": {
+                  "description": "The name of an \"includes\" section. This name is used by a builder to generate a parameter section in the deployment descriptor.",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "A path pointing to a file that contains a map of parameters, either in JSON or in YAML format.",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "optional": {
+            "description": "If the resource is set to optional and the deployment tools are unable to allocate it, then the tools will issue a warning and continue the deployment process.",
+            "type": "boolean",
+            "default": false
+          },
+          "processed-after": {
+            "description": "A list containing the names of the resources that must be processed prior to this one.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "active": {
+            "description": "If a resource is declared to be inactive, the resource will not be allocated during the deployment process.",
+            "type": "boolean",
+            "default": true
+          },
+          "requires": {
+            "description": "A list of property sets provided by other modules and/or resources (providers) that this resource requires.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "description": "The name of a provided property set or resource (provider) that this resource requires.",
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+                },
+                "properties": {
+                  "$ref": "#/definitions/properties",
+                  "description": "Resource properties whose values are determined by the provided properties. These properties can be referenced by the tilde notation: \"~{<provided-property-name>}\" "
+                },
+                "properties-metadata": {
+                  "$ref": "#/definitions/properties-metadata",
+                  "description": "Additional information about the required properties."
+                },
+                "parameters": {
+                  "$ref": "#/definitions/parameters",
+                  "description": "Configuration parameters that are used when provisioning the resource in the target runtime environment."
+                },
+                "parameters-metadata": {
+                  "$ref": "#/definitions/parameters-metadata",
+                  "description": "Additional information about the required parameters."
+                },
+                "includes": {
+                  "type": "array",
+                  "description": "It is possible to define parameters in external files. The \"includes\" section is used to point to those files.",
+                  "items": {
+                    "type": "object",
+                    "required": ["name", "path"],
+                    "properties": {
+                      "name": {
+                        "description": "The name of an \"includes\" section. This name is used by a builder to generate a parameter section in the deployment descriptor.",
+                        "type": "string"
+                      },
+                      "path": {
+                        "description": "A path pointing to a file that contains a map of parameters, either in JSON or in YAML format.",
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "$ref": "#/definitions/parameters",
+      "description": "Global parameters that are used when building or deploying the application"
+    },
+    "parameters-metadata": {
+      "$ref": "#/definitions/parameters-metadata",
+      "description": "Additional information about the global parameters."
+    },
+    "includes": {
+      "type": "array",
+      "description": "It is possible to define parameters in external files. The \"includes\" section is used to point to those files.",
+      "items": {
+        "type": "object",
+        "required": ["name", "path"],
+        "properties": {
+          "name": {
+            "description": "The name of an \"includes\" section. This name is used by a builder to generate a parameter section in the deployment descriptor.",
+            "type": "string"
+          },
+          "path": {
+            "description": "A path pointing to a file that contains a map of parameters, either in JSON or in YAML format.",
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": ["_schema-version", "ID", "version"],
+  "title": "com.sap.mta.mta-schema_3.3",
+  "type": "object"
+}

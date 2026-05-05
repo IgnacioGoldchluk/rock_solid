@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://json.schemastore.org/tunnelhub.json",
+  "additionalProperties": false,
+  "properties": {
+    "package": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "type": "string"
+        }
+      },
+      "required": ["artifact"],
+      "type": "object"
+    },
+    "configuration": {
+      "additionalProperties": false,
+      "properties": {
+        "entrypoint": {
+          "type": "string"
+        },
+        "memorySize": {
+          "type": "number"
+        },
+        "runtime": {
+          "enum": ["nodejs18.x", "nodejs20.x", "nodejs22.x", "nodejs24.x"]
+        },
+        "runtimeEngine": {
+          "enum": ["LAMBDA", "ECS_FARGATE"],
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "lambdaLayers": true,
+        "environmentVariables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "runInVpc": {
+          "type": "boolean",
+          "description": "Whether to run Lambda in VPC. If true and vpcConfig is not provided, uses tenant settings or environment variables as fallback."
+        },
+        "vpcConfig": {
+          "additionalProperties": false,
+          "properties": {
+            "securityGroupIds": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "subnetIds": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": ["subnetIds", "securityGroupIds"],
+          "type": "object",
+          "if": {
+            "properties": {
+              "runtimeEngine": {
+                "const": "LAMBDA"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "lambdaLayers": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            }
+          },
+          "else": {
+            "not": {
+              "required": ["lambdaLayers"]
+            }
+          }
+        },
+        "stsAccess": {
+          "additionalProperties": false,
+          "properties": {
+            "assumeRoles": {
+              "items": {
+                "pattern": "^arn:aws:iam::\\d{12}:role/[a-zA-Z0-9+=,.@_-]+$",
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": ["assumeRoles"],
+          "type": "object"
+        }
+      },
+      "required": ["runtimeEngine", "entrypoint", "runtime", "memorySize"],
+      "type": "object"
+    },
+    "service": {
+      "additionalProperties": false,
+      "properties": {
+        "region": {
+          "type": "string"
+        },
+        "type": {
+          "enum": ["automation", "api"],
+          "type": "string"
+        },
+        "uuid": {
+          "type": "string"
+        }
+      },
+      "required": ["type", "uuid"],
+      "type": "object"
+    }
+  },
+  "required": ["service", "package", "configuration"],
+  "type": "object"
+}

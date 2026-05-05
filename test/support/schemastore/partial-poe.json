@@ -1,0 +1,915 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://json.schemastore.org/partial-poe.json",
+  "$comment": "This schema comes from user submission in https://github.com/SchemaStore/schemastore/issues/3564#issuecomment-1983435001, with minimal edits to pass ajv check",
+  "type": "object",
+  "additionalProperties": false,
+  "title": "Poe the Poet configuration",
+  "description": "Poe the Poet is a task runner and build tool that uses simple configuration to define project tasks. It can work as a standalone tool or as a plugin for Poetry.",
+  "definitions": {
+    "standard_options": {
+      "additionalProperties": true,
+      "properties": {
+        "args": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/standard_options/properties/args/definitions/args"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/definitions/standard_options/properties/args/definitions/args"
+              },
+              "type": "object"
+            }
+          ],
+          "definitions": {
+            "args": {
+              "properties": {
+                "default": {
+                  "description": "The default value for the argument when not provided.",
+                  "anyOf": [
+                    { "type": "string" },
+                    { "type": "integer" },
+                    { "type": "number" },
+                    { "type": "boolean" },
+                    { "type": "null" }
+                  ]
+                },
+                "help": {
+                  "description": "A short description of the argument to include in the documentation of the task.",
+                  "type": "string"
+                },
+                "multiple": {
+                  "description": "Indicates if multiple values are allowed for the argument.",
+                  "anyOf": [{ "type": "boolean" }, { "type": "integer" }]
+                },
+                "name": {
+                  "description": "The name of the argument.",
+                  "type": "string"
+                },
+                "options": {
+                  "description": "A list of options to be provided along with the argument.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "positional": {
+                  "description": "Indicates if the argument is positional.",
+                  "type": "boolean"
+                },
+                "choices": {
+                  "description": "Constrain the accepted values for an argument to a fixed set.",
+                  "oneOf": [
+                    { "items": { "type": "string" } },
+                    { "items": { "type": "integer" } },
+                    { "items": { "type": "number" } }
+                  ],
+                  "type": "array"
+                },
+                "required": {
+                  "description": "Indicates if the argument is required.",
+                  "type": "boolean"
+                },
+                "type": {
+                  "description": "The type of the argument.",
+                  "anyOf": [
+                    { "type": "string" },
+                    { "type": "array" },
+                    { "type": "object" },
+                    { "type": "boolean" },
+                    { "type": "number" },
+                    { "type": "null" }
+                  ]
+                }
+              },
+              "required": ["name"],
+              "type": "object"
+            }
+          },
+          "description": "Define CLI options, positional arguments, or flags that this task should accept."
+        },
+        "cwd": {
+          "description": "Specify the current working directory that this task should run with. This can be a relative path from the project root or an absolute path, and environment variables can be used in the format ${VAR_NAME}.",
+          "minLength": 1,
+          "pattern": "^(?!\\s*$).+",
+          "type": "string"
+        },
+        "deps": {
+          "description": "A list of task invocations that will be executed before this one. Each item in the list is a reference to another task defined within the tasks object.",
+          "items": {
+            "description": "A task name that this task depends on.",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "env": {
+          "$ref": "#/definitions/env_option"
+        },
+        "envfile": {
+          "$ref": "#/definitions/envfile_option"
+        },
+        "help": {
+          "description": "Help text to be displayed next to the task name in the documentation when poe is run without specifying a task.",
+          "type": "string"
+        },
+        "uses": {
+          "additionalProperties": {
+            "description": "The name of the task whose output will be used. This will be set as an environment variable accessible in the task.",
+            "type": "string"
+          },
+          "description": "Allows this task to use the output of other tasks which are executed first. The values are references to the names of the tasks, and the keys are environment variables by which the results of those tasks will be accessible in this task.",
+          "type": "object"
+        },
+        "executor": {
+          "$ref": "#/definitions/executor_option"
+        },
+        "verbosity": {
+          "default": 0,
+          "description": "Specify the verbosity level for this task, from -2 (least verbose) to 2 (most verbose), overriding the project level verbosity setting, which defaults to 0.",
+          "maximum": 2,
+          "minimum": -2,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "capture_stdout_option": {
+      "additionalProperties": true,
+      "properties": {
+        "capture_stdout": {
+          "description": "Redirects the task output to a file with the given path. Supports environment variable interpolation.",
+          "examples": ["output.log", "${POE_PWD}/output.txt"],
+          "pattern": "^(?:\\$\\{[^\\}]+\\}/)?.+$",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "use_exec_option": {
+      "additionalProperties": true,
+      "properties": {
+        "use_exec": {
+          "description": "Specify that this task should be executed in the same process, instead of as a subprocess. Note: This feature has limitations, such as not being compatible with tasks that are referenced by other tasks and not working on Windows.",
+          "examples": [true, false],
+          "type": "boolean"
+        }
+      },
+      "if": {
+        "properties": { "use_exec": { "const": true } },
+        "required": ["use_exec"]
+      },
+      "then": { "not": { "required": ["capture_stdout"] } },
+      "type": "object"
+    },
+    "ignore_fail_exec_option": {
+      "description": "Return exit code 0 even if the task fails, or specify a list of task exit codes to ignore.",
+      "examples": [true],
+      "oneOf": [
+        { "type": "array", "items": { "type": "integer" } },
+        { "type": "boolean" }
+      ]
+    },
+    "ignore_fail_tasks_option": {
+      "description": "If set, the sequence will continue running even if one of the tasks fails.",
+      "examples": [true, "return_zero", "return_non_zero"],
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "enum": ["return_zero", "return_non_zero"],
+          "type": "string"
+        }
+      ]
+    },
+    "env_option": {
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.+$": {
+          "description": "A map of environment variables to be set for this task.",
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "properties": {
+                "default": {
+                  "description": "A default value for an environment variable that will be used only if the variable is not already set.",
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "envfile_option": {
+      "description": "Provide one or more env files to be loaded before running this task. If an array is provided, files will be loaded in the given order.",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/envfile_option/definitions/envfile"
+        },
+        {
+          "properties": {
+            "expected": {
+              "$ref": "#/definitions/envfile_option/definitions/envfile",
+              "description": "Provide one or more env files to be loaded before running this task. Emit a warning if any specified envfile is missing."
+            },
+            "optional": {
+              "$ref": "#/definitions/envfile_option/definitions/envfile",
+              "description": "Provide one or more env files to be loaded before running this task. Do not emit a warning even if a specified envfile is missing."
+            }
+          },
+          "type": "object"
+        }
+      ],
+      "definitions": {
+        "envfile": {
+          "oneOf": [
+            {
+              "description": "The name or relative path to a single env file.",
+              "type": "string"
+            },
+            {
+              "description": "An array of names or relative paths to env files which will be loaded in the given order.",
+              "items": {
+                "description": "The name or relative path to an env file.",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
+        }
+      }
+    },
+    "executor_option": {
+      "description": "Configure the executor type for running tasks. Can be 'auto', 'poetry', 'virtualenv', or 'simple', with 'auto' being the default.",
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "$ref": "#/definitions/executor_option/definitions/type"
+            }
+          },
+          "oneOf": [
+            {
+              "properties": {
+                "extra": {
+                  "description": "Include optional dependencies from the specified extra name.",
+                  "oneOf": [
+                    { "type": "string" },
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  ]
+                },
+                "group": {
+                  "description": "Include dependencies from the specified dependency group.",
+                  "oneOf": [
+                    { "type": "string" },
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  ]
+                },
+                "no-group": {
+                  "description": "Disable the specified dependency group.",
+                  "oneOf": [
+                    { "type": "string" },
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  ]
+                },
+                "with": {
+                  "description": "Run with the given packages installed.",
+                  "oneOf": [
+                    { "type": "string" },
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  ]
+                },
+                "isolated": {
+                  "description": "Run the command in an isolated virtual environment.",
+                  "type": "boolean"
+                },
+                "no-sync": {
+                  "description": "Avoid syncing the virtual environment.",
+                  "type": "boolean"
+                },
+                "locked": {
+                  "description": "Run without updating the uv.lock file.",
+                  "type": "boolean"
+                },
+                "frozen": {
+                  "description": "Run without updating the uv.lock file.",
+                  "type": "boolean"
+                },
+                "no-project": {
+                  "description": "Avoid discovering the project or workspace.",
+                  "type": "boolean"
+                },
+                "python": {
+                  "description": "The Python interpreter to use for the run environment.",
+                  "type": "string"
+                },
+                "type": {
+                  "const": "uv",
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "properties": {
+                "location": {
+                  "description": "Specifies the location of the virtualenv relative to the parent directory. Relevant when 'type' is set to 'virtualenv'.",
+                  "type": "string"
+                },
+                "type": {
+                  "const": "virtualenv",
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "not": {
+                "properties": {
+                  "type": { "enum": ["uv", "virtualenv"] }
+                },
+                "required": ["type"]
+              }
+            }
+          ],
+          "required": ["type"],
+          "type": "object"
+        },
+        {
+          "$ref": "#/definitions/executor_option/definitions/type"
+        }
+      ],
+      "definitions": {
+        "type": {
+          "default": "auto",
+          "description": "Specifies the executor type. 'auto' uses the most appropriate executor, 'poetry' uses the poetry environment, 'uv' uses `uv run` to run tasks, 'virtualenv' specifies a virtual environment, and 'simple' runs tasks without any specific environment setup.",
+          "enum": ["auto", "poetry", "uv", "virtualenv", "simple"],
+          "type": "string"
+        }
+      }
+    },
+    "cmd_task": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_options"
+        },
+        {
+          "$ref": "#/definitions/capture_stdout_option"
+        },
+        {
+          "$ref": "#/definitions/use_exec_option"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "empty_glob": {
+              "default": "pass",
+              "description": "Determines how to handle glob patterns with no matches. The default is 'pass', which causes unmatched patterns to be passed through to the command (just like in bash). Setting it to 'null' will replace an unmatched pattern with nothing, and setting it to 'fail' will cause the task to fail with an error if there are no matches.",
+              "enum": ["pass", "null", "fail"]
+            },
+            "ignore_fail": {
+              "$ref": "#/definitions/ignore_fail_exec_option"
+            },
+            "cmd": {
+              "title": "Command to execute",
+              "description": "Executes a single command as a subprocess without a shell. Supports glob patterns for file matching, parameter expansion, and pattern matching. Environment variable templating is also supported within the command.",
+              "examples": [
+                "rm -rf ./**/*.pyc",
+                "echo '.*' # prevents glob expansion",
+                "echo \\.* # also prevents glob expansion",
+                "echo Hello ${USER}",
+                "echo Hello \\${USER} # escapes the variable for literal dollar sign"
+              ],
+              "type": "string"
+            }
+          },
+          "required": ["cmd"]
+        }
+      ]
+    },
+    "expr_task": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_options"
+        },
+        {
+          "$ref": "#/definitions/capture_stdout_option"
+        },
+        {
+          "$ref": "#/definitions/use_exec_option"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "assert": {
+              "description": "A boolean indicating if the task will fail when the result of the expression is falsy.",
+              "type": "boolean"
+            },
+            "expr": {
+              "description": "A Python expression to be evaluated. Can include environment variables and arguments.",
+              "type": "string"
+            },
+            "ignore_fail": {
+              "$ref": "#/definitions/ignore_fail_exec_option"
+            },
+            "imports": {
+              "description": "A list of Python modules to be imported for use in the expression.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": ["expr"]
+        }
+      ]
+    },
+    "ref_task": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_options"
+        },
+        {
+          "$ref": "#/definitions/capture_stdout_option"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "ignore_fail": {
+              "description": "If true the failure of the referenced task will be ignored and the ref task will return exit code 0.",
+              "examples": [true],
+              "oneOf": [
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "ref": {
+              "description": "A reference to another task by name, with optional additional arguments appended.",
+              "type": "string"
+            }
+          },
+          "not": {
+            "properties": {
+              "executor": {
+                "not": false
+              }
+            },
+            "required": ["executor"]
+          },
+          "required": ["ref"]
+        }
+      ]
+    },
+    "script_task": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_options"
+        },
+        {
+          "$ref": "#/definitions/capture_stdout_option"
+        },
+        {
+          "$ref": "#/definitions/use_exec_option"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "ignore_fail": {
+              "$ref": "#/definitions/ignore_fail_exec_option"
+            },
+            "print_result": {
+              "default": false,
+              "description": "If true then the return value of the Python callable will be output to stdout, unless it is None.",
+              "type": "boolean"
+            },
+            "script": {
+              "description": "A reference to a Python callable to import and execute, and optionally values or expressions to pass as arguments. If the target Python function is an async function then it will be executed with asyncio.run.",
+              "examples": [
+                "my_pkg.my_module.my_func",
+                "my_pkg.scripts:main",
+                "my_pkg.scripts:main(only='images', log_env={'LOG_PATH':'/var/log'})"
+              ],
+              "type": "string"
+            }
+          },
+          "required": ["script"]
+        }
+      ]
+    },
+    "sequence_task": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_options"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "default_item_type": {
+              "default": "ref",
+              "description": "Change the default item type that strings in the sequence are interpreted as.",
+              "type": "string"
+            },
+            "ignore_fail": {
+              "$ref": "#/definitions/ignore_fail_tasks_option"
+            },
+            "sequence": {
+              "$ref": "#/definitions/tasks_array",
+              "description": "A sequence task is defined by an array of tasks or command names to be run one after the other. Each item in the sequence can be a command name, a command, script, reference to another task, or another sequence."
+            }
+          },
+          "required": ["sequence"]
+        }
+      ]
+    },
+    "parallel_task": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_options"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "default_item_type": {
+              "default": "ref",
+              "description": "Change the default item type that strings in the sequence are interpreted as.",
+              "type": "string"
+            },
+            "ignore_fail": {
+              "$ref": "#/definitions/ignore_fail_tasks_option"
+            },
+            "prefix": {
+              "default": "{name}",
+              "description": "Set the prefix applied to each line of output from subtasks. By default this is the task name.",
+              "type": "string"
+            },
+            "prefix_max": {
+              "default": 16,
+              "description": "Set the maximum width of the prefix. Longer prefixes will be truncated.",
+              "type": "integer"
+            },
+            "prefix_template": {
+              "default": "{color_start}{prefix}{color_end} |",
+              "description": "Specifies a template for how the prefix is applied after truncating it to the prefix_max length.",
+              "type": "string"
+            },
+            "parallel": {
+              "$ref": "#/definitions/tasks_array",
+              "description": "A subtask is defined by an array of tasks or command names to be run multiple tasks concurrently. Each subtask can be a command name, a command, script, reference to another task, or another sequence."
+            }
+          },
+          "required": ["parallel"]
+        }
+      ]
+    },
+    "shell_task": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_options"
+        },
+        {
+          "$ref": "#/definitions/capture_stdout_option"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "ignore_fail": {
+              "$ref": "#/definitions/ignore_fail_exec_option"
+            },
+            "interpreter": {
+              "description": "Specify the shell interpreter that this task should execute with, or a list of interpreters in order of preference.",
+              "examples": [
+                "bash",
+                ["bash", "-c"],
+                ["sh", "-c"],
+                "powershell",
+                ["pwsh", "-c"]
+              ],
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              ]
+            },
+            "shell": {
+              "description": "A simple command line or a sequence of commands to be executed inside a new shell. It can consist of multiple statements. These tasks can leverage the full syntax of the shell interpreter such as command substitution, pipes, background processes, etc.",
+              "examples": [
+                "echo 'Hello World'",
+                "cat foo.txt | grep bar",
+                "for i in {1..5}; do echo \"Welcome $i times\"; done"
+              ],
+              "type": "string"
+            }
+          },
+          "required": ["shell"]
+        }
+      ]
+    },
+    "switch_task": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_options"
+        },
+        {
+          "$ref": "#/definitions/capture_stdout_option"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "control": {
+              "$ref": "#/definitions/one_of_tasks",
+              "description": "A required definition for a task to be executed to determine which case task to run."
+            },
+            "default": {
+              "default": "fail",
+              "description": "Defines the default behavior if no cases are matched. Can either pass or fail.",
+              "enum": ["pass", "fail"],
+              "type": "string"
+            },
+            "switch": {
+              "description": "A list of cases with tasks to execute based on the control task's output.",
+              "items": {
+                "$ref": "#/definitions/one_of_tasks",
+                "properties": {
+                  "case": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    ],
+                    "description": "The value(s) that match the control task's output to determine this case should be executed."
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": ["control", "switch"]
+        }
+      ]
+    },
+    "one_of_tasks": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/definitions/cmd_task"
+        },
+        {
+          "$ref": "#/definitions/script_task"
+        },
+        {
+          "$ref": "#/definitions/shell_task"
+        },
+        {
+          "$ref": "#/definitions/sequence_task"
+        },
+        {
+          "$ref": "#/definitions/parallel_task"
+        },
+        {
+          "$ref": "#/definitions/expr_task"
+        },
+        {
+          "$ref": "#/definitions/switch_task"
+        },
+        {
+          "$ref": "#/definitions/ref_task"
+        }
+      ]
+    },
+    "tasks_array": {
+      "items": {
+        "$ref": "#/definitions/one_of_tasks"
+      },
+      "type": "array"
+    }
+  },
+  "properties": {
+    "default_array_item_task_type": {
+      "default": "ref",
+      "description": "When a task is declared as a string inside an array (e.g. inline in a sequence task), then it is interpreted as the default array item task type, which will be 'ref' unless otherwise specified.",
+      "enum": ["cmd", "expr", "ref", "script", "shell"],
+      "type": "string"
+    },
+    "default_array_task_type": {
+      "default": "sequence",
+      "description": "When a task is declared as an array (instead of a table), then it is interpreted as the default array task type, which will be 'sequence' unless otherwise specified.",
+      "enum": ["sequence", "parallel"],
+      "type": "string"
+    },
+    "default_task_type": {
+      "default": "cmd",
+      "description": "Sets the default task type for tasks defined as strings. By default, tasks are interpreted as shell commands ('cmd'). This can be overridden to 'script' or other supported types.",
+      "enum": ["cmd", "expr", "ref", "script", "shell"],
+      "type": "string"
+    },
+    "env": {
+      "$ref": "#/definitions/env_option"
+    },
+    "envfile": {
+      "$ref": "#/definitions/envfile_option"
+    },
+    "executor": {
+      "$ref": "#/definitions/executor_option"
+    },
+    "include": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      ],
+      "description": "Specify one or more other toml or json files to load tasks from."
+    },
+    "include_script": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        }
+      ],
+      "description": "Load dynamically generated tasks from one or more python functions."
+    },
+    "poetry_command": {
+      "description": "Change the name of the task poe registers with poetry when used as a plugin.",
+      "type": "string"
+    },
+    "poetry_hooks": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Register tasks to run automatically before or after other poetry CLI commands.",
+      "type": "object"
+    },
+    "shell_interpreter": {
+      "anyOf": [
+        {
+          "description": "A single default shell interpreter as a string.",
+          "type": "string"
+        },
+        {
+          "description": "An array of strings specifying a command and arguments for the default shell interpreter.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      ],
+      "description": "Change the default shell interpreter for executing shell tasks. Normally, tasks are executed using a posix shell, but this can be overridden here.",
+      "examples": ["bash", ["bash", "-c"]]
+    },
+    "tasks": {
+      "additionalProperties": false,
+      "patternProperties": {
+        "^\\w[\\w\\d\\-_\\+:]*$": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/one_of_tasks"
+            },
+            {
+              "$ref": "#/definitions/tasks_array"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "groups": {
+      "description": "Define groups of tasks to be displayed together in the help output.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^\\w[\\w\\d\\-_]*$": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "heading": {
+              "description": "A human-readable name for the group displayed in the help output.",
+              "type": "string"
+            },
+            "executor": {
+              "$ref": "#/definitions/executor_option"
+            },
+            "tasks": {
+              "description": "The tasks defined within this group.",
+              "additionalProperties": false,
+              "patternProperties": {
+                "^\\w[\\w\\d\\-_\\+:]*$": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/definitions/one_of_tasks"
+                    },
+                    {
+                      "$ref": "#/definitions/tasks_array"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            }
+          }
+        }
+      },
+      "type": "object"
+    },
+    "verbosity": {
+      "default": 0,
+      "description": "Sets the default verbosity level for all commands. '-1' is quieter, '0' is the default level, and '1' is more verbose. The command line arguments are incremental, with '--quiet' or '-q' decreasing verbosity, and '--verbose' or '-v' increasing it.",
+      "maximum": 1,
+      "minimum": -1,
+      "type": "integer"
+    }
+  }
+}

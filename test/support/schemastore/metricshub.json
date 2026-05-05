@@ -1,0 +1,2181 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://json.schemastore.org/metricshub.json",
+  "type": "object",
+  "definitions": {
+    "sequential": {
+      "type": "boolean",
+      "description": "Sequential mode. This forces all network calls to be ordered in a sequential order."
+    },
+    "enableSelfMonitoring": {
+      "description": "Enables or disables self monitoring signals. E.g. job duration metrics.",
+      "type": "boolean"
+    },
+    "duration": {
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string",
+          "pattern": "^[0-9]+\\s*[years|yrs|y|weeks|wks|w|days|d|hours|hrs|h|minutes|mins|m!seconds|secs|s|milliseconds|ms]*$"
+        }
+      ]
+    },
+    "namespace": {
+      "description": "Forces a specific namespace for connectors that perform namespace auto-detection (Advanced).",
+      "type": "string"
+    },
+    "loggerLevel": {
+      "type": "string",
+      "enum": [
+        "all",
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "off"
+      ],
+      "default": "error",
+      "description": "Logger Level (Default: error)"
+    },
+    "resources": {
+      "type": "object",
+      "description": "Contains Resources",
+      "additionalProperties": {
+        "type": "object",
+        "description": "Resource name",
+        "properties": {
+          "loggerLevel": {
+            "$ref": "#/definitions/loggerLevel"
+          },
+          "outputDirectory": {
+            "type": "string",
+            "description": "Output directory"
+          },
+          "collectPeriod": {
+            "$ref": "#/definitions/collectPeriod"
+          },
+          "discoveryCycle": {
+            "$ref": "#/definitions/discoveryCycle"
+          },
+          "alertingSystemConfig": {
+            "type": "object",
+            "description": "Alerting System Configuration",
+            "properties": {
+              "disable": {
+                "type": "boolean",
+                "description": "If true, disables the alerting system"
+              },
+              "problemTemplate": {
+                "type": "string",
+                "description": "Problem alerts template"
+              }
+            }
+          },
+          "enableSelfMonitoring": {
+            "$ref": "#/definitions/enableSelfMonitoring"
+          },
+          "sequential": {
+            "$ref": "#/definitions/sequential"
+          },
+          "resolveHostnameToFqdn": {
+            "$ref": "#/definitions/resolveHostnameToFqdn"
+          },
+          "jobTimeout": {
+            "$ref": "#/definitions/jobTimeout"
+          },
+          "attributes": {
+            "type": "object",
+            "description": "Resource attributes",
+            "additionalProperties": {
+              "type": ["string", "number", "array"],
+              "description": "Attribute key-value pair"
+            }
+          },
+          "metrics": {
+            "type": "object",
+            "description": "Resource metrics",
+            "additionalProperties": {
+              "type": ["string", "number"],
+              "description": "Metrics key-value pair"
+            }
+          },
+          "protocols": {
+            "type": "object",
+            "description": "Protocols Used",
+            "properties": {
+              "http": {
+                "type": "object",
+                "description": "Configures the HTTP protocol to access the host.",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Sets the username used to establish the connection with the host through the HTTP protocol."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Sets the password used to establish the connection with the host through the HTTP protocol."
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the HTTP request times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "https": {
+                    "type": "boolean",
+                    "description": "Enables HTTPS to access the host (Default: true)."
+                  },
+                  "port": {
+                    "type": "number",
+                    "description": "Sets the HTTPS port number used to perform HTTP requests (Default: 443)."
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  }
+                }
+              },
+              "ipmi": {
+                "type": "object",
+                "description": "Configures the IPMI protocol to access the host.",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Sets the username used to establish the connection with the host through the IPMI protocol."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Sets the username used to establish the connection with the host through the IPMI protocol."
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the IPMI request times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "bmcKey": {
+                    "type": "string",
+                    "description": "BMC Key used to establish the connection with the host through the IPMI protocol."
+                  },
+                  "skipAuth": {
+                    "type": "boolean",
+                    "description": "Skip Authentication"
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  }
+                }
+              },
+              "osCommand": {
+                "type": "object",
+                "description": "Configures the OS Command protocol to access the host.",
+                "properties": {
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the local OS Command times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "useSudo": {
+                    "type": "boolean",
+                    "description": "Sets if sudo needs to be used for the local OS Command (Default: false).",
+                    "default": false
+                  },
+                  "useSudoCommands": {
+                    "type": "array",
+                    "description": "Sets the list of commands for which sudo is required.",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "sudoCommand": {
+                    "type": "string",
+                    "description": "Sets the sudo command to be used for the host to be monitored (Default: sudo).",
+                    "default": "sudo"
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  }
+                }
+              },
+              "ping": {
+                "type": "object",
+                "description": "Configures the Ping protocol to access the host.",
+                "properties": {
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the ping times out (Default: 5s).",
+                    "default": "5s"
+                  }
+                }
+              },
+              "snmp": {
+                "type": "object",
+                "description": "Configures the SNMP protocol to access the host.",
+                "properties": {
+                  "version": {
+                    "description": "Sets the version of the SNMP protocol (Default: v1).",
+                    "type": "string",
+                    "enum": ["v1", "v2c"],
+                    "default": "v1"
+                  },
+                  "community": {
+                    "type": "string",
+                    "description": "Sets the SNMP Community string to use to perform queries (Default: public)."
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the SNMP request times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "port": {
+                    "type": "number",
+                    "description": "Sets the SNMP port number used to perform SNMP queries (Default: 161).",
+                    "default": 161
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  },
+                  "retryIntervals": {
+                    "$ref": "#/definitions/retryIntervals"
+                  }
+                }
+              },
+              "snmpv3": {
+                "type": "object",
+                "description": "Configures the SNMPv3 protocol to access the host.",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Sets the username to use for performing the SNMPv3 query."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Sets the password to use for performing the SNMPv3 query."
+                  },
+                  "privacyPassword": {
+                    "type": "string",
+                    "description": "Sets the privacy password to use for performing the SNMPv3 query."
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the SNMPv3 request times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "port": {
+                    "type": "number",
+                    "description": "Sets the SNMP port number used to perform SNMP queries (Default: 161).",
+                    "default": 161
+                  },
+                  "contextName": {
+                    "type": "string",
+                    "description": "Sets the context name."
+                  },
+                  "authType": {
+                    "type": "string",
+                    "enum": [
+                      "NO_AUTH",
+                      "MD5",
+                      "SHA",
+                      "SHA256",
+                      "SHA512",
+                      "SHA224",
+                      "SHA384"
+                    ],
+                    "description": "Sets the SNMPv3 authentication type. (MD5, SHA, SHA256, SHA512, SHA384, SHA224 or NO_AUTH)."
+                  },
+                  "privacy": {
+                    "type": "string",
+                    "enum": ["DES", "AES", "none"],
+                    "description": "Sets the SNMPv3 encryption type. (AES, DES or none)."
+                  },
+                  "retryIntervals": {
+                    "$ref": "#/definitions/retryIntervals"
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  }
+                }
+              },
+              "ssh": {
+                "type": "object",
+                "description": "Configures the SSH protocol to access the host.",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Sets the username to use for performing the SSH query."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Sets the password to use for performing the SSH query."
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the command times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "sudoCommand": {
+                    "description": "Sets the sudo command to be used.",
+                    "type": "string",
+                    "default": "sudo"
+                  },
+                  "useSudo": {
+                    "description": "Sets if sudo needs to be used for the SSH Command (Default: false).",
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "useSudoCommands": {
+                    "description": "Sets the list of commands for which sudo is required.",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "privateKey": {
+                    "type": "string",
+                    "description": "Sets the private Key File to use to establish the connection to the host through the SSH protocol."
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  }
+                }
+              },
+              "wbem": {
+                "type": "object",
+                "description": "Configures the WBEM protocol to access the host.",
+                "properties": {
+                  "namespace": {
+                    "$ref": "#/definitions/namespace"
+                  },
+                  "password": {
+                    "description": "Sets the password used to establish the connection with the host through the WBEM protocol.",
+                    "type": "string"
+                  },
+                  "port": {
+                    "description": "Sets the HTTPS port number used to perform WBEM queries (Default: 5989 for HTTPS or 5988 for HTTP).",
+                    "type": "integer",
+                    "default": 5989
+                  },
+                  "protocol": {
+                    "$ref": "#/definitions/transportProtocols",
+                    "description": "Sets the protocol used to access the host (Default: https).",
+                    "default": "https"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the WBEM request times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "username": {
+                    "description": "Sets the username used to establish the connection with the host through the WBEM protocol.",
+                    "type": "string"
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  }
+                }
+              },
+              "winrm": {
+                "type": "object",
+                "description": "Configures the WinRM protocol to access the host.",
+                "properties": {
+                  "namespace": {
+                    "$ref": "#/definitions/namespace"
+                  },
+                  "password": {
+                    "description": "Sets the password used to establish the connection with the host through the WinRM protocol.",
+                    "type": "string"
+                  },
+                  "port": {
+                    "description": "Sets the HTTPS port number used to perform WinRM queries (Default: 5989 for HTTPS or 5988 for HTTP).",
+                    "type": "integer",
+                    "default": 5989
+                  },
+                  "protocol": {
+                    "$ref": "#/definitions/transportProtocols",
+                    "description": "Sets the protocol used to access the host (Default: https).",
+                    "default": "https"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the WinRM request times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "username": {
+                    "description": "Sets the username used to establish the connection with the host through the WinRM protocol.",
+                    "type": "string"
+                  },
+                  "authentications": {
+                    "type": "array",
+                    "description": "Authentication Type",
+                    "items": {
+                      "type": "string",
+                      "enum": ["ntlm", "kerberos"]
+                    }
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  }
+                }
+              },
+              "wmi": {
+                "type": "object",
+                "description": "Configures the WMI protocol to access the host.",
+                "properties": {
+                  "namespace": {
+                    "$ref": "#/definitions/namespace"
+                  },
+                  "password": {
+                    "description": "Sets the password used to establish the connection with the host through the WMI protocol.",
+                    "type": "string"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Sets how long until the WMI request times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "username": {
+                    "description": "Sets the username used to establish the connection with the host through the WMI protocol.",
+                    "type": "string"
+                  },
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  }
+                }
+              },
+              "jdbc": {
+                "type": "object",
+                "description": "Configuration for JDBC connection.",
+                "properties": {
+                  "hostname": {
+                    "$ref": "#/definitions/hostname"
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "How long until the SQL query times out (Default: 120s).",
+                    "default": "120s"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Name used to authenticate against the database."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password used to authenticate against the database."
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "The JDBC connection URL to access the database."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "The type of database (e.g., postgresql, oracle, mssql, informix, h2, mysql)."
+                  },
+                  "port": {
+                    "type": "integer",
+                    "description": "The port number used to connect to the database.",
+                    "minimum": 1,
+                    "maximum": 65535
+                  },
+                  "database": {
+                    "type": "string",
+                    "description": "The name of the database instance to connect to on the server."
+                  }
+                }
+              },
+              "jmx": {
+                "type": "object",
+                "description": "Configures the JMX protocol to access the host using Java Management Extensions (JMX). Used for monitoring Java applications via MBean access.",
+                "properties": {
+                  "hostname": {
+                    "$ref": "#/definitions/hostname",
+                    "description": "Specifies the target host for the JMX connection."
+                  },
+                  "port": {
+                    "type": "integer",
+                    "description": "Sets the JMX port number used to perform the connection (Default: 1099).",
+                    "default": 1099,
+                    "minimum": 1,
+                    "maximum": 65535
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Username used to authenticate the JMX connection (optional)."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password used to authenticate the JMX connection (optional)."
+                  },
+                  "timeout": {
+                    "$ref": "#/definitions/duration",
+                    "description": "Specifies how long until the JMX connection attempt times out (Default: 30s).",
+                    "default": "30s"
+                  }
+                }
+              }
+            }
+          },
+          "additionalConnectors": {
+            "type": "object",
+            "patternProperties": {
+              "^[a-zA-Z0-9_.-]+$": {
+                "type": "object",
+                "properties": {
+                  "uses": {
+                    "type": "string",
+                    "description": "Specifies the connector ID to use. Defaults to the key name if not specified."
+                  },
+                  "variables": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "description": "Variable key-value pair"
+                    },
+                    "description": "Key-value pairs for connector-specific variables."
+                  },
+                  "force": {
+                    "type": "boolean",
+                    "description": "Set to false for auto-detection only, defaults to true if not specified.",
+                    "default": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "description": "Custom connector configurations keyed by their ID including variables (Advanced).",
+            "additionalProperties": false
+          },
+          "connectors": {
+            "description": "Defines the list of connectors to include, exclude, or force. Each entry is a connector ID or a tag with an optional prefix to control behavior.\n\nPrefixes:\n- (none)  Add the connector by its ID for automatic detection.\n- `#`       Include all connectors that have the specified tag.\n- `!#`      Exclude all connectors that have the specified tag.\n- `+`       Force-enable the specified connector (included even if not auto-detected).\n- `!`       Exclude the specified connector by its ID.\n\nExamples:\n- `mysql`        Include the connector with ID mysql.\n- `#database`    Include all connectors tagged database.\n- `!#beta`       Exclude all connectors tagged beta.\n- `+aws`         Force-enable the aws connector.\n- `!gcp`         Exclude the gcp connector.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "monitors": {
+            "type": "object",
+            "description": "Monitor Identity Properties",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "keys": {
+                  "type": "array",
+                  "description": "Monitor job keys used to create the monitor id",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "discovery": {
+                  "type": "object",
+                  "description": "Discovery monitoring job",
+                  "properties": {
+                    "sources": {
+                      "$ref": "#/definitions/sources"
+                    },
+                    "metrics": { "$ref": "#/definitions/metrics" },
+                    "mapping": {
+                      "type": "object",
+                      "description": "Discovery Mapping",
+                      "properties": {
+                        "source": {
+                          "type": "string"
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "description": "Discovery Attributes",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "ID"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "Display Name"
+                            }
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "metrics": {
+                          "type": "string",
+                          "description": "Discovery Metrics",
+                          "additionalProperties": {}
+                        },
+                        "conditionalCollection": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                },
+                "collect": {
+                  "type": "object",
+                  "description": "Collect monitoring job",
+                  "properties": {
+                    "sources": {
+                      "$ref": "#/definitions/sources"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Collect Instance Type",
+                      "enum": ["monoInstance", "multiInstance"]
+                    },
+                    "mapping": {
+                      "type": "object",
+                      "description": "Collect Mapping",
+                      "properties": {
+                        "source": {
+                          "type": "string"
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "description": "Collect Attributes",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "ID"
+                            }
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "metrics": {
+                          "type": "object",
+                          "description": "Collect Metrics",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "legacyTextParameters": {
+                          "type": "object",
+                          "properties": {
+                            "StatusInformation": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "simple": {
+                  "type": "object",
+                  "description": "Simple monitoring job",
+                  "properties": {
+                    "sources": {
+                      "$ref": "#/definitions/sources"
+                    },
+                    "metrics": { "$ref": "#/definitions/metrics" },
+                    "mapping": {
+                      "type": "object",
+                      "description": "Discovery Mapping",
+                      "properties": {
+                        "source": {
+                          "type": "string"
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "description": "Discovery Attributes",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "ID"
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "Display Name"
+                            }
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "metrics": {
+                          "type": "object",
+                          "description": "Discovery Metrics",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        },
+                        "conditionalCollection": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "stateSetCompression": {
+            "$ref": "#/definitions/stateSetCompression"
+          },
+          "monitorFilters": {
+            "$ref": "#/definitions/monitorFilters"
+          }
+        }
+      }
+    },
+    "resultContent": {
+      "type": "string",
+      "description": "Result Content Expected",
+      "enum": ["http_status", "header", "body", "all"]
+    },
+    "httpMethod": {
+      "type": "string",
+      "description": "HTTP Method",
+      "enum": ["get", "post", "delete", "put"]
+    },
+    "executeForEachEntryOf": {
+      "type": "object",
+      "description": "Execute For Each Entry",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "concatMethod": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["list", "json_array", "json_array_extended"]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "concatStart": {
+                  "type": "string"
+                },
+                "concatEnd": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Metric definitions describing the collected OpenTelemetry metrics and their metadata (unit, description, and type).",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "unit": {
+            "type": "string",
+            "description": "The measurement unit of the metric (e.g., 'Cel', 's', 'By'). Default is an empty string."
+          },
+          "description": {
+            "type": "string",
+            "description": "A human-readable explanation of what the metric measures and its context."
+          },
+          "type": {
+            "description": "Defines the metric type being collected. Can be a simple string type (Gauge, Counter, UpDownCounter) or an object with state set mapping.",
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": ["Gauge", "Counter", "UpDownCounter"],
+                "default": "Gauge",
+                "description": "A simple metric type. • 'Gauge' measures a value at a point in time. • 'Counter' represents a monotonically increasing value. • 'UpDownCounter' can both increase and decrease over time."
+              },
+              {
+                "type": "object",
+                "description": "A metric type definition that allows state set mapping.",
+                "properties": {
+                  "stateSet": {
+                    "type": "array",
+                    "description": "A list defining the possible states that this metric can represent (e.g., ['ok', 'degraded', 'failed']). Typically used when the metric indicates a binary value (0 or 1) corresponding to each defined state."
+                  },
+                  "output": {
+                    "type": "string",
+                    "enum": ["Gauge", "Counter", "UpDownCounter"],
+                    "description": "Specifies the output metric type when 'stateSet' is defined. Determines how the resulting metric will be emitted in OpenTelemetry."
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "description": "Contains Sources",
+      "additionalProperties": {
+        "type": "object",
+        "description": "Source Name",
+        "oneOf": [
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "http"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "method": {
+                "$ref": "#/definitions/httpMethod"
+              },
+              "url": {
+                "type": "string",
+                "description": "HTTP Url"
+              },
+              "path": {
+                "type": "string",
+                "description": "HTTP Path"
+              },
+              "header": {
+                "type": "string",
+                "description": "HTTP Header"
+              },
+              "body": {
+                "type": "string",
+                "description": "HTTP Body"
+              },
+              "authenticationToken": {
+                "type": "string",
+                "description": "HTTP Authentication Token"
+              },
+              "resultContent": {
+                "$ref": "#/definitions/resultContent"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "ipmi"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "commandLine"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "commandLine": {
+                "type": "string",
+                "description": "The Command Line to Execute"
+              },
+              "timeout": {
+                "type": ["number", "string"],
+                "description": "The Command Line Timeout"
+              },
+              "executeLocally": {
+                "type": "boolean",
+                "description": "Command Executed On Local Agent"
+              },
+              "exclude": {
+                "type": "string",
+                "description": "Exclude Lines Matching"
+              },
+              "keep": {
+                "type": "string",
+                "description": "Keep Lines Matching"
+              },
+              "beginAtLineNumber": {
+                "type": "integer",
+                "description": "Begin At Line Number"
+              },
+              "endAtLineNumber": {
+                "type": "integer",
+                "description": "End At Line Number"
+              },
+              "separators": {
+                "type": "string",
+                "description": "Column Separator"
+              },
+              "selectColumns": {
+                "type": "string",
+                "description": "Columns Selected"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "copy"
+              },
+              "from": {
+                "type": "string",
+                "description": "Source Copied"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "static"
+              },
+              "value": {
+                "type": "string",
+                "description": "Source Value"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "snmpGet"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "oid": {
+                "type": "string",
+                "description": "OID Queried"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "snmpTable"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "oid": {
+                "type": "string",
+                "description": "OID Queried"
+              },
+              "selectColumns": {
+                "type": "string",
+                "description": "Columns Selected"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "tableJoin"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "leftTable": {
+                "type": "string",
+                "description": "Left Table"
+              },
+              "rightTable": {
+                "type": "string",
+                "description": "Right Table"
+              },
+              "leftKeyColumn": {
+                "type": "integer",
+                "description": "Left Key Column"
+              },
+              "rightKeyColumn": {
+                "type": "integer",
+                "description": "Right Key Column"
+              },
+              "defaultRightLine": {
+                "type": "string",
+                "description": "Line Used If No Matches From Right Table"
+              },
+              "isWbemKey": {
+                "type": "boolean",
+                "description": "Is WBEM Identifier"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "tableUnion"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "tables": {
+                "type": "array",
+                "description": "Tables To Be Concatenated",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "wbem"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "query": {
+                "type": "string",
+                "description": "WBEM Query"
+              },
+              "namespace": {
+                "type": "string",
+                "description": "WBEM Namespace"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "wmi"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "query": {
+                "type": "string",
+                "description": "WMI Query"
+              },
+              "namespace": {
+                "type": "string",
+                "description": "WMI Namespace"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "internalDbQuery"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "tables": {
+                "type": "array",
+                "description": "The list of tables to be used in the internal database query (SQL)",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "description": "Source to be used as a table"
+                    },
+                    "alias": {
+                      "type": "string",
+                      "description": "Alias for the table"
+                    },
+                    "columns": {
+                      "type": "array",
+                      "description": "SQL table columns",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Column name"
+                          },
+                          "type": {
+                            "type": "string",
+                            "description": "SQL column type"
+                          },
+                          "number": {
+                            "type": "integer",
+                            "description": "Column number in the source"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "query": {
+                "type": "string",
+                "description": "Internal database SQL Query"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "sql"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "query": {
+                "type": "string",
+                "description": "SQL Query"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "awk"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "script": {
+                "type": "string",
+                "description": "The AWK script to be executed for the computation task."
+              },
+              "input": {
+                "type": "string",
+                "description": "The input on which to execute the AWK task."
+              },
+              "separators": {
+                "type": "string",
+                "description": "The separators parameter for the AWK task."
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "jmx"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "objectName": {
+                "type": "string",
+                "description": "The ObjectName pattern to query (JMX MBean name)."
+              },
+              "attributes": {
+                "type": "array",
+                "description": "The list of attributes to fetch from the MBean.",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "keyProperties": {
+                "type": "array",
+                "description": "Optional list of key property names (e.g., 'scope', 'name') to include as extra columns.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "eventLog"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "logName": {
+                "type": "string",
+                "description": "Windows Event Log name"
+              },
+              "eventIds": {
+                "type": "array",
+                "description": "List of event IDs to filter",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sources": {
+                "type": "array",
+                "description": "List of event sources to filter",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "levels": {
+                "type": "array",
+                "description": "List of event log levels to filter. Accepts level names (e.g., 'error', 'warn', 'info', 'success', 'failure') or numeric codes (1-5).",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    }
+                  ]
+                }
+              },
+              "maxEventsPerPoll": {
+                "type": "integer",
+                "description": "Maximum number of events to retrieve per poll (default: 50, -1 for unlimited)",
+                "default": 50
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "file"
+              },
+              "forceSerialization": {
+                "type": "boolean"
+              },
+              "computes": {
+                "$ref": "#/definitions/computes"
+              },
+              "executeForEachEntryOf": {
+                "$ref": "#/definitions/executeForEachEntryOf"
+              },
+              "paths": {
+                "type": "array",
+                "description": "File path patterns to read (e.g., C:\\logs\\*.log, /var/log/app/*.log). Supports wildcards.",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "maxSizePerPoll": {
+                "oneOf": [
+                  {
+                    "type": "integer",
+                    "description": "Maximum number of bytes to read per polling cycle across all files (LOG mode). Use -1 for no limit. Default is 5 MB (5242880 bytes)."
+                  },
+                  {
+                    "type": "string",
+                    "description": "Maximum size per poll as a string (e.g., '5Mb', '10MB'). Supports size units."
+                  }
+                ],
+                "default": 5242880
+              },
+              "mode": {
+                "type": "string",
+                "description": "Processing mode: LOG for incremental reading with cursors, or FLAT for full-file read on each poll (default: LOG).",
+                "enum": ["LOG", "FLAT"],
+                "default": "LOG"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "computes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["add", "divide", "multiply", "subtract"]
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "value": {
+                "type": ["string", "number"],
+                "description": "Number Value"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["and", "prepend", "append"]
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "value": {
+                "type": "string",
+                "description": "String Value"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "arrayTranslate"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "translationTable": {
+                "type": "string",
+                "description": "Translation Table Name"
+              },
+              "arraySeparator": {
+                "type": "string",
+                "description": "Array Separator"
+              },
+              "resultSeparator": {
+                "type": "string",
+                "description": "Result Separator"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "awk"
+              },
+              "script": {
+                "type": "string",
+                "description": "Awk Script Name"
+              },
+              "exclude": {
+                "type": "string",
+                "description": "Exclude Lines Matching"
+              },
+              "keep": {
+                "type": "string",
+                "description": "Keep Lines Matching"
+              },
+              "separators": {
+                "type": "string",
+                "description": "Column Separator"
+              },
+              "selectColumns": {
+                "type": "string",
+                "description": "Column Computed"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "convert"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "conversion": {
+                "type": "string",
+                "enum": ["hex2Dec", "array2SimpleStatus"]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "duplicateColumn"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["excludeOnlyMatchingLines", "keepOnlyMatchingLines"]
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "regExp": {
+                "type": "string",
+                "description": "Regular Expression To Match"
+              },
+              "valueList": {
+                "type": "string",
+                "description": "Value List To Match"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "extract"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "subColumn": {
+                "type": "integer",
+                "description": "Subcolumn Extracted"
+              },
+              "subSeparators": {
+                "type": "string",
+                "description": "Subcolumn Separators"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "extractPropertyFromWbemPath"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "property": {
+                "type": "string",
+                "description": "Property Extracted"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "json2Csv"
+              },
+              "entryKey": {
+                "type": "string",
+                "description": "JSON Entry Key"
+              },
+              "properties": {
+                "type": "string",
+                "description": "Properties To Capture"
+              },
+              "separator": {
+                "type": "string",
+                "description": "Column Separator"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "perBitTranslation"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "bitList": {
+                "type": "string",
+                "description": "List Of Bits"
+              },
+              "translationTable": {
+                "type": "string",
+                "description": "Translation Table Name"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "replace"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "existingValue": {
+                "type": "string",
+                "description": "Value Replaced"
+              },
+              "newValue": {
+                "type": "string",
+                "description": "New Value"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "substring"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "start": {
+                "type": "string",
+                "description": "Starting Character Index"
+              },
+              "length": {
+                "type": "string",
+                "description": "Substring Length"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "translate"
+              },
+              "column": {
+                "type": "integer",
+                "description": "Column Computed"
+              },
+              "translationTable": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "description": "Translation Table Name"
+                  },
+                  {
+                    "type": "object",
+                    "description": "Inline Translation Table",
+                    "additionalProperties": {
+                      "type": ["string", "number"],
+                      "description": "Translation key-value pairs"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "xml2Csv"
+              },
+              "recordTag": {
+                "type": "string",
+                "description": "XML Record Tag"
+              },
+              "properties": {
+                "type": "string",
+                "description": "Properties To Capture"
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "encode"
+              },
+              "column": {
+                "type": "integer",
+                "description": "The column index used for the Encode computation."
+              },
+              "encoding": {
+                "type": "string",
+                "description": "The encoding algorithm or format to apply (base64 or url)."
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "decode"
+              },
+              "column": {
+                "type": "integer",
+                "description": "The column index used for the Decode computation."
+              },
+              "encoding": {
+                "type": "string",
+                "description": "The encoding algorithm or format to reverse (base64 or url)."
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "excludeMatchingLines"
+              },
+              "column": {
+                "type": "integer",
+                "description": "The column from which to extract values for matching."
+              },
+              "regExp": {
+                "type": "string",
+                "description": "The regular expression pattern to match against the column values."
+              },
+              "valueList": {
+                "type": "string",
+                "description": "The list of values to match against the column values."
+              }
+            }
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "keepColumns"
+              },
+              "columnNumbers": {
+                "type": "string",
+                "description": "The column numbers to be kept in the KeepColumns computation (comma-separated list)."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "transportProtocols": {
+      "type": "string",
+      "enum": ["http", "https"]
+    },
+    "stateSetCompression": {
+      "type": "string",
+      "description": "Represents the possible compression methods for the state set metrics.",
+      "enum": ["none", "suppressZeros"],
+      "default": "suppressZeros"
+    },
+    "monitorFilters": {
+      "type": "array",
+      "description": "Monitor inclusion or exclusion in data collection. This parameter accepts '+<monitor_name>' for inclusion and '!<monitor_name>' for exclusion.",
+      "items": {
+        "type": "string",
+        "pattern": "^[+!]?[a-zA-Z0-9_.-]+$",
+        "description": "Each value can optionally start with '+' or '!' followed by a valid monitor type."
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "resolveHostnameToFqdn": {
+      "type": "boolean",
+      "description": "Resolve hostnames to FQDN (Default: false).",
+      "default": false
+    },
+    "collectPeriod": {
+      "$ref": "#/definitions/duration",
+      "description": "Sets the collect period that MetricsHub uses to collects metrics from the monitored resources (Default: 2m).",
+      "default": "2m"
+    },
+    "jobTimeout": {
+      "$ref": "#/definitions/duration",
+      "description": "Sets how long until the job times out (Default: 5m).",
+      "default": "5m"
+    },
+    "hostname": {
+      "description": "The hostname to which the query is sent.",
+      "oneOf": [
+        {
+          "type": "array"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "retryIntervals": {
+      "type": "array",
+      "description": "An array of retry intervals (in milliseconds) between request retries.",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "A retry interval in milliseconds. Must be a non-negative integer."
+      },
+      "minItems": 1,
+      "uniqueItems": false
+    },
+    "discoveryCycle": {
+      "type": "integer",
+      "description": "Sets the cycle that MetricsHub uses to perform discoveries and detect new components in your monitored environment. By default, MetricsHub runs a discovery after 30 collects."
+    }
+  },
+  "properties": {
+    "jobPoolSize": {
+      "type": "integer",
+      "description": "Job Pool Size"
+    },
+    "loggerLevel": {
+      "$ref": "#/definitions/loggerLevel"
+    },
+    "outputDirectory": {
+      "type": "string",
+      "description": "Output directory"
+    },
+    "collectPeriod": {
+      "$ref": "#/definitions/collectPeriod"
+    },
+    "discoveryCycle": {
+      "$ref": "#/definitions/discoveryCycle"
+    },
+    "alertingSystemConfig": {
+      "type": "object",
+      "description": "Alerting System Configuration",
+      "properties": {
+        "disable": {
+          "type": "boolean",
+          "description": "If true, disables the alerting system"
+        },
+        "problemTemplate": {
+          "type": "string",
+          "description": "Problem alerts template"
+        }
+      }
+    },
+    "enableSelfMonitoring": {
+      "$ref": "#/definitions/enableSelfMonitoring"
+    },
+    "sequential": {
+      "$ref": "#/definitions/sequential"
+    },
+    "resolveHostnameToFqdn": {
+      "$ref": "#/definitions/resolveHostnameToFqdn"
+    },
+    "jobTimeout": {
+      "$ref": "#/definitions/jobTimeout"
+    },
+    "otelCollector": {
+      "description": "Customizes the OpenTelemetry Collector sub-process.",
+      "type": "object",
+      "properties": {
+        "commandLine": {
+          "description": "Overrides the OpenTelemetry Collector command line.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "environment": {
+          "type": "object",
+          "description": "Configures the OpenTelemetry Collector environment variables."
+        },
+        "output": {
+          "description": "Configures where to print the OpenTelemetry Collector's output (Default: log).",
+          "type": "string",
+          "enum": ["log", "console", "silent"],
+          "default": "log"
+        },
+        "workingDir": {
+          "description": "Configures the working directory of the OpenTelemetry Collector.",
+          "type": "string"
+        },
+        "disabled": {
+          "description": "Disables the OpenTelemetry Collector (Default: false).",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "otel": {
+      "type": "object",
+      "description": "Internal OpenTelemetry SDK configuration",
+      "properties": {
+        "otel.exporter.otlp.metrics.endpoint": {
+          "type": "string",
+          "default": "http://localhost:4317",
+          "description": "The OTLP metrics endpoint URL. Must be an http or https URL, depending on whether TLS is used. For gRPC, the URL is http://localhost:4317 and for HTTP/Protobuf it's http://localhost:4318/v1/metrics"
+        },
+        "otel.exporter.otlp.metrics.protocol": {
+          "type": "string",
+          "description": "Property used to configure the transport protocol to use on OTLP metric requests",
+          "enum": ["grpc", "http/protobuf", "noop"],
+          "default": "grpc"
+        },
+        "otel.exporter.otlp.metrics.certificate": {
+          "type": "string",
+          "description": "Path to a PEM-formatted file containing trusted certificates for verifying the OTLP server TLS credentials."
+        },
+        "otel.exporter.otlp.metrics.headers": {
+          "type": "string",
+          "description": "Custom headers to send with OTLP metric requests, typically for authentication."
+        },
+        "otel.exporter.otlp.metrics.timeout": {
+          "type": "string",
+          "default": "10",
+          "description": "Timeout for OTLP metric requests (in seconds)."
+        },
+        "otel.exporter.otlp.metrics.pool.size": {
+          "type": "integer",
+          "default": 20,
+          "description": "Exporter pool size. Determines how many metric export operations can run in parallel."
+        },
+        "otel.exporter.otlp.metrics.append_resource_attributes": {
+          "type": "boolean",
+          "default": false,
+          "description": "When enabled, all resource attributes will be added as attributes on each exported metric."
+        }
+      },
+      "additionalProperties": {
+        "type": "string",
+        "description": "Additional OpenTelemetry configuration properties."
+      }
+    },
+    "web": {
+      "type": "object",
+      "description": "Web configuration loaded by default. Represents key-value pairs used for web-related settings.",
+      "properties": {
+        "server.port": {
+          "type": "string",
+          "default": "31888",
+          "description": "Server port number."
+        },
+        "spring.main.banner-mode": {
+          "type": "string",
+          "default": "off",
+          "description": "Spring application banner mode (supported values: console, log, off)."
+        },
+        "spring.ai.mcp.server.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable the MCP server."
+        },
+        "spring.ai.mcp.server.stdio": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable communication over STDIO."
+        },
+        "spring.ai.mcp.server.name": {
+          "type": "string",
+          "default": "metricshub-mcp-server",
+          "description": "MCP server name."
+        },
+        "spring.ai.mcp.server.resource-change-notification": {
+          "type": "boolean",
+          "default": true,
+          "description": "Notify on resource changes."
+        },
+        "spring.ai.mcp.server.tool-change-notification": {
+          "type": "boolean",
+          "default": true,
+          "description": "Notify on tool changes."
+        },
+        "spring.ai.mcp.server.prompt-change-notification": {
+          "type": "boolean",
+          "default": true,
+          "description": "Notify on prompt changes."
+        },
+        "spring.ai.mcp.server.sse-endpoint": {
+          "type": "string",
+          "default": "/sse",
+          "description": "SSE endpoint for server events."
+        },
+        "spring.ai.mcp.server.sse-message-endpoint": {
+          "type": "string",
+          "default": "/mcp/message",
+          "description": "SSE endpoint for messages."
+        },
+        "spring.ai.mcp.server.type": {
+          "type": "string",
+          "default": "sync",
+          "description": "MCP server type (sync or async)."
+        },
+        "spring.ai.mcp.server.capabilities.completion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable completion capability."
+        },
+        "spring.ai.mcp.server.capabilities.prompt": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable prompt capability."
+        },
+        "spring.ai.mcp.server.capabilities.resource": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable resource capability."
+        },
+        "spring.ai.mcp.server.capabilities.tool": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable tool capability."
+        },
+        "spring.ai.mcp.server.request-timeout": {
+          "$ref": "#/definitions/duration",
+          "default": "5m",
+          "description": "Request timeout duration."
+        },
+        "jwt.short_expire": {
+          "type": "integer",
+          "default": 3600,
+          "description": "JSON Web Token short expire value (jwt)."
+        },
+        "jwt.long_expire": {
+          "type": "integer",
+          "default": 86400,
+          "description": "JSON Web Token long expire value (refresh)."
+        },
+        "jwt.secret": {
+          "type": "string",
+          "default": "",
+          "description": "Secret key used for signing JWT tokens."
+        },
+        "tls.enabled": {
+          "type": "boolean",
+          "description": "Enable/disable TLS for the embedded web server; false uses HTTP (Default: true).",
+          "default": true
+        },
+        "tls.keystore.path": {
+          "type": "string",
+          "description": "Keystore path (supports classpath:); uses bundled keystore by default (Default: classpath:m8b-keystore.p12).",
+          "default": "classpath:m8b-keystore.p12"
+        },
+        "tls.keystore.password": {
+          "type": "string",
+          "description": "Keystore password (also used as key password) (Default: NOPWD).",
+          "default": "NOPWD"
+        },
+        "tls.keystore.key-password": {
+          "type": "string",
+          "description": "Optional key password; falls back to keystore password when not set."
+        },
+        "tls.keystore.key-alias": {
+          "type": "string",
+          "description": "Optional key alias; if unset, first suitable private-key entry is used."
+        },
+        "ai.openai.tool-output.max-tool-output-bytes": {
+          "type": "integer",
+          "description": "Maximum tool output bytes (Default: 10485760).",
+          "default": 10485760
+        },
+        "ai.openai.tool-output.safety-delta-bytes": {
+          "type": "integer",
+          "description": "Safety delta bytes (Default: 2097152).",
+          "default": 2097152
+        },
+        "ai.openai.tool-output.base-temp-dir": {
+          "type": "string",
+          "description": "Base temporary directory (Default: ${java.io.tmpdir}/metricshub/ai).",
+          "default": "${java.io.tmpdir}/metricshub/ai"
+        },
+        "ai.openai.api-key": {
+          "type": "string",
+          "description": "OpenAI API key."
+        },
+        "ai.openai.model": {
+          "type": "string",
+          "description": "OpenAI model name (Default: gpt-5.2).",
+          "default": "gpt-5.2"
+        },
+        "ai.openai.reasoning.enabled": {
+          "type": "boolean",
+          "description": "Enable OpenAI reasoning (Default: true).",
+          "default": true
+        },
+        "ai.openai.reasoning.effort": {
+          "type": "string",
+          "description": "Reasoning effort (Default: MEDIUM).",
+          "enum": ["HIGH", "LOW", "MINIMAL", "NONE", "XHIGH", "MEDIUM"],
+          "default": "MEDIUM"
+        },
+        "ai.openai.reasoning.summary": {
+          "type": "string",
+          "description": "Reasoning summary (Default: AUTO).",
+          "enum": ["CONCISE", "DETAILED", "AUTO"],
+          "default": "AUTO"
+        }
+      },
+      "additionalProperties": {
+        "type": "string",
+        "description": "Web configuration key-value pair."
+      },
+      "default": {}
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Top level attributes",
+      "additionalProperties": {
+        "type": ["string", "number"],
+        "description": "Attribute key-value pair"
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Top level metrics",
+      "additionalProperties": {
+        "type": ["string", "number"],
+        "description": "Metrics key-value pair"
+      }
+    },
+    "resources": {
+      "$ref": "#/definitions/resources"
+    },
+    "resourceGroups": {
+      "type": "object",
+      "description": "Contains Resource Groups",
+      "additionalProperties": {
+        "type": "object",
+        "description": "Resource Group name",
+        "properties": {
+          "loggerLevel": {
+            "$ref": "#/definitions/loggerLevel"
+          },
+          "outputDirectory": {
+            "type": "string",
+            "description": "Output directory"
+          },
+          "collectPeriod": {
+            "$ref": "#/definitions/collectPeriod"
+          },
+          "discoveryCycle": {
+            "$ref": "#/definitions/discoveryCycle"
+          },
+          "alertingSystemConfig": {
+            "type": "object",
+            "description": "Alerting System Configuration",
+            "properties": {
+              "disable": {
+                "type": "boolean",
+                "description": "If true, disables the alerting system"
+              },
+              "problemTemplate": {
+                "type": "string",
+                "description": "Problem alerts template"
+              }
+            }
+          },
+          "enableSelfMonitoring": {
+            "$ref": "#/definitions/enableSelfMonitoring"
+          },
+          "sequential": {
+            "$ref": "#/definitions/sequential"
+          },
+          "resolveHostnameToFqdn": {
+            "$ref": "#/definitions/resolveHostnameToFqdn"
+          },
+          "jobTimeout": {
+            "$ref": "#/definitions/jobTimeout"
+          },
+          "attributes": {
+            "type": "object",
+            "description": "Resource group attributes",
+            "additionalProperties": {
+              "type": ["string", "number", "array"],
+              "description": "Attribute key-value pair"
+            }
+          },
+          "metrics": {
+            "type": "object",
+            "description": "Resource group metrics",
+            "additionalProperties": {
+              "type": ["string", "number"],
+              "description": "Metrics key-value pair"
+            }
+          },
+          "resources": {
+            "$ref": "#/definitions/resources"
+          },
+          "stateSetCompression": {
+            "$ref": "#/definitions/stateSetCompression"
+          },
+          "monitorFilters": {
+            "$ref": "#/definitions/monitorFilters"
+          }
+        }
+      }
+    },
+    "license": {
+      "description": "MetricsHub License",
+      "type": "object",
+      "properties": {
+        "product": {
+          "description": "The name of the product the license is for.",
+          "type": "string"
+        },
+        "organization": {
+          "description": "The name of the organization the license is for.",
+          "type": "string"
+        },
+        "expiresOn": {
+          "description": "The expiration date of the license in the format yyyy-MM-dd.",
+          "type": "string"
+        },
+        "resources": {
+          "description": "The maximum number of resources the license covers.",
+          "type": "integer"
+        },
+        "key": {
+          "description": "The license key",
+          "type": "string"
+        }
+      }
+    },
+    "stateSetCompression": {
+      "$ref": "#/definitions/stateSetCompression"
+    },
+    "patchDirectory": {
+      "type": "string",
+      "description": "The path of the custom connectors directory, connectors will also be loaded from the default directory."
+    },
+    "monitorFilters": {
+      "$ref": "#/definitions/monitorFilters"
+    }
+  }
+}

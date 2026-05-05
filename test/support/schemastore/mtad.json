@@ -1,0 +1,1240 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://json.schemastore.org/mtad.json",
+  "definitions": {
+    "generic-memory": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*(M|MB|G|GB|m|mb|g|gb)$"
+    },
+    "module-type": {
+      "type": "string",
+      "anyOf": [
+        {
+          "const": "application",
+          "description": "[CF/XSA] Standard application module"
+        },
+        { "const": "binary", "description": "[CF/XSA] Binary module" },
+        {
+          "const": "business-logging",
+          "description": "[CF] Business logging module"
+        },
+        {
+          "const": "com.sap.application.content",
+          "description": "[CF] SAP application content module"
+        },
+        {
+          "const": "com.sap.html5.application-content",
+          "description": "[CF/XSA] HTML5 application content"
+        },
+        {
+          "const": "com.sap.portal.site-content",
+          "description": "[CF/XSA] Portal site content module"
+        },
+        { "const": "com.sap.xs.hdi", "description": "[CF/XSA] HDI module" },
+        {
+          "const": "com.sap.xs.hdi-dynamic",
+          "description": "[CF/XSA] Dynamic HDI module"
+        },
+        {
+          "const": "com.sap.xs.hdi-zdm",
+          "description": "[CF/XSA] ZDM HDI module"
+        },
+        {
+          "const": "com.sap.xs.sds",
+          "description": "[CF/XSA] Streaming Analytics module"
+        },
+        {
+          "const": "com.sap.xs.dwf",
+          "description": "[CF/XSA] Data Warehousing Foundation module"
+        },
+        {
+          "const": "javascript.nodejs",
+          "description": "[XSA] JavaScript Node.js runtime"
+        },
+        { "const": "nodejs", "description": "[XSA] Node.js runtime" },
+        { "const": "native", "description": "[XSA] Native C++ runtime" },
+        { "const": "custom", "description": "[XSA] Custom runtime module" },
+        {
+          "const": "java",
+          "description": "[XSA] Java runtime (default Tomcat)"
+        },
+        { "const": "java.tomcat", "description": "[XSA] Java Tomcat runtime" },
+        { "const": "java.tomee", "description": "[XSA] Java TomEE runtime" },
+        { "const": "python", "description": "[XSA] Python runtime" },
+        { "const": "ruby", "description": "[CF/XSA] Ruby runtime" },
+        { "const": "go", "description": "[CF/XSA] Go runtime" },
+        { "const": "php", "description": "[CF/XSA] PHP runtime" },
+        { "const": "dotnet_core", "description": "[CF/XSA] .NET Core runtime" },
+        { "const": "staticfile", "description": "[CF/XSA] Static file module" },
+        { "type": "string" }
+      ]
+    },
+    "module-parameters": {
+      "type": "object",
+      "anyOf": [
+        { "$ref": "#/definitions/module-parameters-cf" },
+        { "$ref": "#/definitions/module-parameters-xsa" },
+        { "$ref": "#/definitions/module-parameters-cf-xsa" }
+      ]
+    },
+    "module-parameters-cf": {
+      "type": "object",
+      "properties": {
+        "app-features": {
+          "$ref": "#/definitions/module-parameters-app-features",
+          "description": "[CF] A set of features that can be enabled for the application module (This is not applicable for module type com.sap.application.content). The features are not mandatory and can be used to enable additional functionality for the application."
+        },
+        "apply-namespace": {
+          "description": "[CF] Apply namespace to application name.",
+          "type": "boolean"
+        },
+        "buildpacks": {
+          "$ref": "#/definitions/module-parameters-buildpacks",
+          "description": "[CF] An array of buildpacks. If a buildpack parameter already exists, it will be overwritten by the buildpacks listed in the buildpacks parameter."
+        },
+        "create-service-broker": {
+          "description": "[CF] Specifies whether a service broker should be registered for the application module; default value is: false.",
+          "type": "boolean"
+        },
+        "docker": {
+          "$ref": "#/definitions/module-parameters-docker",
+          "description": "[CF] Creates a module from a docker image. When using a docker image parameter, the module content is not needed."
+        },
+        "enable-parallel-service-bindings": {
+          "description": "[CF] Enables or disables the parallel binding or unbinding of services during deployment.",
+          "type": "boolean"
+        },
+        "health-check-invocation-timeout": {
+          "description": "[CF] The timeout in seconds for individual health check requests for http and port health checks.",
+          "type": "integer"
+        },
+        "idle-domain": {
+          "description": "[CF] The idle domain on which the idle application will be available during blue-green deploy.",
+          "type": "string"
+        },
+        "idle-domains": {
+          "$ref": "#/definitions/module-parameters-domains",
+          "description": "[CF] The domains on which the idle application will be available during blue-green deploy."
+        },
+        "idle-host": {
+          "description": "[CF] The hostname or subdomain where the idle application will be available during blue-green deploy.",
+          "type": "string"
+        },
+        "idle-hosts": {
+          "$ref": "#/definitions/module-parameters-hosts",
+          "description": "[CF] The hostnames or subdomain where the idle application will be available during blue-green deploy."
+        },
+        "idle-routes": {
+          "$ref": "#/definitions/module-parameters-idle-routes",
+          "description": "[CF] Valid for blue-green deployment with temporary routes."
+        },
+        "keep-existing": {
+          "$ref": "#/definitions/module-parameters-keep-existing",
+          "description": "[CF] Defines application attributes kept after deployment or blue-green deployment."
+        },
+        "readiness-health-check-http-endpoint": {
+          "description": "[CF] The endpoint called to determine if the app is ready for HTTP checks.",
+          "type": "string"
+        },
+        "readiness-health-check-interval": {
+          "description": "[CF] Interval in seconds between individual readiness health check requests.",
+          "type": "number"
+        },
+        "readiness-health-check-invocation-timeout": {
+          "description": "[CF] Timeout in seconds for individual readiness health check requests.",
+          "type": "number"
+        },
+        "readiness-health-check-type": {
+          "description": "[CF] The type of health check to be performed on the module: http, port, or process.",
+          "type": "string",
+          "enum": ["port", "http", "process"]
+        },
+        "task-execution-timeout": {
+          "description": "[CF] Timeout in seconds for executing a task.",
+          "type": "number",
+          "minimum": 0
+        },
+        "upload-timeout": {
+          "description": "[CF] Timeout in seconds for uploading application binary.",
+          "type": "number",
+          "minimum": 0
+        },
+        "skip-deploy": {
+          "description": "[CF] Skip the deployment of the application.",
+          "type": "boolean"
+        },
+        "stack": {
+          "description": "[CF] Defines which prebuilt root file system (rootfs) to use.",
+          "type": "string"
+        },
+        "stage-timeout": {
+          "description": "[CF] Defines staging timeout in seconds.",
+          "type": "number",
+          "minimum": 0
+        },
+        "start-timeout": {
+          "description": "[CF] Defines start timeout in seconds.",
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "module-parameters-cf-xsa": {
+      "type": "object",
+      "properties": {
+        "app-name": {
+          "description": "[CF/XSA] The name of the application in the Cloud Foundry environment to be deployed for this module, based on the module name.",
+          "type": "string"
+        },
+        "buildpack": {
+          "description": "[CF/XSA] The name or URL of a custom buildpack required by the application.",
+          "type": "string"
+        },
+        "command": {
+          "description": "[CF/XSA] A custom command required to start the application.",
+          "type": "string"
+        },
+        "dependency-type": {
+          "description": "[CF/XSA] Defines the dependency type.",
+          "type": "string",
+          "enum": ["hard", "soft"]
+        },
+        "disk-quota": {
+          "$ref": "#/definitions/generic-memory",
+          "description": "[CF/XSA] The disk space that will be available to the application."
+        },
+        "domain": {
+          "description": "[CF/XSA] The domain on which the application will be available later.",
+          "type": "string"
+        },
+        "domains": {
+          "$ref": "#/definitions/module-parameters-domains",
+          "description": "[CF/XSA] The domains on which the application will be available later."
+        },
+        "enable-ssh": {
+          "description": "[CF/XSA] Enables use of SSH within an application.",
+          "type": "boolean"
+        },
+        "health-check-type": {
+          "description": "[CF/XSA] Defines how the module will be monitored for availability.",
+          "type": "string",
+          "enum": ["port", "process", "http"]
+        },
+        "health-check-timeout": {
+          "description": "[CF/XSA] The timeout between starting an app and the first healthy response.",
+          "type": "integer"
+        },
+        "host": {
+          "description": "[CF/XSA] The hostname or subdomain where an application is available later.",
+          "type": "string"
+        },
+        "hosts": {
+          "$ref": "#/definitions/module-parameters-hosts",
+          "description": "[CF/XSA] The hostnames or subdomain where an application is available later."
+        },
+        "instances": {
+          "description": "[CF/XSA] The number of application instances that will be started during deployment.",
+          "type": "number",
+          "minimum": 0
+        },
+        "keep-existing-routes": {
+          "description": "[CF/XSA] Keep existing routes even if not defined within the descriptors.",
+          "type": "boolean"
+        },
+        "memory": {
+          "$ref": "#/definitions/generic-memory",
+          "description": "[CF/XSA] Defines the memory allocated to the application."
+        },
+        "no-route": {
+          "description": "[CF/XSA] Defines if a route should be assigned to the application.",
+          "type": "boolean"
+        },
+        "no-start": {
+          "description": "[CF/XSA] Start/do not start the application during deployment.",
+          "type": "boolean"
+        },
+        "restart-on-env-change": {
+          "$ref": "#/definitions/module-parameters-restart-on-env-change",
+          "description": "[CF/XSA] Restart app if environment variables change."
+        },
+        "route-path": {
+          "description": "[CF/XSA] The context 'route-path' part of the default URI.",
+          "type": "string"
+        },
+        "routes": {
+          "$ref": "#/definitions/module-parameters-routes",
+          "description": "[CF/XSA] A parameter that lists multiple HTTP routes."
+        },
+        "service-broker-password": {
+          "description": "[CF/XSA] The password used for authentication by the XS controller at the service broker.",
+          "type": "string"
+        },
+        "service-broker-space-scoped": {
+          "description": "[CF/XSA] Makes the service plans of the broker visible only within the targeted space.",
+          "type": "boolean"
+        },
+        "service-broker-url": {
+          "description": "[CF/XSA] The URL to register service requests.",
+          "type": "string"
+        },
+        "service-broker-user": {
+          "description": "[CF/XSA] The name of the user required for authentication by the XS controller.",
+          "type": "string"
+        },
+        "tasks": {
+          "$ref": "#/definitions/module-parameters-tasks",
+          "description": "[CF/XSA] Specify tasks available for execution in the current droplet of the application."
+        }
+      },
+      "additionalProperties": true
+    },
+    "module-parameters-app-features": {
+      "type": "object",
+      "properties": {
+        "ssh": {
+          "description": "Enable SSH access to the application.",
+          "type": "boolean"
+        },
+        "file-based-vcap-services": {
+          "description": "Enable file-based VCAP service bindings for the app.",
+          "type": "boolean"
+        }
+      }
+    },
+    "module-parameters-buildpacks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "module-parameters-domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "module-parameters-hosts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "module-parameters-idle-routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "idle-route": { "type": "string" }
+        },
+        "required": ["idle-route"]
+      },
+      "description": "List of idle-route objects for the module"
+    },
+    "module-parameters-routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["route"],
+        "properties": {
+          "route": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string",
+            "anyOf": [
+              {
+                "enum": ["http1", "http2"]
+              }
+            ]
+          },
+          "no-hostname": {
+            "type": "boolean"
+          },
+          "apply-namespace": {
+            "description": "[CF] Apply namespace to application routes.",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "module-parameters-tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "command"],
+        "properties": {
+          "name": {
+            "description": "[CF/XSA] The task name.",
+            "type": "string"
+          },
+          "command": {
+            "description": "[CF/XSA] The command to be executed.",
+            "type": "string"
+          },
+          "memory": {
+            "$ref": "#/definitions/generic-memory",
+            "description": "[CF/XSA] Defines the memory that is available to the Cloud Foundry task."
+          },
+          "disk-quota": {
+            "$ref": "#/definitions/generic-memory",
+            "description": "[CF/XSA] Defines the disk space that is available to the Cloud Foundry task."
+          }
+        }
+      }
+    },
+    "module-parameters-docker": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "description": "An image parameter is a docker image from the Docker Hub or somewhere else. eg. cloudfoundry/test-app",
+          "type": "string"
+        },
+        "username": {
+          "description": "The username is optional, but if a Docker image from a private repository is uploaded, then it is mandatory.",
+          "type": "string"
+        },
+        "password": {
+          "description": "The password is optional, but if a Docker image from a private repository is uploaded, then it is mandatory.",
+          "type": "string"
+        }
+      }
+    },
+    "module-parameters-keep-existing": {
+      "type": "object",
+      "properties": {
+        "env": {
+          "description": "Keep the existing environment",
+          "type": "boolean"
+        },
+        "service-bindings": {
+          "description": "Keep the existing Service bindings",
+          "type": "boolean"
+        },
+        "routes": {
+          "description": "Keep the existing routes",
+          "type": "boolean"
+        }
+      }
+    },
+    "module-parameters-restart-on-env-change": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "vcap-application": {
+            "description": "Restart on vcap-application env change",
+            "type": "boolean"
+          },
+          "vcap-services": {
+            "description": "Restart on vcap-services env change",
+            "type": "boolean"
+          },
+          "user-provided": {
+            "description": "Restart on user-provided env change",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "module-requires": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "description": "An MTA internal name which must match either a provided name, a resource name, or a module name within the same MTA.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "list": {
+            "description": "All required and found configuration data sets will be assembled into a JSON array and provided to the module by the lookup name as specified by the value of 'list'.",
+            "type": "string"
+          },
+          "properties": {
+            "description": "Required properties can be mapped from provided properties. Provided property values can be accessed by \"~{<provided-property-name>}\". Such expressions can be part of an arbitrary string",
+            "type": "object"
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the required dependency's properties."
+          },
+          "parameters": {
+            "$ref": "#/definitions/module-requires-parameters",
+            "description": "Parameters can be used to influence the behavior of tools which interpret this descriptor. Parameters are not made available to the module at runtime. Provided property values can be accessed by \"~{<provided-property-name>}\". Such expressions can be part of an arbitrary string"
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the required dependency's parameters."
+          }
+        }
+      }
+    },
+    "module-requires-parameters": {
+      "type": "object",
+      "properties": {
+        "content-target": {
+          "description": "[CF] Specify that the resource would be used as a target for the module content deployment.",
+          "type": "boolean"
+        },
+        "binding-name": {
+          "description": "[CF] Provide a binding name for the association between an application and a service instance.",
+          "type": "string"
+        },
+        "delete-service-key-after-deployment": {
+          "description": "[CF] If this parameter is set to true, the service keys used during the content deployment are deleted once the deployment is completed. The parameter is valid only for modules with direct content deployment.",
+          "type": "boolean"
+        },
+        "env-var-name": {
+          "description": "[CF/XSA] Used when consuming an existing service key. Specifies the name of the environment variable that will contain the service key's credentials.",
+          "type": "string"
+        }
+      }
+    },
+    "module-provides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "description": "An MTA internal name which can used by a requiring module.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "public": {
+            "description": "Indicates, that the provided properties shall be made publicly available by the deployer. Default value is false.",
+            "type": "boolean"
+          },
+          "properties": {
+            "description": "Property names and values make up the configuration data which is to be provided to requiring modules at runtime",
+            "type": "object"
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the provided dependency's properties."
+          },
+          "parameters": {
+            "$ref": "#/definitions/module-provides-parameters",
+            "description": "Parameters can be used to influence the behavior of tools which interpret this descriptor. Parameters are not made available to the module at runtime. Provided property values can be accessed by \"~{<provided-property-name>}\". Such expressions can be part of an arbitrary string"
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the provided dependency's parameters."
+          }
+        }
+      }
+    },
+    "module-provides-parameters": {
+      "type": "object",
+      "properties": {
+        "visibility": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resource-configuration-target"
+          }
+        },
+        "use-live-routes": {
+          "description": "[CF] Valid for blue-green deployment. Specify this parameter if you want to provide the routes specified in the descriptor.",
+          "type": "boolean"
+        }
+      }
+    },
+    "resource-type": {
+      "type": "string",
+      "anyOf": [
+        {
+          "enum": [
+            "org.cloudfoundry.managed-service",
+            "org.cloudfoundry.existing-service",
+            "org.cloudfoundry.existing-service-key",
+            "org.cloudfoundry.user-provided-service",
+            "configuration"
+          ]
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "resource-requires": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "description": "An MTA internal name which must match either a provided name, or a resource name within the same MTA.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "properties": {
+            "description": "Required properties can be mapped from provided properties. Provided property values can be accessed by \"~{<provided-property-name>}\". Such expressions can be part of an arbitrary string",
+            "type": "object"
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the required dependency's properties."
+          },
+          "parameters": {
+            "description": "Parameters can be used to influence the behavior of tools which interpret this descriptor. Parameters are not made available to the resource at runtime. Provided property values can be accessed by \"~{<provided-property-name>}\". Such expressions can be part of an arbitrary string",
+            "type": "object"
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the required dependency's parameters."
+          }
+        }
+      }
+    },
+    "resource-parameters": {
+      "type": "object",
+      "anyOf": [
+        { "$ref": "#/definitions/resource-parameters-cf" },
+        { "$ref": "#/definitions/resource-parameters-cf-xsa" },
+        { "$ref": "#/definitions/resource-parameters-xsa" }
+      ]
+    },
+    "resource-parameters-cf": {
+      "type": "object",
+      "properties": {
+        "apply-namespace": {
+          "description": "[CF] Apply namespace to service name.",
+          "type": "boolean"
+        },
+        "syslog-drain-url": {
+          "description": "[CF] URL to which logs for bound applications are streamed.",
+          "type": "string"
+        },
+        "skip-service-updates": {
+          "$ref": "#/definitions/resource-skip-service-updates",
+          "description": "[CF] Map value, containing the service components (parameters, plan, tags) to skip when updating a service."
+        },
+        "fail-on-service-update": {
+          "$ref": "#/definitions/resource-fail-on-service-update",
+          "description": "[CF] Map value specifying which service components (parameters, plan, tags) should cause the deployment to fail if their update fails."
+        }
+      },
+      "additionalProperties": true
+    },
+    "resource-parameters-cf-xsa": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "description": "[CF/XSA] Name of the service to create.",
+          "type": "string",
+          "anyOf": [
+            {
+              "enum": [
+                "application-logs",
+                "auditlog",
+                "rabbitmq",
+                "autoscaler",
+                "portal-services",
+                "fs-storage",
+                "hana",
+                "jobscheduler",
+                "xsuaa",
+                "connectivity",
+                "destination",
+                "feature-flags",
+                "redis",
+                "ml-foundation-services",
+                "mongodb",
+                "objectstore",
+                "postgresql"
+              ]
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "service-key-name": {
+          "description": "[CF/XSA] Used when consuming an existing service key. Specifies the name of the service key.",
+          "type": "string"
+        },
+        "service-name": {
+          "description": "[CF/XSA] Service instance name. Default value is the resource name.",
+          "type": "string"
+        },
+        "service-broker": {
+          "description": "[CF/XSA] The name of the service broker to be used.",
+          "type": "string"
+        },
+        "service-plan": {
+          "description": "[CF/XSA] Name of the service plan to be used.",
+          "type": "string"
+        },
+        "service-tags": {
+          "description": "[CF/XSA] Some services employ a list of custom tags to parse <VCAP_SERVICES> for credentials.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "siteId": {
+          "description": "[CF/XSA] A globally unique ID (GUID) for your Fiori LaunchPad site.",
+          "type": "string"
+        },
+        "config": {
+          "description": "[CF/XSA] Map value containing the service creation configuration, e.g., url and user credentials (user and password).",
+          "type": "object"
+        },
+        "provider-nid": {
+          "description": "[CF/XSA] When used for cross-MTA dependency resolution, the provider-nid is always 'mta'.",
+          "type": "string",
+          "enum": ["mta"]
+        },
+        "provider-id": {
+          "description": "[CF/XSA] The resource from the provider MTA <mta-id>:<mta-provides-dependency-name>.",
+          "type": "string"
+        },
+        "version": {
+          "description": "[CF/XSA] The version of the provider MTA.",
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\\+[0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*)?$"
+        },
+        "target": {
+          "$ref": "#/definitions/resource-configuration-target",
+          "description": "[CF/XSA] The name of the organization and space in which the provider MTA is deployed."
+        }
+      },
+      "additionalProperties": true
+    },
+    "resource-skip-service-updates": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "description": "The configuration parameters which will be passed to the service broker.",
+          "type": "boolean"
+        },
+        "plan": {
+          "description": "The service plan.",
+          "type": "boolean"
+        },
+        "tags": {
+          "description": "The custom tags for a service instance.",
+          "type": "boolean"
+        },
+        "syslog-drain-url": {
+          "description": "URL to which logs for bound applications are streamed.",
+          "type": "boolean"
+        }
+      }
+    },
+    "resource-fail-on-service-update": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "description": "Specifies whether the deployment should fail if updating the service instance parameters fails.",
+          "type": "boolean"
+        },
+        "plan": {
+          "description": "Specifies whether the deployment should fail if updating the service plan fails.",
+          "type": "boolean"
+        },
+        "tags": {
+          "description": "Specifies whether the deployment should fail if updating the service tags fails.",
+          "type": "boolean"
+        }
+      }
+    },
+    "resource-configuration-target": {
+      "type": "object",
+      "properties": {
+        "org": {
+          "description": "[CF/XSA] The org in which the configuration will be looked for",
+          "type": "string"
+        },
+        "space": {
+          "description": "[CF/XSA] The space in which the configuration will be looked for",
+          "type": "string"
+        }
+      }
+    },
+    "properties-metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "overwritable": {
+            "description": "Default value is true.",
+            "type": "boolean"
+          },
+          "optional": {
+            "description": "Default value is false.",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "hooks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {
+            "description": "An internal name which can be used for documentation purposes and shown by the deployer.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "type": {
+            "description": "Defines the type of action that should be executed by the deployer.",
+            "type": "string",
+            "default": "task",
+            "enum": ["task"]
+          },
+          "phases": {
+            "description": "A list of strings that define the points at which the hook must be executed.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "deploy.application.before-stop",
+                "blue-green.application.before-stop.idle",
+                "blue-green.application.before-stop.live",
+                "deploy.application.after-stop",
+                "blue-green.application.after-stop.idle",
+                "blue-green.application.after-stop.live",
+                "deploy.application.before-unmap-routes",
+                "blue-green.application.before-unmap-routes.live",
+                "blue-green.application.before-unmap-routes.idle",
+                "deploy.application.before-start",
+                "blue-green.application.before-start.idle",
+                "blue-green.application.before-start.live"
+              ]
+            }
+          },
+          "parameters": {
+            "$ref": "#/definitions/hooks-parameters",
+            "description": "Configuration parameters that are used when executing the hook to the target runtime environment."
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the hook's parameters."
+          },
+          "requires": {
+            "description": "List of names either matching a resource name or a provided dependency name provided within the same MTA that are required by this hook.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "description": "An MTA internal name which must match either a provided name, or a resource name within the same MTA.",
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+                },
+                "parameters": {
+                  "description": "Parameters can be used to influence the behavior of tools which interpret this descriptor. Parameters are not made available to the hook at runtime. Provided property values can be accessed by \"~{<provided-property-name>}\". Such expressions can be part of an arbitrary string",
+                  "type": "object"
+                },
+                "parameters-metadata": {
+                  "$ref": "#/definitions/properties-metadata",
+                  "description": "Additional information about the hook's parameters."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "hooks-parameters": {
+      "type": "object",
+      "required": ["command"],
+      "properties": {
+        "name": {
+          "description": "Defines the name of the Cloud Foundry task that should be executed.",
+          "type": "string"
+        },
+        "command": {
+          "description": "Defines the actual command that is executed as a Cloud Foundry task.",
+          "type": "string"
+        },
+        "memory": {
+          "$ref": "#/definitions/generic-memory",
+          "description": "[CF/XSA] Defines the memory that is available to the Cloud Foundry task."
+        },
+        "disk-quota": {
+          "$ref": "#/definitions/generic-memory",
+          "description": "[CF/XSA] Defines the disk space that is available to the Cloud Foundry task."
+        }
+      }
+    },
+    "apply-namespace-values": {
+      "type": "object",
+      "properties": {
+        "app-names": {
+          "description": "Apply namespace to application names.",
+          "type": "boolean"
+        },
+        "service-names": {
+          "description": "Apply namespace to service names.",
+          "type": "boolean"
+        },
+        "app-routes": {
+          "description": "Apply namespace to application routes.",
+          "type": "boolean"
+        },
+        "as-suffix": {
+          "description": "Apply namespace as suffix.",
+          "type": "boolean"
+        }
+      }
+    },
+    "module-parameters-xsa": {
+      "type": "object",
+      "properties": {
+        "check-deploy-id": {
+          "description": "[XSA] Check the deployment (process) id when checking the application execution status",
+          "type": "boolean"
+        },
+        "execute-app": {
+          "description": "[XSA] After start and upon completion, application sets [success | failure]-marker in a log message",
+          "type": "boolean"
+        },
+        "failure-marker": {
+          "description": "[XSA] The failure marker in the log files for application execution.",
+          "type": "string"
+        },
+        "port": {
+          "description": "[XSA] Overwrite the default port of application.",
+          "type": "number"
+        },
+        "ports": {
+          "description": "[XSA] Overwrite the default ports of application.",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "stop-app": {
+          "description": "[XSA] Stop the application after execution.",
+          "type": "boolean"
+        },
+        "success-marker": {
+          "description": "[XSA] The success marker in logfiles for application execution.",
+          "type": "string"
+        },
+        "tcp": {
+          "description": "[XSA] Use TCP type routes for all application routes if there is domains parameters with multiple values.",
+          "type": "boolean"
+        },
+        "tcps": {
+          "description": "[XSA] Create a TCPS route (and use TLS with SSL termination at the platform router) for all app routes where there are 'hosts' and domains parameters with multiple values.",
+          "type": "boolean"
+        },
+        "zdm-mode": {
+          "description": "[XSA] Run blue-green deployment in zero-downtime-maintenance mode",
+          "type": "boolean"
+        }
+      }
+    },
+    "resource-parameters-xsa": {
+      "type": "object",
+      "properties": {
+        "config-path": {
+          "description": "[XSA] The relative path from the MTA root directory to a file in the same application project, which contains information used to create or update parameters of an XS advanced service represented by the MTA resource.",
+          "type": "string"
+        },
+        "database_id": {
+          "description": "[XSA] The unique ID of a database instance (other than the default) that hosts the run-time to which you want to deploy an application.",
+          "type": "string"
+        },
+        "service-alternatives": {
+          "description": "[XSA] List of alternatives for a default service offering defined in the deploy service configuration. If a default service offering does not exist for the current org/space or creating a service fails (with a specific error), service alternatives are used. The order of service alternatives is considered.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "siteId": {
+          "description": "[XSA] A globally unique ID (GUID) for your Fiori LaunchPad site",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "description": "MTA deployment descriptor schema v3.3. Contains Cloud Foundry and XSA specific types and parameters.",
+  "properties": {
+    "_schema-version": {
+      "description": "Used to indicate to an MTA processing tool (e.g. a deployer), which schema version was taken as the base when authoring a descriptor.",
+      "type": "string",
+      "pattern": "^(\\d+\\.)?(\\d+\\.)?(\\*|\\d+)$",
+      "default": "3.3.0"
+    },
+    "ID": {
+      "description": "A globally unique ID of this MTA. Unlimited string of unicode characters.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+    },
+    "version": {
+      "description": "Application version. Shall follow the semantic versioning standard.",
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\\+[0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*)?$"
+    },
+    "description": {
+      "description": "A non-translatable description of this MTA. This is not a text for application users.",
+      "type": "string"
+    },
+    "provider": {
+      "description": "The provider or vendor of this software.",
+      "type": "string"
+    },
+    "copyright": {
+      "description": "A copyright statement from the provider.",
+      "type": "string"
+    },
+    "parameters": {
+      "description": "Global parameters related to the MTA application.",
+      "type": "object",
+      "properties": {
+        "apply-namespace": {
+          "description": "Apply namespace to application names, service names and application routes.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apply-namespace-values"
+          }
+        },
+        "apps-stage-timeout": {
+          "description": "[CF] Defines how long, in seconds, your application can take during staging before the MTA operation times out.",
+          "type": "number"
+        },
+        "apps-start-timeout": {
+          "description": "[CF] Defines how long, in seconds, your application can take to start before the MTA operation times out.",
+          "type": "number"
+        },
+        "apps-task-execution-timeout": {
+          "description": "[CF] Defines how long, in seconds, your application can take to execute a task before the MTA operation times out",
+          "type": "number"
+        },
+        "apps-upload-timeout": {
+          "description": "[CF] Defines how long, in seconds, you can upload your application binary before the MTA operation times out.",
+          "type": "number"
+        },
+        "enable-parallel-deployments": {
+          "description": "[CF/XSA] Defines if parallel deployment of modules is enabled. When enabled, modules without explicitly set deployed-after parameter are deployed in parallel. ",
+          "type": "boolean"
+        },
+        "keep-existing-routes": {
+          "description": "[CF/XSA] Indicates if the existing routes of all applications within that MTA should be kept.",
+          "type": "boolean"
+        },
+        "bg-dependency-aware-stop-order": {
+          "description": "[CF] Enables dependency-aware stop ordering during the final phase of blue-green deployments.",
+          "type": "boolean"
+        }
+      }
+    },
+    "parameters-metadata": {
+      "$ref": "#/definitions/properties-metadata",
+      "description": "Additional information about the MTA's parameters."
+    },
+    "hooks": {
+      "$ref": "#/definitions/hooks",
+      "description": "A list of hooks that will be executed for the MTA."
+    },
+    "modules": {
+      "description": "A list of modules to be deployed by the MTA application.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {
+            "description": "The module name which must be unique and cannot be the same as any provided property set or resource name.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "type": {
+            "$ref": "#/definitions/module-type",
+            "description": "The module type that defines the design-time tools for the module."
+          },
+          "description": {
+            "description": "A free text describing this module.",
+            "type": "string"
+          },
+          "path": {
+            "description": "The path to a folder that contains the module artifacts.",
+            "type": "string"
+          },
+          "deployed-after": {
+            "description": "A list containing the names of the modules that must be deployed prior to this one.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "properties": {
+            "description": "A collection of key-value pairs that are available to the module at runtime.",
+            "type": "object"
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the module's properties."
+          },
+          "parameters": {
+            "$ref": "#/definitions/module-parameters",
+            "description": "Configuration parameters that are used when deploying the module to the target runtime environment."
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the module's parameters."
+          },
+          "hooks": {
+            "$ref": "#/definitions/hooks",
+            "description": "A list of hooks that will be executed for the module."
+          },
+          "requires": {
+            "$ref": "#/definitions/module-requires",
+            "description": "List of names either matching a resource name or a name provided by another module within the same MTA that are required by this module."
+          },
+          "provides": {
+            "$ref": "#/definitions/module-provides",
+            "description": "List of provided names (MTA internal) to which properties can be attached"
+          }
+        }
+      }
+    },
+    "resources": {
+      "description": "A list of resources to be deployed by the MTA application.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "description": "The resource name which must be unique and cannot be the same as any provided property set or resource name.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "type": {
+            "$ref": "#/definitions/resource-type",
+            "description": "The resource type that defines the design-time tools for the resource."
+          },
+          "active": {
+            "description": "If a resource is declared to be active, it is allocated and bound according to declared requirements. Default value is true.",
+            "type": "boolean"
+          },
+          "optional": {
+            "description": "A resource can be declared to be optional, if the MTA can compensate for its non-existence. Default value is false.",
+            "type": "boolean"
+          },
+          "description": {
+            "description": "A free text describing this resource.",
+            "type": "string"
+          },
+          "processed-after": {
+            "description": "A list containing the names of the resources that must be processed prior to this one.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "properties": {
+            "description": "Property names and values make up the configuration data which is to be provided to requiring modules at runtime.",
+            "type": "object"
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the resource's properties."
+          },
+          "parameters": {
+            "$ref": "#/definitions/resource-parameters",
+            "description": "Parameters can be used to influence the behavior of tools which interpret this descriptor. Parameters are not made available to requiring modules at runtime. Untyped resources cannot have parameters."
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the resource's parameters."
+          },
+          "hooks": {
+            "$ref": "#/definitions/hooks",
+            "description": "A list of hooks that will be executed for the resource."
+          },
+          "requires": {
+            "$ref": "#/definitions/resource-requires",
+            "description": "List of names either matching a resource name or a name provided by another resource within the same MTA that are required by this resource."
+          }
+        }
+      }
+    },
+    "module-types": {
+      "description": "A list of custom module type definitions that will be used by the MTA application.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "extends"],
+        "properties": {
+          "name": {
+            "description": " An MTA internal name of the module type that will be specified in the 'type' element of modules consuming it.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "extends": {
+            "description": "The name of the extended type. Can be another module type defined in this descriptor or one of the default types supported by the deployer.",
+            "type": "string"
+          },
+          "properties": {
+            "description": "A collection of key-value pairs that will be inherited by all modules of this type.",
+            "type": "object"
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the module type's properties."
+          },
+          "parameters": {
+            "description": "Configuration parameters that will be inherited in all modules of this type.",
+            "type": "object"
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the module's parameters."
+          }
+        }
+      }
+    },
+    "resource-types": {
+      "description": "A list of custom resource type definitions that will be used by the MTA application.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "extends"],
+        "properties": {
+          "name": {
+            "description": " An MTA internal name of the resource type that will be specified in the 'type' element of resources consuming it.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+          },
+          "extends": {
+            "description": "The name of the extended type. Can be another resource type defined in this descriptor or one of the default types supported by the deployer.",
+            "type": "string"
+          },
+          "properties": {
+            "description": "A collection of key-value pairs that will be inherited by all resources of this type.",
+            "type": "object"
+          },
+          "properties-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the resource type's properties."
+          },
+          "parameters": {
+            "description": "Configuration parameters that will be inherited in all resources of this type.",
+            "type": "object"
+          },
+          "parameters-metadata": {
+            "$ref": "#/definitions/properties-metadata",
+            "description": "Additional information about the resource's parameters."
+          }
+        }
+      }
+    }
+  },
+  "required": ["_schema-version", "ID", "version"],
+  "title": "mtad.yaml v3.3",
+  "type": "object"
+}

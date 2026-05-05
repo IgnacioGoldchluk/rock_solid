@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "allOf": [
+    {
+      "$ref": "jsbeautifyrc#/definitions/CHJProperties"
+    },
+    {
+      "$ref": "jsbeautifyrc#/definitions/HJProperties"
+    },
+    {
+      "$ref": "jsbeautifyrc#/definitions/CProperties"
+    },
+    {
+      "$ref": "jsbeautifyrc#/definitions/HProperties"
+    },
+    {
+      "$ref": "jsbeautifyrc#/definitions/JProperties"
+    },
+    {
+      "properties": {
+        "css": {
+          "type": "object",
+          "allOf": [
+            {
+              "$ref": "jsbeautifyrc#/definitions/CHJProperties"
+            },
+            {
+              "$ref": "jsbeautifyrc#/definitions/CProperties"
+            }
+          ]
+        },
+        "js": {
+          "type": "object",
+          "allOf": [
+            {
+              "$ref": "jsbeautifyrc#/definitions/CHJProperties"
+            },
+            {
+              "$ref": "jsbeautifyrc#/definitions/HJProperties"
+            },
+            {
+              "$ref": "jsbeautifyrc#/definitions/JProperties"
+            }
+          ]
+        },
+        "html": {
+          "type": "object",
+          "allOf": [
+            {
+              "$ref": "jsbeautifyrc#/definitions/CHJProperties"
+            },
+            {
+              "$ref": "jsbeautifyrc#/definitions/HJProperties"
+            },
+            {
+              "$ref": "jsbeautifyrc#/definitions/HProperties"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "id": "https://json.schemastore.org/jsbeautifyrc-nested",
+  "title": "JSON schema for beautifyrc",
+  "type": "object"
+}

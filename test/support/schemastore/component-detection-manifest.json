@@ -1,0 +1,779 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/CGManifest",
+  "definitions": {
+    "ActorInfo": {
+      "title": "ActorInfo",
+      "description": "Represents an actor (person, organization, or software agent). At least one of name, email, or url should be populated.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Person", "Organization", "SoftwareAgent"]
+        }
+      }
+    },
+    "CGManifest": {
+      "properties": {
+        "registrations": {
+          "items": {
+            "$ref": "#/definitions/Registration"
+          },
+          "type": "array"
+        },
+        "version": {
+          "type": "integer"
+        }
+      },
+      "required": ["registrations", "version"],
+      "title": "CGManifest",
+      "type": "object"
+    },
+    "Registration": {
+      "title": "Registration",
+      "type": "object",
+      "properties": {
+        "component": {
+          "$ref": "#/definitions/Component"
+        },
+        "dependencyRoots": {
+          "items": {
+            "$ref": "#/definitions/Component"
+          },
+          "type": "array"
+        },
+        "developmentDependency": {
+          "type": "boolean"
+        },
+        "detectedComponentLocations": {
+          "description": "Additional locations impacted by this component, relative to the cgmanifest.json file or using the {SourceFileRoot} placeholder.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "licensesConcluded": {
+          "description": "SPDX license expression(s) as resolved via ClearlyDefined API or curations.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "suppliers": {
+          "description": "Entities that supplied/published the component.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ActorInfo"
+          }
+        }
+      },
+      "required": ["component"]
+    },
+    "Component": {
+      "title": "Component",
+      "type": "object",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/Cargo"
+        },
+        {
+          "$ref": "#/definitions/Git"
+        },
+        {
+          "$ref": "#/definitions/Go"
+        },
+        {
+          "$ref": "#/definitions/Linux"
+        },
+        {
+          "$ref": "#/definitions/Maven"
+        },
+        {
+          "$ref": "#/definitions/Npm"
+        },
+        {
+          "$ref": "#/definitions/NuGet"
+        },
+        {
+          "$ref": "#/definitions/Other"
+        },
+        {
+          "$ref": "#/definitions/Pip"
+        },
+        {
+          "$ref": "#/definitions/Pod"
+        },
+        {
+          "$ref": "#/definitions/RubyGems"
+        },
+        {
+          "$ref": "#/definitions/VCPKG"
+        }
+      ]
+    },
+    "Cargo": {
+      "title": "Cargo",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["cargo"]
+        },
+        "cargo": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version"]
+        }
+      },
+      "required": ["type", "cargo"]
+    },
+    "Git": {
+      "title": "Git",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["git"]
+        },
+        "git": {
+          "type": "object",
+          "properties": {
+            "commitHash": {
+              "type": "string"
+            },
+            "repositoryUrl": {
+              "type": "string",
+              "format": "uri"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["commitHash", "repositoryUrl"]
+        }
+      },
+      "required": ["type", "git"]
+    },
+    "Go": {
+      "title": "Go",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["go"]
+        },
+        "go": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version"]
+        }
+      },
+      "required": ["type", "go"]
+    },
+    "Linux": {
+      "title": "Linux",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["linux"]
+        },
+        "linux": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "distribution": {
+              "type": "string"
+            },
+            "release": {
+              "type": "string"
+            },
+            "key-URL": {
+              "type": "string",
+              "format": "uri"
+            },
+            "pool-URL": {
+              "type": "string",
+              "format": "uri"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version", "distribution", "release"]
+        }
+      },
+      "required": ["type", "linux"]
+    },
+    "Maven": {
+      "title": "Maven",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["maven"]
+        },
+        "maven": {
+          "type": "object",
+          "properties": {
+            "groupId": {
+              "type": "string"
+            },
+            "artifactId": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["groupId", "artifactId", "version"]
+        }
+      },
+      "required": ["type", "maven"]
+    },
+    "Npm": {
+      "title": "Npm",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["npm"]
+        },
+        "npm": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version"]
+        }
+      },
+      "required": ["type", "npm"]
+    },
+    "NuGet": {
+      "title": "NuGet",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["nuget"]
+        },
+        "nuget": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version"]
+        }
+      },
+      "required": ["type", "nuget"]
+    },
+    "Other": {
+      "title": "Other",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["other"]
+        },
+        "other": {
+          "title": "Other",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "downloadUrl": {
+              "format": "uri",
+              "type": "string"
+            },
+            "hash": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version", "downloadUrl", "hash"]
+        }
+      },
+      "required": ["type", "other"]
+    },
+    "Pip": {
+      "title": "Pip",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["pip"]
+        },
+        "pip": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version"]
+        }
+      },
+      "required": ["type", "pip"]
+    },
+    "Pod": {
+      "title": "Pod",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["pod"]
+        },
+        "pod": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version"]
+        }
+      },
+      "required": ["type", "pod"]
+    },
+    "RubyGems": {
+      "title": "RubyGems",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["rubygems"]
+        },
+        "rubygems": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["name", "version"]
+        }
+      },
+      "required": ["type", "rubygems"]
+    },
+    "VCPKG": {
+      "title": "VCPKG",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["vcpkg"]
+        },
+        "vcpkg": {
+          "type": "object",
+          "properties": {
+            "spdxId": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            },
+            "downloadLocation": {
+              "type": "string"
+            },
+            "triplet": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "portVersion": {
+              "type": "integer"
+            },
+            "licenses": {
+              "description": "SPDX license expression(s) declared by the package author.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authorsInfo": {
+              "description": "Structured author/creator identity (SPDX 3.0.1 originatedBy).",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActorInfo"
+              }
+            },
+            "packageUrl": {
+              "description": "Package URL per the purl-spec.",
+              "type": "string"
+            },
+            "downloadUrl": {
+              "description": "Direct download URL for the package binary.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sourceUrl": {
+              "description": "Source code repository URL.",
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "required": ["spdxId", "name"]
+        }
+      },
+      "required": ["type", "vcpkg"]
+    }
+  },
+  "id": "https://json.schemastore.org/component-detection-manifest.json",
+  "title": "Component Detection manifest"
+}

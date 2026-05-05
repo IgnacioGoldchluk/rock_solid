@@ -1,0 +1,950 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://json.schemastore.org/bitrise.json",
+  "$ref": "#/definitions/BitriseDataModel",
+  "definitions": {
+    "AppModel": {
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the project."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A short summary of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the project."
+        },
+        "status_report_name": {
+          "$ref": "#/definitions/StatusReportNameModel",
+          "description": "The name that will appear on the status report sent to connected services (like GitHub, GitLab, Bitbucket, and so on) after the build is finished."
+        },
+        "envs": {
+          "$ref": "#/definitions/EnvModel",
+          "description": "Environment Variables defined for the project."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "BitriseDataModel": {
+      "anyOf": [
+        { "required": ["format_version"] },
+        { "required": ["include"] }
+      ],
+      "properties": {
+        "format_version": {
+          "type": "string",
+          "description": "The version of the Bitrise configuration format. The Bitrise CLI checks it to ensure compatibility between the configuration file and the CLI version. This is relevant for locally run builds: on the Bitrise website, the CLI is always up to date, so the `format_version` property doesn't have an effect on builds triggered."
+        },
+        "default_step_lib_source": {
+          "type": "string",
+          "description": "The default Step library for the Steps used in your configuration. Bitrise uses this source if no specific source is provided for a given Step."
+        },
+        "project_type": {
+          "type": "string",
+          "description": "The type of your Bitrise project, such as ios, android, flutter, and so on."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the Bitrise configuration."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A short summary of the Bitrise configuration."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the Bitrise configuration."
+        },
+        "services": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/ContainerModel"
+            }
+          },
+          "type": "object",
+          "description": "Docker container definitions used by Steps as service containers."
+        },
+        "containers": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/ContainerModel"
+            }
+          },
+          "type": "object",
+          "description": "Docker container definitions used by Steps as execution containers."
+        },
+        "app": {
+          "$ref": "#/definitions/AppModel"
+        },
+        "meta": {
+          "patternProperties": {
+            ".*": {
+              "additionalProperties": true
+            }
+          },
+          "type": "object",
+          "description": "Stores project metadata key-value pairs related to the Bitrise configuration. Most importantly, it defines the default stack and the build machine type for the project."
+        },
+        "trigger_map": {
+          "items": {
+            "$ref": "#/definitions/TriggerMapItemModel"
+          },
+          "type": "array",
+          "description": "Defines the build triggers on a project level. This is the legacy method of configuring triggers: we recommend using target-based triggers defined as part of a Pipeline or a Workflow instead."
+        },
+        "pipelines": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/PipelineModel"
+            }
+          },
+          "type": "object",
+          "description": "Define Pipelines in your project's configuration. Pipelines can be used to organize the entire CI/CD process and to set up advanced configurations with multiple different tasks running parallel and/or sequentially."
+        },
+        "stages": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/StageModel"
+            }
+          },
+          "type": "object",
+          "description": "Defines Stages in your configuration. A Stage is a collection of Workflows that are executed sequentially as part of a Pipeline."
+        },
+        "workflows": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/WorkflowModel"
+            }
+          },
+          "type": "object",
+          "description": "The Workflows included in your configuration. A Workflow is a collection of Steps: reusable, configurable units of work. Steps are executed sequentially within a Workflow."
+        },
+        "step_bundles": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/StepBundleModel"
+            }
+          },
+          "type": "object",
+          "description": "Step bundles allow you to group multiple Steps into a single unit. With Step bundles, you can reuse Steps and sequences of Steps."
+        },
+        "tools": {
+          "$ref": "#/definitions/ToolsModel",
+          "description": "Declarative configuration for tool versions used in the build. "
+        },
+        "tool_config": {
+          "$ref": "#/definitions/ToolConfigModel"
+        },
+        "include": {
+          "items": {
+            "$ref": "#/definitions/IncludeItemModel",
+            "description": "An included configuration file."
+          },
+          "type": "array",
+          "description": "The `include` property allows you to use other configuration YAML files in your Bitrise configuration, to break down large, complex YAML files into smaller, modular components."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ContainerModel": {
+      "required": ["image"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["execution", "service"],
+          "description": "The type of the container. Use `execution` for containers that execute Steps, and `service` for background service containers."
+        },
+        "image": {
+          "type": "string",
+          "description": "The Docker image for the container, in `[REPOSITORY[:TAG]]` format."
+        },
+        "credentials": {
+          "$ref": "#/definitions/DockerCredentialModel",
+          "description": "Credentials for authenticating with a Docker registry when pulling the image."
+        },
+        "ports": {
+          "type": "array",
+          "description": "Port mappings that expose container ports to the host or to other containers.",
+          "items": {
+            "type": "string",
+            "description": "A port mapping in the format `[HostPort]:[ContainerPort]`."
+          }
+        },
+        "envs": {
+          "$ref": "#/definitions/EnvModel",
+          "description": "Environment variables passed to the Docker container. Workflow-level `envs` are also inherited by containers."
+        },
+        "options": {
+          "type": "string",
+          "description": "Additional options passed to the `docker create` command. Note: `--network`, `--volume` (`-v`), and `--entrypoint` are not supported."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "ContainerReferenceConfigModel": {
+      "type": "object",
+      "description": "Additional configuration for a container reference.",
+      "properties": {
+        "recreate": {
+          "type": "boolean",
+          "description": "If true, the current container instance is discarded and a fresh one is started for this Step."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ContainerReferenceModel": {
+      "description": "A reference to a container. Can be specified as a container ID string or as an object with the container ID as the key and optional configuration as the value.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "The ID of the container as defined in the top-level `containers` map."
+        },
+        {
+          "type": "object",
+          "description": "The container ID with optional configuration.",
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/ContainerReferenceConfigModel"
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1
+        }
+      ]
+    },
+    "DockerCredentialModel": {
+      "required": ["username", "password"],
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "The username used for the `docker login` command."
+        },
+        "password": {
+          "type": "string",
+          "description": "The password used for the `docker login` command. Use a Secret environment variable to avoid exposing the value in the configuration."
+        },
+        "server": {
+          "type": "string",
+          "description": "The server used for the `docker login` command. Optional if the server is already part of the image reference."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EnvModel": {
+      "items": {
+        "patternProperties": {
+          ".*": {
+            "additionalProperties": true
+          }
+        },
+        "type": "object",
+        "description": "An Environment Variable defined as a key-value pair, with optional properties."
+      },
+      "type": "array",
+      "description": "A list of Environment Variables."
+    },
+    "PipelineModel": {
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the Pipeline."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A short summary of the Pipeline."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the Pipeline."
+        },
+        "triggers": {
+          "$ref": "#/definitions/TriggersModel",
+          "description": "Target-based triggers defined for the Pipeline: if a code event matches the condition defined in a trigger, Bitrise will trigger a build with the Pipeline."
+        },
+        "status_report_name": {
+          "$ref": "#/definitions/StatusReportNameModel",
+          "description": "The name that will appear on the status report sent to connected services (like GitHub, GitLab, Bitbucket, and so on) after the build is finished."
+        },
+        "stages": {
+          "items": {
+            "patternProperties": {
+              ".*": {
+                "$ref": "#/definitions/StageModel"
+              }
+            },
+            "type": "object",
+            "description": "A Stage that is part of the Pipeline configuration."
+          },
+          "type": "array",
+          "description": "The list of Stages that are part of the Pipeline configuration."
+        },
+        "workflows": {
+          "patternProperties": {
+            ".*": {
+              "$ref": "#/definitions/GraphPipelineWorkflowModel"
+            }
+          },
+          "type": "object",
+          "description": "The Workflows that are part of the Pipeline configuration. You can create dependencies between Workflows with the `depends_on` property."
+        },
+        "priority": {
+          "$ref": "#/definitions/PriorityModel"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "GraphPipelineWorkflowModel": {
+      "properties": {
+        "depends_on": {
+          "items": {
+            "type": "string",
+            "description": "The name of a Workflow that this Workflow depends on."
+          },
+          "type": "array",
+          "description": "This property defines the Workflows that this Workflow depends on. If any of the Workflows in the list fails, this Workflow won't run."
+        },
+        "abort_on_fail": {
+          "type": "boolean",
+          "description": "When this property is `true`, the Pipeline and any other running Workflows are aborted if this Workflow fails."
+        },
+        "should_always_run": {
+          "type": "string",
+          "enum": ["none", "workflow"],
+          "description": "This property defines whether a Workflow should run if a previous Workflow failed. Set to `workflow` if you want this Workflow to always run regardless of failures. The default value is `none`."
+        },
+        "run_if": {
+          "$ref": "#/definitions/GraphPipelineWorkflowRunIfModel"
+        },
+        "parallel": {
+          "oneOf": [{ "type": "integer" }, { "type": "string" }],
+          "description": "The `parallel` property allows you to run copies of the same Workflow in parallel, in a single instruction. This is particularly useful for test sharding. It takes an integer or an Environment Variable."
+        },
+        "uses": {
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/definitions/EnvModel"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "GraphPipelineWorkflowRunIfModel": {
+      "required": ["expression"],
+      "properties": {
+        "expression": {
+          "type": "string",
+          "description": "A Go template expression that defines the conditions for running the Workflow."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "description": "The conditions defined for running a Workflow."
+    },
+    "StageModel": {
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the Stage."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A short summary of the Stage."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the Stage."
+        },
+        "abort_on_fail": {
+          "type": "boolean",
+          "description": "When this property is true, the Pipeline and any other running Stages are aborted if this Stage fails."
+        },
+        "should_always_run": {
+          "type": "boolean",
+          "description": "When this property is true, the Stage will always run, even if a previous Stage in the Pipeline failed."
+        },
+        "workflows": {
+          "items": {
+            "patternProperties": {
+              ".*": {
+                "$ref": "#/definitions/WorkflowStageConfigModel"
+              }
+            },
+            "type": "object",
+            "description": "A Workflow that is part of the Stage configuration."
+          },
+          "type": "array",
+          "description": "The list of Workflows that are part of the Stage configuration."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "StatusReportNameModel": {
+      "type": "string",
+      "description": "The name that will appear on the status report sent to connected services (like GitHub, GitLab, Bitbucket, etc.) after the build is finished.",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9,./():\\-_ <>\\[\\]\\|]*$"
+    },
+    "ToolsModel": {
+      "description": "Mapping of tool IDs to versions to set up. Version syntax supports exact versions (e.g. '1.2.3'), partial matches to the latest release (e.g. '22:latest'), partial matches to installed versions (e.g. '1.2:installed'), as well as the special aliases 'latest' and 'installed' to select the highest respective version.",
+      "patternProperties": {
+        ".*": {
+          "type": "string",
+          "description": "The version of the tool to set up."
+        }
+      },
+      "type": "object"
+    },
+    "ToolConfigModel": {
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "Tool provider to use for setup. Defaults to 'asdf' if not specified.",
+          "enum": ["asdf", "mise"]
+        },
+        "extra_plugins": {
+          "description": "Additional tool plugins beyond Bitrise's vetted and tested integrations for common tools. Maps tool IDs to asdf plugin repository URLs.",
+          "patternProperties": {
+            ".*": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL to the plugin source repository (git clone URL)"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "TriggersModel": {
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The property determines whether a defined trigger is active. The default value is `true`. If you want to disable the trigger, set it to `false`."
+        },
+        "push": {
+          "items": {
+            "$ref": "#/definitions/PushTriggerModel",
+            "description": "A push trigger configuration."
+          },
+          "type": "array",
+          "description": "Code push triggers: they define the conditions for triggering a Bitrise build when code is pushed to the project's repository."
+        },
+        "pull_request": {
+          "items": {
+            "$ref": "#/definitions/PullrequestTriggerModel",
+            "description": "A pull request trigger configuration."
+          },
+          "type": "array",
+          "description": "Pull request triggers: they define the conditions for triggering a Bitrise build when a pull request is opened in the project's repository."
+        },
+        "tag": {
+          "items": {
+            "$ref": "#/definitions/TagTriggerModel"
+          },
+          "type": "array",
+          "description": "Git tag triggers: they define the conditions for triggering a Bitrise build when a Git tag is pushed to the project's repository."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PushTriggerMapItemCommitsConditionModel": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": "A glob pattern used to match against the condition."
+        },
+        "regex": {
+          "type": "string",
+          "description": "A regular expression pattern used to match against the condition."
+        },
+        "last_commit": {
+          "type": "boolean",
+          "description": "Defines whether Bitrise should evaluate every commit message or changed file in a code push or only those belonging to the most recent commit. Its default value is `false`."
+        }
+      },
+      "oneOf": [{ "required": ["pattern"] }, { "required": ["regex"] }],
+      "additionalProperties": false
+    },
+    "PushTriggerModel": {
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "If this property is true, the push trigger is active and can trigger Bitrise builds."
+        },
+        "priority": {
+          "$ref": "#/definitions/PriorityModel"
+        },
+        "branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "A branch of the project's repository. Bitrise triggers a build if code is pushed to the branch defined in this property."
+        },
+        "commit_message": {
+          "oneOf": [
+            { "$ref": "#/definitions/PushTriggerMapItemCommitsConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Define a Git commit message that should trigger a Bitrise build."
+        },
+        "changed_files": {
+          "oneOf": [
+            { "$ref": "#/definitions/PushTriggerMapItemCommitsConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Set a filepath or a folder. If any file or files change in that location, Bitrise triggers a build."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PullrequestTriggerModel": {
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "If this property is true, the pull request trigger is active and can trigger Bitrise builds."
+        },
+        "priority": {
+          "$ref": "#/definitions/PriorityModel",
+          "description": "The priority of the pull request trigger."
+        },
+        "draft_enabled": {
+          "type": "boolean",
+          "description": "If this property is `true`, draft pull requests can trigger builds, too."
+        },
+        "source_branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Bitrise triggers a build if the branch name in this property matches the source branch of a pull request opened in the project's repository."
+        },
+        "target_branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Bitrise triggers a build if the branch name in the property matches the target branch of a pull request opened in the project's repository."
+        },
+        "label": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "If a pull request's label matches the label in this property, Bitrise triggers a build."
+        },
+        "comment": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "This property looks for comments on pull requests to trigger Bitrise builds."
+        },
+        "commit_message": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Define a Git commit message that should trigger a Bitrise build."
+        },
+        "changed_files": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Set a filepath or a folder. If any file or files change in that location in a pull request, Bitrise triggers a build."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TagTriggerModel": {
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "If this property is true, the tag trigger is active and can trigger Bitrise builds."
+        },
+        "priority": {
+          "$ref": "#/definitions/PriorityModel",
+          "description": "The priority of the tag trigger."
+        },
+        "name": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "This property looks for the name of a Git tag to trigger a Bitrise build."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "TriggerMapItemRegexConditionModel": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": "A glob pattern used to match against the condition."
+        },
+        "regex": {
+          "type": "string",
+          "description": "A regular expression pattern used to match against the condition."
+        }
+      },
+      "oneOf": [{ "required": ["pattern"] }, { "required": ["regex"] }],
+      "additionalProperties": false
+    },
+    "TriggerMapItemModel": {
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["push", "pull_request", "tag"],
+          "description": "The type of the code event the trigger looks for."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "If this property is true, the trigger is active and can trigger Bitrise builds."
+        },
+        "pipeline": {
+          "type": "string",
+          "description": "The name of the Pipeline that will be triggered if the code event matches the trigger condition."
+        },
+        "workflow": {
+          "type": "string",
+          "description": "The name of the Workflow that will be triggered if the code event matches the trigger condition."
+        },
+
+        "push_branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "A branch of the project's repository. Bitrise triggers a build if code is pushed to the branch defined in this property."
+        },
+        "commit_message": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Define a Git commit message that should trigger a Bitrise build."
+        },
+        "changed_files": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Set a filepath or a folder. If any file or files change in that location, Bitrise triggers a build."
+        },
+
+        "pull_request_source_branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Bitrise triggers a build if the branch name in this property matches the source branch of a pull request opened in the project's repository."
+        },
+        "pull_request_target_branch": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Bitrise triggers a build if the branch name in the property matches the target branch of a pull request opened in the project's repository."
+        },
+        "draft_pull_request_enabled": {
+          "type": "boolean",
+          "description": "If this property is `true`, draft pull requests can trigger builds, too."
+        },
+        "pull_request_label": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "You can mark pull requests with labels. If a pull request's label matches the label in this property, Bitrise triggers a build."
+        },
+        "pull_request_comment": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "This property looks for comments on pull requests to trigger Bitrise builds."
+        },
+
+        "tag": {
+          "oneOf": [
+            { "$ref": "#/definitions/TriggerMapItemRegexConditionModel" },
+            { "type": "string" }
+          ],
+          "description": "Bitrise triggers a build when a Git tag matching the tag defined in this property is pushed to the project's repository."
+        },
+
+        "pattern": {
+          "type": "string",
+          "description": "A pattern used to match against specific code event attributes."
+        },
+        "is_pull_request_allowed": {
+          "type": "boolean",
+          "description": "If this property is true, pull requests are allowed to trigger Bitrise builds."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "WithModel": {
+      "required": ["steps"],
+      "properties": {
+        "container": {
+          "type": "string",
+          "description": "The name of the container that will be used as the execution environment."
+        },
+        "services": {
+          "type": "array",
+          "description": "The name of the service container that will be used to run services.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "steps": {
+          "items": {
+            "patternProperties": {
+              "^(?!bundle::)(?!with$).*": {
+                "$ref": "bitrise-step.json",
+                "description": "A Step in the Workflow."
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
+          },
+          "type": "array",
+          "description": "The list of Steps to be executed within the specified container environment."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "WorkflowStageConfigModel": {
+      "properties": {
+        "run_if": {
+          "type": "string",
+          "description": "A Go template expression that defines the conditions for running the Workflow within the Stage."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "WorkflowModel": {
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the Workflow."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A short summary of the Workflow."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the Workflow."
+        },
+        "triggers": {
+          "$ref": "#/definitions/TriggersModel",
+          "description": "Target-based triggers defined for the Workflow: if a code event matches the condition defined in a trigger, Bitrise will trigger a build with the Workflow."
+        },
+        "status_report_name": {
+          "$ref": "#/definitions/StatusReportNameModel"
+        },
+        "before_run": {
+          "items": {
+            "type": "string",
+            "description": "The name of a Workflow that will run before this Workflow starts."
+          },
+          "type": "array",
+          "description": "The Workflows that will run before this Workflow starts."
+        },
+        "after_run": {
+          "items": {
+            "type": "string",
+            "description": "The name of a Workflow that will run after this Workflow is successfully finished."
+          },
+          "type": "array",
+          "description": "The Workflows that will run after this Workflow is successfully finished."
+        },
+        "envs": {
+          "$ref": "#/definitions/EnvModel",
+          "description": "Environment Variables defined for the Workflow."
+        },
+        "steps": {
+          "items": {
+            "patternProperties": {
+              "^bundle::.+": {
+                "$ref": "#/definitions/StepBundleOverrideModel"
+              },
+              "^with$": {
+                "$ref": "#/definitions/WithModel",
+                "description": "A with group defining Steps to be executed within a specific container environment."
+              },
+              "^(?!bundle::)(?!with$).*": {
+                "$ref": "bitrise-step.json"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
+          },
+          "type": "array",
+          "description": "The list of Steps in the Workflow."
+        },
+        "priority": {
+          "$ref": "#/definitions/PriorityModel",
+          "description": "The priority of the Workflow."
+        },
+        "tools": {
+          "$ref": "#/definitions/ToolsModel",
+          "description": "Declarative configuration for tool versions used in the Workflow."
+        },
+        "meta": {
+          "patternProperties": {
+            ".*": {
+              "additionalProperties": true
+            }
+          },
+          "type": "object",
+          "description": "Stores project metadata key-value pairs. Most importantly, it defines the stack and the machine type for the Workflow."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "StepBundleModel": {
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the Step bundle."
+        },
+        "summary": {
+          "type": "string",
+          "description": "A short summary of the Step bundle."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the Step bundle."
+        },
+        "envs": {
+          "$ref": "#/definitions/EnvModel"
+        },
+        "inputs": {
+          "$ref": "#/definitions/EnvModel",
+          "description": "Inputs defined for the Step bundle: these are values that can be set when the Step bundle is added to a Workflow."
+        },
+        "execution_container": {
+          "$ref": "#/definitions/ContainerReferenceModel",
+          "description": "The default execution container for Steps in this bundle. Steps in the bundle inherit this container unless they define their own."
+        },
+        "service_containers": {
+          "type": "array",
+          "description": "The default service containers for Steps in this bundle. Service containers accumulate additively through the hierarchy.",
+          "items": {
+            "$ref": "#/definitions/ContainerReferenceModel"
+          }
+        },
+        "steps": {
+          "items": {
+            "patternProperties": {
+              "^bundle::.+": {
+                "$ref": "#/definitions/StepBundleOverrideModel"
+              },
+              "^(?!bundle::)(?!with$).*": {
+                "$ref": "bitrise-step.json"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
+          },
+          "type": "array",
+          "description": "The Steps included in the Step bundle."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "StepBundleOverrideModel": {
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "envs": {
+          "$ref": "#/definitions/EnvModel"
+        },
+        "inputs": {
+          "$ref": "#/definitions/EnvModel"
+        },
+        "execution_container": {
+          "$ref": "#/definitions/ContainerReferenceModel",
+          "description": "Overrides the execution container for this bundle invocation."
+        },
+        "service_containers": {
+          "type": "array",
+          "description": "Overrides the service containers for this bundle invocation.",
+          "items": {
+            "$ref": "#/definitions/ContainerReferenceModel"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "IncludeItemModel": {
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The file path of the included configuration file. This path is relative to the root of the repository."
+        },
+        "repository": {
+          "type": "string",
+          "description": "The name of the repository that contains the included configuration file. You do not need the URL, just the name. Leave it empty if the file is in the same repository as your current configuration file."
+        },
+        "branch": {
+          "type": "string",
+          "description": "The repository branch that contains the included configuration file. It has a lower priority than `tag` and `commit`."
+        },
+        "commit": {
+          "type": "string",
+          "description": "The commit hash of the commit that contains the included configuration file. It takes priority over `branch` and `tag` if they are all specified."
+        },
+        "tag": {
+          "type": "string",
+          "description": "The Git tag of the commit that contains the included configuration file. It has a higher priority than `branch` but a lower priority than `commit`."
+        }
+      },
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "PriorityModel": {
+      "description": "Build priority determines a build's position in the build queue. A build with a higher priority is executed sooner than a build with a lower priority. You can set priorities for Pipelines, Workflows, build triggers, and when manually starting a new build.",
+      "type": "integer",
+      "maximum": 100,
+      "minimum": -100
+    }
+  }
+}

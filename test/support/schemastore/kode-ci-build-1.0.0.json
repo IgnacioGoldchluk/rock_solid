@@ -1,0 +1,578 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://json.schemastore.org/kode-ci-build-1.0.0.json",
+  "additionalProperties": false,
+  "definitions": {
+    "env": {
+      "type": "object",
+      "required": ["name", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "환경변수 이름",
+          "pattern": "[a-zA-Z_][a-zA-Z_0-9]*"
+        },
+        "value": {
+          "type": "string",
+          "description": "환경변수 값"
+        },
+        "branch": {
+          "type": "string",
+          "description": "환경변수를 적용할 브랜치"
+        }
+      }
+    },
+    "build-condition": {
+      "type": "object",
+      "description": "빌드 실행 조건",
+      "additionalProperties": true,
+      "properties": {
+        "push": {
+          "type": "object",
+          "description": "Push 이벤트에 의한 조건",
+          "properties": {
+            "branches": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": ["*"],
+              "description": "Push 빌드의 branch 조건",
+              "minItems": 1
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": ["*"],
+              "description": "Push 빌드의 tag 조건",
+              "minItems": 1
+            },
+            "commit": {
+              "type": "object",
+              "properties": {
+                "message-contain": {
+                  "type": "string",
+                  "description": "commit message에 주어진 문자열을 포함한 경우만 빌드"
+                }
+              }
+            },
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [""],
+              "description": "Push 빌드의 paths 조건",
+              "minItems": 1
+            }
+          },
+          "dependencies": {
+            "paths": ["branches"]
+          },
+          "additionalProperties": false
+        },
+        "pull-request": {
+          "type": "object",
+          "description": "PullRequest 이벤트에 의한 조건",
+          "properties": {
+            "branches": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [""],
+              "description": "PR빌드의 target 브랜치 조건",
+              "minItems": 1
+            },
+            "types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "assigned",
+                  "unassigned",
+                  "labeled",
+                  "unlabeled",
+                  "opened",
+                  "edited",
+                  "closed",
+                  "reopened",
+                  "synchronize",
+                  "converted_to_draft",
+                  "ready_for_review",
+                  "locked",
+                  "unlocked",
+                  "review_requested",
+                  "review_request_removed",
+                  "auto_merge_enabled",
+                  "auto_merge_disabled"
+                ]
+              },
+              "default": ["opened", "synchronize", "reopened"],
+              "description": "PR 이벤트 타입",
+              "minItems": 1
+            },
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [""],
+              "description": "PullRequest 빌드의 paths 조건",
+              "minItems": 1
+            }
+          },
+          "dependencies": {
+            "paths": ["branches"]
+          },
+          "additionalProperties": false
+        },
+        "manual": {
+          "type": "object",
+          "description": "수동빌드 대상을 위한 조건",
+          "properties": {
+            "branches": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [""],
+              "description": "수동빌드의 대상이 되는 브랜치 조건",
+              "minItems": 1
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [""],
+              "description": "수동빌드의 대상이 되는 태그 조건",
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "schedule": {
+          "type": "object",
+          "description": "스케줄에 의한 조건",
+          "required": ["cron", "branches"],
+          "properties": {
+            "cron": {
+              "type": "string",
+              "description": "cron 표현식. unix 표현식과 quartz 표현식 사용가능"
+            },
+            "branches": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "스케줄 빌드의 branch 조건",
+              "minItems": 1
+            },
+            "zone": {
+              "type": "string",
+              "default": ["Asia/Seoul"],
+              "description": "스케줄 빌드 zone"
+            },
+            "build-if-changed": {
+              "type": "boolean",
+              "default": true,
+              "description": "변경된 파일이 있을때만 빌드"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "job": {
+      "type": "object",
+      "required": ["name", "execute"],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "작업 이름",
+          "pattern": "[a-zA-Z0-9_-]{1,40}"
+        },
+        "execute": {
+          "type": "array",
+          "description": "실행할 명령 목록(순차실행)",
+          "items": {
+            "type": "string",
+            "default": "echo \"hello world\""
+          },
+          "minItems": 1
+        },
+        "needs": {
+          "type": "array",
+          "description": "선행 작업 및 조건 정의",
+          "default": [],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["job", "when"],
+            "properties": {
+              "job": {
+                "type": "string",
+                "description": "선행 작업의 이름"
+              },
+              "when": {
+                "type": "string",
+                "description": "선행 작업의 결과 조건",
+                "enum": ["success", "failure", "done", "skipped", "always"]
+              }
+            }
+          }
+        },
+        "set-proxy": {
+          "type": "array",
+          "description": "사내 Proxy 설정",
+          "default": ["shell"],
+          "items": {
+            "type": "string",
+            "enum": [
+              "shell",
+              "gradle",
+              "npm",
+              "docker",
+              "yarn",
+              "maven",
+              "java",
+              "sbt"
+            ]
+          }
+        },
+        "no-proxy-hosts": {
+          "type": "array",
+          "description": "proxy 예외할 host 목록 (ip, ip/mask, domain)",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "run-on": {
+          "$ref": "#/definitions/run-on"
+        },
+        "artifacts": {
+          "type": "array",
+          "description": "artifact로 지정할 파일 혹은 디렉토리 경로",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "caches": {
+          "type": "array",
+          "description": "다음 빌드의 속도 향상을 위한 캐시 설정",
+          "default": [],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "path"],
+            "properties": {
+              "key": {
+                "type": "string",
+                "description": "캐시 식별키 (repo scope)",
+                "pattern": "^[a-zA-Z0-9_-]{1,40}$"
+              },
+              "path": {
+                "type": "string",
+                "description": "캐시할 파일 혹은 디렉토리 경로"
+              },
+              "upload": {
+                "type": "boolean",
+                "description": "캐시 업로드 여부",
+                "default": true
+              },
+              "download": {
+                "type": "boolean",
+                "description": "캐시 다운로드 여부",
+                "default": true
+              }
+            }
+          }
+        },
+        "git-clone": {
+          "type": "string",
+          "description": "git clone시 depth를 주기위한 옵션",
+          "default": "shallow",
+          "pattern": "^(shallow|deep|shallow:[0-9]+)$"
+        },
+        "max-execution-time": {
+          "type": "string",
+          "description": "최대 실행시간 (e.g. '1h', '100m')",
+          "default": "1h",
+          "pattern": "^([0-9]+)(h|m)$"
+        },
+        "post-process": {
+          "type": "object",
+          "description": "빌드 후처리기 설정",
+          "additionalProperties": true,
+          "properties": {
+            "app-center-releases": {
+              "$ref": "#/definitions/app-center-releases"
+            },
+            "git-ops": {
+              "$ref": "#/definitions/git-ops"
+            }
+          }
+        },
+        "html-reports": {
+          "type": "array",
+          "description": "html report 설정. path 경로의 html 파일을 업로드",
+          "default": [],
+          "items": {
+            "type": "object",
+            "required": ["name", "path"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "report 이름",
+                "pattern": "[a-zA-Z0-9_-]+"
+              },
+              "path": {
+                "type": "string",
+                "description": "report 경로. html 확장자만 지정 가능"
+              }
+            }
+          }
+        },
+        "export": {
+          "type": "object",
+          "description": "다음 job으로 전달할 파일 및 환경변수를 지정합니다. 해당 job 의 성공/실패 상관없이 export 됩니다.",
+          "additionalProperties": false,
+          "properties": {
+            "artifacts": {
+              "type": "array",
+              "description": "다음 job으로 전달할 파일 이름 목록",
+              "default": [],
+              "items": {
+                "type": "string"
+              }
+            },
+            "environment": {
+              "type": "array",
+              "description": "다음 job으로 전달할 환경변수 이름 목록",
+              "default": [],
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "downloads": {
+          "type": "array",
+          "description": "선행 job의 export.artifacts를 현재 job으로 가져옵니다.",
+          "default": [],
+          "items": {
+            "type": "object",
+            "required": ["from", "path"],
+            "additionalProperties": false,
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "artifacts를 가져올 job 이름"
+              },
+              "path": {
+                "type": "string",
+                "description": "다운로드된 파일을 저장할 경로 (작업 디렉토리 기준)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "run-on": {
+      "type": "object",
+      "description": "실행환경 설정",
+      "additionalProperties": false,
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "docker image",
+          "default": "+@basebox",
+          "pattern": "^(\\+@[a-z0-9-]+|\\+\\/[a-z0-9/-]+|[a-z0-9/._-]+)(:[a-z0-9A-Z._-]+)?$"
+        },
+        "resources": {
+          "description": "실행에 사용할 리소스 크기 설정",
+          "anyOf": [
+            {
+              "type": "string",
+              "default": "small",
+              "enum": [
+                "small",
+                "medium",
+                "large",
+                "xlarge",
+                "xxlarge",
+                "xxxlarge"
+              ]
+            },
+            {
+              "type": "object",
+              "required": ["cpu", "memory"],
+              "properties": {
+                "cpu": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "default": "1.0",
+                      "pattern": "^[0-9]+(\\.[0-9]+)?$"
+                    },
+                    {
+                      "type": "number",
+                      "default": 1
+                    }
+                  ],
+                  "description": "cpu (e.g. '1.0')",
+                  "default": "1.0"
+                },
+                "memory": {
+                  "type": "string",
+                  "description": "memory (e.g. '500Mi', '2Gi').",
+                  "default": "1Gi",
+                  "pattern": "^([0-9]+)(Mi|Gi)$"
+                }
+              }
+            }
+          ]
+        },
+        "use": {
+          "type": "array",
+          "description": "실행환경에서 사용할 기능 설정",
+          "default": [],
+          "items": {
+            "type": "string",
+            "const": "docker"
+          }
+        },
+        "platform": {
+          "type": "string",
+          "description": "실행환경 플랫폼",
+          "default": "k8s",
+          "enum": ["k8s", "macos"]
+        },
+        "selectors": {
+          "type": "array",
+          "description": "platform: macos 일때 사용할 agent를 선택",
+          "default": [],
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "agent label 값"
+              },
+              "pattern": {
+                "type": "string",
+                "default": "*",
+                "description": "agent value를 pattern 으로 지정"
+              }
+            }
+          }
+        }
+      }
+    },
+    "app-center-releases": {
+      "type": "array",
+      "description": "artifact로 지정된 .apk/.ipa 파일을 appcenter로 릴리즈",
+      "items": {
+        "type": "object",
+        "description": "appcenter release 설정",
+        "required": ["app-id"],
+        "additionalProperties": false,
+        "properties": {
+          "app-id": {
+            "type": "string",
+            "description": "App ID",
+            "pattern": "[a-zA-Z0-9_-]+"
+          },
+          "tags": {
+            "type": "array",
+            "description": "릴리즈 그룹에 대한 Tag들을 지정",
+            "items": {
+              "type": "string",
+              "description": "릴리즈 그룹에 대한 Tag 값",
+              "pattern": "[a-zA-Z0-9_-]+"
+            }
+          }
+        }
+      }
+    },
+    "git-ops": {
+      "type": "object",
+      "description": "GitOps 방식의 K8S Deploy를 위한 manifest repo 업데이트",
+      "required": ["manifest", "update"],
+      "additionalProperties": false,
+      "properties": {
+        "manifest": {
+          "type": "object",
+          "description": "K8S manifest repo 정보",
+          "required": ["repo", "branch"],
+          "additionalProperties": false,
+          "properties": {
+            "repo": {
+              "type": "string",
+              "description": "repo('owner/repo')",
+              "pattern": "[.a-zA-Z0-9_-]+/[.a-zA-Z0-9_-]+"
+            },
+            "branch": {
+              "type": "string",
+              "description": "branch",
+              "pattern": "[a-zA-Z0-9/_.@-]+"
+            }
+          }
+        },
+        "update": {
+          "type": "array",
+          "description": "manifest repo를 업데이트하기 위한 명령",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "with-artifacts": {
+          "type": "array",
+          "description": "빌드 작업에서 manifest reop로 전달할 artifacts",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sync-git-tag": {
+          "type": "boolean",
+          "description": "manifest repo에 git tag를 동기화할지 여부. push tag 빌드일때만 동작",
+          "default": false
+        }
+      }
+    }
+  },
+  "properties": {
+    "on": {
+      "$ref": "#/definitions/build-condition",
+      "description": "실행 조건"
+    },
+    "jobs": {
+      "type": "array",
+      "description": "실행할 작업들: 독립적으로 병렬 실행됨",
+      "items": {
+        "$ref": "#/definitions/job"
+      }
+    },
+    "environment": {
+      "type": "array",
+      "description": "환경변수",
+      "items": {
+        "$ref": "#/definitions/env"
+      }
+    }
+  },
+  "required": ["jobs"],
+  "title": "KoDE/CI Build Spec",
+  "type": "object",
+  "description": "KoDE/CI 빌드 스펙에 사용되는 yaml의 스키마를 정의"
+}
