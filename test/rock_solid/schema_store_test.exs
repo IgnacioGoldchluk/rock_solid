@@ -711,7 +711,15 @@ defmodule RockSolid.SchemaStoreTest do
     "xunit-2.3.json",
     "xunit.runner.schema.json",
     "yamlfmt.json",
-    "zarf.json"
+    "zarf.json",
+    "grunt-watch-task.json",
+    "bxci.schema-3.x.json",
+    "azure-deviceupdate-update-manifest-5.json",
+    "drone.json",
+    "ubuntu-server-autoinstall.json",
+    "starlake.json",
+    "pull-request-labeler-5.json",
+    "pyrseas-0.8.json"
   ]
 
   describe "regression schemas" do

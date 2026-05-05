@@ -24,6 +24,19 @@ defmodule RockSolid.Intersection.NotTest do
       assert expected == Not.add_clause(schema, clause)
     end
 
+    test "required removed enum returns false" do
+      schema = %{
+        "properties" => %{
+          "age" => %{"type" => "integer"},
+          "name" => %{"enum" => ["Alice"]}
+        },
+        "required" => ["name"]
+      }
+
+      clause = %{"properties" => %{"name" => %{"enum" => ["Alice", "Bob"]}}}
+      assert false == Not.add_clause(schema, clause)
+    end
+
     test "required and properties sets non-specified required to false" do
       schema = %{
         "properties" => %{

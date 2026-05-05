@@ -794,6 +794,35 @@ defmodule RockSolid.TransformationTest do
   end
 
   describe "simplify/1" do
+    test "oneOf with mutually exclusive but non-required property sets it as required" do
+      schema = %{
+        "$id" => schema_id(),
+        "oneOf" => [
+          %{"properties" => %{"bar" => %{"type" => "boolean"}}},
+          %{"properties" => %{"bar" => %{"type" => "array", "items" => %{"type" => "boolean"}}}}
+        ]
+      }
+
+      expected = %{
+        "anyOf" => [
+          %{
+            "properties" => %{"bar" => %{"type" => "boolean"}},
+            "required" => ["bar"],
+            "type" => "object"
+          },
+          %{
+            "properties" => %{
+              "bar" => %{"items" => %{"type" => "boolean"}, "type" => "array"}
+            },
+            "required" => ["bar"],
+            "type" => "object"
+          }
+        ]
+      }
+
+      assert expected == Transformation.simplify(schema)
+    end
+
     test "if/then without specified type" do
       schema = %{
         "$id" => schema_id(),

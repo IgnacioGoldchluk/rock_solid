@@ -347,6 +347,26 @@ defmodule RockSolid.StrategyTest do
       })
     end
 
+    property "oneOf + allOf" do
+      check_schema(%{
+        "$defs" => %{
+          "bar" => %{"type" => "boolean"},
+          "foo" => %{
+            "oneOf" => [
+              %{"properties" => %{"bar" => %{"$ref" => "#/$defs/bar"}}},
+              %{
+                "properties" => %{
+                  "bar" => %{"type" => "array", "items" => %{"$ref" => "#/$defs/bar"}}
+                }
+              }
+            ]
+          }
+        },
+        "allOf" => [%{"$ref" => "#/$defs/foo"}],
+        "properties" => %{"baz" => %{"type" => "string"}}
+      })
+    end
+
     property "oneOf schemas" do
       check_schema(%{
         "type" => "object",

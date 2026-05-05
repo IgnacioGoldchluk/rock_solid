@@ -81,8 +81,13 @@ defmodule RockSolid.Intersection.Not do
 
     not_clause
     |> to_override_properties(existing_required)
-    |> Enum.map(&apply_not_property(&1, schema))
+    |> Enum.map(fn {key, _value} = property ->
+      new_schema = apply_not_property(property, schema)
+      if impossible?(new_schema, key), do: false, else: new_schema
+    end)
+    |> Enum.reject(&(&1 == false))
     |> case do
+      [] -> false
       [single_schema] -> single_schema
       schemas when is_list(schemas) and length(schemas) > 1 -> %{"anyOf" => schemas}
     end
@@ -92,17 +97,25 @@ defmodule RockSolid.Intersection.Not do
     apply_not_property(kv, Map.put(schema, "properties", %{}))
   end
 
+  defp apply_not_property({key, false}, schema) do
+    Map.update(schema, "required", [key], &([key | &1] |> Enum.uniq()))
+  end
+
   defp apply_not_property({key, value}, %{"properties" => props} = schema) do
     new_props =
       case value do
         true -> Map.put(props, key, false)
-        false -> Map.put(props, key, false)
         %{"const" => const} -> remove_enum(props, key, [const])
         %{"enum" => enums} -> remove_enum(props, key, enums)
         subschema -> Map.update(props, key, %{"not" => subschema}, &add_clause(&1, subschema))
       end
 
     Map.put(schema, "properties", new_props)
+  end
+
+  defp impossible?(schema, property) do
+    get_in(schema, ["properties", property]) == false and
+      property in Map.get(schema, "required", [])
   end
 
   defp to_override_properties(not_clause, existing_required) when is_map(not_clause) do
@@ -113,16 +126,24 @@ defmodule RockSolid.Intersection.Not do
     not_clause
     |> Map.get("required", [])
     |> Enum.reject(&(&1 in existing_required))
-    |> Map.from_keys(false)
+    |> Map.from_keys(true)
     |> Map.merge(properties)
   end
 
   defp remove_enum(props, key, to_remove) do
     Map.update(props, key, %{"not" => %{"enum" => to_remove}}, fn
-      %{"enum" => values} -> %{"enum" => Enum.filter(values, &(&1 not in to_remove))}
-      other -> do_add_clause(other, %{"enum" => to_remove})
+      %{"enum" => values} ->
+        case Enum.filter(values, &(&1 not in to_remove)) do
+          [] -> false
+          remaining -> %{"enum" => remaining}
+        end
+
+      other ->
+        do_add_clause(other, %{"enum" => to_remove})
     end)
   end
+
+  defp do_add_clause(false, _), do: false
 
   defp do_add_clause(%{"not" => %{"anyOf" => clauses}} = schema, new_clause) do
     put_in(schema, ["not", "anyOf"], Enum.uniq([new_clause | clauses]))
