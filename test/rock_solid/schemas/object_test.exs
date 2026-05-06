@@ -188,13 +188,13 @@ defmodule RockSolid.Schemas.ObjectTest do
       schema = %{
         "type" => "object",
         "patternProperties" => %{
-          "[a-z]+" => true,
-          "[A-Za-z]+" => true
+          "[a-z]+" => %{"type" => "string", "minLength" => 1},
+          "[A-Za-z]+" => %{"type" => "string"}
         }
       }
 
       assert {:error, [%Zoi.Error{message: msg}]} = Object.new(schema)
-      assert String.starts_with?(msg, "non-empty intersection patternProperties")
+      assert String.starts_with?(msg, "overlapping patternProperties")
     end
   end
 end

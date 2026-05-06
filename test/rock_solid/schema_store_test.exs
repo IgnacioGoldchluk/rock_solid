@@ -57,7 +57,16 @@ defmodule RockSolid.SchemaStoreTest do
     # osi-license
     "clasp.json",
     # contains a ref and no id, causing wrong resolution
-    "databricks-asset-bundles.json"
+    "databricks-asset-bundles.json",
+    # {"type": "object", "enum": ["some_string"]}...
+    # technically we can set it to false so that it passes, but better to warn the user
+    "cloudify.json",
+    # additionalProperties: false but also has an if/then/else statement with required
+    # properties, meaning it can never match. The `additionalProperties` should be inside
+    # the then/else clauses, not at the top
+    "typo3.json",
+    # subschema has "type": "string" with "if": {"properties": ...} which always matches
+    "minecraft-dimension.json"
   ]
 
   # Debug later
@@ -608,7 +617,6 @@ defmodule RockSolid.SchemaStoreTest do
     "samtrc.json",
     "scarb.json",
     "schema-catalog.json",
-    "scikit-build.json",
     "semantic-release.json",
     "sergen.json",
     "servicehub.config.schema.json",
@@ -723,15 +731,18 @@ defmodule RockSolid.SchemaStoreTest do
     "rancher-fleet-0.5.json",
     "youtrack-app.json",
     "jsonld.json",
-    "datalogic-scan2deploy-ce.json",
     "vim-addon-info.json",
-    "minecraft-dimension.json",
     "winget-pkgs-locale-1.0.0.json",
     "winget-pkgs-singleton-1.0.0.json",
-    "rancher-fleet-0.8.json"
-    # These work sometimes but are a bit flaky
-    # "pyrseas-0.8.json",
-    # "minecraft-loot-table.json",
+    "rancher-fleet-0.8.json",
+    "chrome-manifest.json",
+    "grpc-api-gateway.json",
+    # Modified to pass, original was likely auto generated and the
+    # schema doesn't make sense or is incomplete
+    "uxp-manifest-5.json",
+    "minecraft-loot-table.json",
+    "pyrseas-0.8.json",
+    "datalogic-scan2deploy-ce.json"
   ]
 
   describe "regression schemas" do

@@ -254,18 +254,14 @@ defmodule RockSolid.Strategy do
     max_optionals =
       case schema["maxProperties"] do
         nil -> length(optional)
-        other -> max(length(optional), other)
+        max_props -> min(length(optional), max_props - length(required))
       end
 
-    StreamData.tuple(
-      {StreamData.integer(min_optionals..max_optionals), StreamData.shuffle(optional)}
-    )
-    |> StreamData.bind(fn {to_take, optional_props} ->
-      {_, optionals} = Enum.split(optional_props, to_take)
-
-      properties
-      |> Map.new(fn {name, subschema} -> {name, from_json_schema(subschema)} end)
-      |> StreamData.optional_map(optionals)
+    MoreStreamData.sample(optional, min_length: min_optionals, max_length: max_optionals)
+    |> StreamData.bind(fn optionals_chosen ->
+      (required ++ optionals_chosen)
+      |> Map.new(fn name -> {name, from_json_schema(properties[name])} end)
+      |> StreamData.fixed_map()
     end)
     |> StreamData.bind(fn current_map -> pattern_properties(schema, current_map) end)
     |> StreamData.bind(fn current_map -> additional_properties(schema, current_map) end)

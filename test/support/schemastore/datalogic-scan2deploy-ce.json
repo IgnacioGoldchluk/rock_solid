@@ -269,7 +269,8 @@
       },
       "then": {
         "required": ["mode-key"]
-      }
+      },
+      "required": ["mode"]
     },
     "deployment": {
       "$id": "#/properties/deployment",

@@ -48,6 +48,31 @@ defmodule RockSolid.StrategyTest do
       })
     end
 
+    property "multiple properties defined with maxProperties < properties" do
+      check_schema(%{
+        "type" => "object",
+        "maxProperties" => 1,
+        "additionalProperties" => false,
+        "properties" => %{
+          "foo" => %{"type" => "string"},
+          "bar" => %{"type" => "boolean"},
+          "baz" => %{"type" => "number"}
+        }
+      })
+    end
+
+    property "defined properties with minProperties" do
+      check_schema(%{
+        "type" => "object",
+        "additionalProperties" => false,
+        "minProperties" => 1,
+        "properties" => %{
+          "foo" => %{"type" => "boolean"},
+          "bar" => %{"type" => "boolean"}
+        }
+      })
+    end
+
     property "catch-all patternProperties and propertyNames" do
       check_schema(%{
         "patternProperties" => %{".*" => %{"type" => ["number", "string", "boolean"]}},

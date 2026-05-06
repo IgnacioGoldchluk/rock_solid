@@ -142,6 +142,7 @@
     }
   },
   "description": "Configuration file defining a dimension for a data pack for Minecraft.",
+  "required": ["type"],
   "properties": {
     "type": {
       "title": "Type",

@@ -183,8 +183,15 @@ defmodule RockSolid.Schemas.Object do
 
     Enum.reduce_while(combs, :ok, fn {k1, k2}, _ ->
       case Pattern.intersection(k1, k2) do
-        {:ok, _} -> {:halt, {:error, "non-empty intersection patternProperties: #{k1}, #{k2}"}}
-        _ -> {:cont, :ok}
+        {:ok, _} ->
+          if pattern_props[k1] == pattern_props[k2] do
+            {:cont, :ok}
+          else
+            {:halt, {:error, "overlapping patternProperties: #{k1}, #{k2}"}}
+          end
+
+        _ ->
+          {:cont, :ok}
       end
     end)
   end

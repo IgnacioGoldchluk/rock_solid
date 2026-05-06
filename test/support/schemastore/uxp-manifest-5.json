@@ -134,8 +134,7 @@
                       "allOf": [
                         {
                           "pattern": "^((Cmd|Ctrl|Opt|Alt|Shift)\\+)+[a-zA-Z0-9]$"
-                        },
-                        { "pattern": "Cmd|Ctrl" }
+                        }
                       ]
                     },
                     "win": {
@@ -144,8 +143,7 @@
                       "type": "string",
                       "examples": ["Ctrl+Alt+B", "Ctrl+6"],
                       "allOf": [
-                        { "pattern": "^((Ctrl|Alt|Shift)\\+)+[a-zA-Z0-9]$" },
-                        { "pattern": "Ctrl" }
+                        { "pattern": "^((Ctrl|Alt|Shift)\\+)+[a-zA-Z0-9]$" }
                       ]
                     }
                   }

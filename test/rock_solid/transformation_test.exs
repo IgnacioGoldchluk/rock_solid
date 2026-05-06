@@ -794,6 +794,31 @@ defmodule RockSolid.TransformationTest do
   end
 
   describe "simplify/1" do
+    test "patternProperties with catch-all but they are the same object" do
+      schema_id = schema_id()
+
+      schema = %{
+        "$id" => schema_id,
+        "$defs" => %{"foo" => %{"type" => "integer"}},
+        "type" => "object",
+        "patternProperties" => %{
+          ".*" => %{"$ref" => "#{schema_id}#/$defs/foo", "x-rocksolid-refbehaviour" => "merge"},
+          "^bar$" => %{"$ref" => "#{schema_id}#/$defs/foo", "x-rocksolid-refbehaviour" => "merge"}
+        }
+      }
+
+      expected = %{
+        "additionalProperties" => false,
+        "patternProperties" => %{
+          ".*" => %{"$ref" => "#{schema_id}#/$defs/foo"},
+          "^bar$" => %{"$ref" => "#{schema_id}#/$defs/foo"}
+        },
+        "type" => "object"
+      }
+
+      assert expected == Transformation.simplify(schema)
+    end
+
     test "oneOf with mutually exclusive but non-required property sets it as required" do
       schema = %{
         "$id" => schema_id(),

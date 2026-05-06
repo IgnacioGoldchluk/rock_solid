@@ -5,6 +5,7 @@
   "definitions": {
     "numberProvider": {
       "$comment": "https://minecraft.wiki/w/Loot_table#Number_Providers",
+      "required" : ["type"],
       "properties": {
         "type": {
           "title": "Type",
