@@ -9,6 +9,17 @@ defmodule RockSolid.Intersection do
 
   @number_types ["integer", "number"]
 
+  @any_value %{
+    "anyOf" => [
+      %{"type" => "array"},
+      %{"type" => "boolean"},
+      %{"type" => "null"},
+      %{"type" => "number"},
+      %{"type" => "object"},
+      %{"type" => "string"}
+    ]
+  }
+
   @doc """
   Performs the intersection between two schemas.
   """
@@ -45,6 +56,8 @@ defmodule RockSolid.Intersection do
 
   # Same reference
   defp do_intersection(%{"$ref" => r1}, %{"$ref" => r1}), do: {:ok, %{"$ref" => r1}}
+  defp do_intersection(%{"$ref" => r1}, s2) when s2 == @any_value, do: {:ok, %{"$ref" => r1}}
+  defp do_intersection(s1, %{"$ref" => r2}) when s1 == @any_value, do: {:ok, %{"$ref" => r2}}
 
   # Different reference
   defp do_intersection(%{"$ref" => _} = s1, s2), do: with_ref(s1, s2)
@@ -115,9 +128,6 @@ defmodule RockSolid.Intersection do
   end
 
   defp with_ref(schema1, schema2) do
-    # We don't care about types in this case
-    schema1 = sanitize_ref(schema1)
-    schema2 = sanitize_ref(schema2)
     key = {schema1, schema2}
 
     case Context.get(key) do
@@ -194,7 +204,4 @@ defmodule RockSolid.Intersection do
   defp not_clauses(nil), do: []
   defp not_clauses(%{"anyOf" => clauses}), do: clauses
   defp not_clauses(clause), do: [clause]
-
-  defp sanitize_ref(%{"$ref" => _} = schema), do: Map.take(schema, ["$ref"])
-  defp sanitize_ref(schema), do: schema
 end

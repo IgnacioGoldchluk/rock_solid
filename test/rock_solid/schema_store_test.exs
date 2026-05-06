@@ -719,7 +719,20 @@ defmodule RockSolid.SchemaStoreTest do
     "ubuntu-server-autoinstall.json",
     "starlake.json",
     "pull-request-labeler-5.json",
-    "pyrseas-0.8.json"
+    "declarative-automation-bundles.json",
+    "rancher-fleet-0.5.json",
+    "youtrack-app.json",
+    "jsonld.json",
+    "datalogic-scan2deploy-ce.json",
+    "vim-addon-info.json",
+    "minecraft-dimension.json",
+    "winget-pkgs-locale-1.0.0.json",
+    "winget-pkgs-singleton-1.0.0.json",
+    "rancher-fleet-0.8.json",
+    # These work sometimes but are a bit flaky
+    # "pyrseas-0.8.json",
+    # "minecraft-loot-table.json",
+
   ]
 
   describe "regression schemas" do

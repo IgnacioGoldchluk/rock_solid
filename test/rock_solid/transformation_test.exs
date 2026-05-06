@@ -1169,7 +1169,17 @@ defmodule RockSolid.TransformationTest do
       }
 
       simplified = Transformation.simplify(schema)
-      placeholder_pointer = get_in(simplified, ["properties", "children", "items", "$ref"])
+
+      placeholder_pointer =
+        get_in(simplified, [
+          "properties",
+          "children",
+          "items",
+          "properties",
+          "children",
+          "items",
+          "$ref"
+        ])
 
       placeholder_value = %{
         "properties" => %{

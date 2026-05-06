@@ -455,7 +455,7 @@ defmodule RockSolid.Strategy do
 
     StreamData.scale(gen, fn size ->
       case {size, min_length, max_length} do
-        {0, min, nil} -> min
+        {0, min, _max} -> min
         {size, min, nil} -> ceil(:math.log(size)) + min
         {size, min, max} -> min(ceil(:math.log(size)) + min, max)
       end
