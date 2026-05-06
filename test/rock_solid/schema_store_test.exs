@@ -728,11 +728,10 @@ defmodule RockSolid.SchemaStoreTest do
     "minecraft-dimension.json",
     "winget-pkgs-locale-1.0.0.json",
     "winget-pkgs-singleton-1.0.0.json",
-    "rancher-fleet-0.8.json",
+    "rancher-fleet-0.8.json"
     # These work sometimes but are a bit flaky
     # "pyrseas-0.8.json",
     # "minecraft-loot-table.json",
-
   ]
 
   describe "regression schemas" do
