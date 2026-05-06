@@ -201,24 +201,7 @@
                 }
               },
               {
-                "if": {
-                  "anyOf": [
-                    {
-                      "properties": {
-                        "Type": {
-                          "const": "TypeScript"
-                        }
-                      }
-                    },
-                    {
-                      "properties": {
-                        "Type": {
-                          "const": "Angular"
-                        }
-                      }
-                    }
-                  ]
-                },
+                "if": {"properties": {"Type": {"enum": ["TypeScript", "Angular"]}}},
                 "then": {
                   "additionalProperties": false,
                   "properties": {

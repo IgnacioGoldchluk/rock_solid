@@ -345,12 +345,12 @@ defmodule RockSolid.Transformation do
       # Consider special case where if never matches, no need to add the `not` clause
       # to the else case
       false ->
-        [Intersection.safe_intersection(schema, else_)]
+        [Intersection.safe_post_intersection(schema, else_)]
 
       if_intersection ->
         [
-          Intersection.safe_intersection(if_intersection, then_),
-          schema |> Intersection.Not.add_clause(if_) |> Intersection.safe_intersection(else_)
+          Intersection.safe_post_intersection(if_intersection, then_),
+          schema |> Intersection.Not.add_clause(if_) |> Intersection.safe_post_intersection(else_)
         ]
     end
     |> discard_impossible_intersections()

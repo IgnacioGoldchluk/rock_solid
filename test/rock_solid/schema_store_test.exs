@@ -744,7 +744,9 @@ defmodule RockSolid.SchemaStoreTest do
     "uxp-manifest-5.json",
     "minecraft-loot-table.json",
     "pyrseas-0.8.json",
-    "datalogic-scan2deploy-ce.json"
+    "datalogic-scan2deploy-ce.json",
+    "gaspar-1.0.json",
+    "gaspar-3.0.json"
   ]
 
   describe "regression schemas" do

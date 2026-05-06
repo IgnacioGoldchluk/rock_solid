@@ -61,24 +61,7 @@
             },
             "allOf": [
               {
-                "if": {
-                  "anyOf": [
-                    {
-                      "properties": {
-                        "Type": {
-                          "const": "Kotlin"
-                        }
-                      }
-                    },
-                    {
-                      "properties": {
-                        "Type": {
-                          "const": "Proto"
-                        }
-                      }
-                    }
-                  ]
-                },
+                "if": {"properties": {"Type": {"enum": ["Kotlin", "Proto"]}}},
                 "then": {
                   "additionalProperties": false,
                   "required": ["PackageNamespace"],

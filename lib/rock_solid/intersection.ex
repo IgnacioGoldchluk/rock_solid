@@ -54,6 +54,33 @@ defmodule RockSolid.Intersection do
     end
   end
 
+  @doc """
+  Peforms the safe intersection when the left subschema is applied before the right one
+  """
+  def safe_post_intersection(
+        %{"type" => "object"} = left,
+        %{"additionalProperties" => additional_props} = right
+      ) do
+    # Handle special case because `additionalProperties` from right are applied AFTER
+    # everything from left
+    right_no_additional_props = Map.delete(right, "additionalProperties")
+
+    case safe_intersection(left, right_no_additional_props) do
+      %{"type" => "object"} = intersection ->
+        Map.update(
+          intersection,
+          "additionalProperties",
+          additional_props,
+          &safe_intersection(&1, additional_props)
+        )
+
+      other ->
+        other
+    end
+  end
+
+  def safe_post_intersection(left, right), do: safe_intersection(left, right)
+
   # Same reference
   defp do_intersection(%{"$ref" => r1}, %{"$ref" => r1}), do: {:ok, %{"$ref" => r1}}
   defp do_intersection(%{"$ref" => r1}, s2) when s2 == @any_value, do: {:ok, %{"$ref" => r1}}

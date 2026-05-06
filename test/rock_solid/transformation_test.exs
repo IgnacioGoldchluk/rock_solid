@@ -353,6 +353,40 @@ defmodule RockSolid.TransformationTest do
   end
 
   describe "expand_if_then_else/1" do
+    test "'then' with additionalProperties applies after regular intersection" do
+      schema = %{
+        "type" => "object",
+        "properties" => %{"foo" => %{"type" => "string"}},
+        "required" => ["foo"],
+        "if" => %{"properties" => %{"foo" => %{"const" => "bar"}}},
+        "then" => %{
+          "additionalProperties" => false,
+          "properties" => %{"baz" => %{"type" => "string"}}
+        }
+      }
+
+      expected = [
+        %{
+          "additionalProperties" => false,
+          "properties" => %{
+            "baz" => %{"type" => "string"},
+            "foo" => %{"enum" => ["bar"]}
+          },
+          "required" => ["foo"],
+          "type" => "object"
+        },
+        %{
+          "properties" => %{
+            "foo" => %{"not" => %{"enum" => ["bar"]}, "type" => "string"}
+          },
+          "required" => ["foo"],
+          "type" => "object"
+        }
+      ]
+
+      assert equals?(expected, Transformation.expand_if_then_else(schema))
+    end
+
     test "schema with no if/then/else clauses is returned as is" do
       schema = %{"type" => "object", "properties" => %{"name" => %{"type" => "string"}}}
       assert [schema] == Transformation.expand_if_then_else(schema)
