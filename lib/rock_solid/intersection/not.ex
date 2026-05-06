@@ -144,6 +144,7 @@ defmodule RockSolid.Intersection.Not do
   end
 
   defp do_add_clause(false, _), do: false
+  defp do_add_clause(true, clause), do: %{"not" => clause}
 
   defp do_add_clause(%{"not" => %{"anyOf" => clauses}} = schema, new_clause) do
     put_in(schema, ["not", "anyOf"], Enum.uniq([new_clause | clauses]))
