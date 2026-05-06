@@ -928,6 +928,7 @@
     },
     {
       "required": ["version"],
+      "additionalProperties": false,
       "properties": {
         "version": {
           "x-taplo": {
@@ -946,6 +947,7 @@
     },
     {
       "required": ["version"],
+      "additionalProperties": false,
       "properties": {
         "version": {
           "x-taplo": {

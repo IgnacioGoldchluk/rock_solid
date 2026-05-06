@@ -8,6 +8,30 @@ defmodule RockSolid.MigrationTest do
   alias RockSolid.Resolvers.RemoteResolver
 
   describe "migrate/1" do
+    test "dependencies dependencies is treated as property" do
+      schema = %{
+        "$id" => schema_id(),
+        "type" => "object",
+        "properties" => %{"dependencies" => %{"type" => "array"}},
+        "dependencies" => %{
+          "dependencies" => %{
+            "required" => ["foo"]
+          }
+        }
+      }
+
+      expected = %{
+        "$id" => schema["$id"],
+        "dependentSchemas" => %{
+          "dependencies" => %{"required" => ["foo"], "type" => "object"}
+        },
+        "properties" => %{"dependencies" => %{"type" => "array"}},
+        "type" => "object"
+      }
+
+      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+    end
+
     test "unevaluatedProperties overrides additionalProperties if not set" do
       schema = %{
         "$id" => schema_id(),

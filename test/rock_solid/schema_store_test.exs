@@ -65,11 +65,14 @@ defmodule RockSolid.SchemaStoreTest do
     # properties, meaning it can never match. The `additionalProperties` should be inside
     # the then/else clauses, not at the top
     "typo3.json",
+    "minecraft-biome.json",
     # subschema has "type": "string" with "if": {"properties": ...} which always matches
     "minecraft-dimension.json",
     # Incorrect "$ref" to object + "type": "array" instead of having the "$ref"
     # as part of "items"
-    "ti8m-cdk-environment-definition.json"
+    "ti8m-cdk-environment-definition.json",
+    # Contains oneOf [{type: string}, {type: string}]
+    "jasonette.json"
   ]
 
   # Debug later
@@ -746,7 +749,8 @@ defmodule RockSolid.SchemaStoreTest do
     "pyrseas-0.8.json",
     "datalogic-scan2deploy-ce.json",
     "gaspar-1.0.json",
-    "gaspar-3.0.json"
+    "gaspar-3.0.json",
+    "hatch.json"
   ]
 
   describe "regression schemas" do

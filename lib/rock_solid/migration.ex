@@ -100,6 +100,9 @@ defmodule RockSolid.Migration do
           definition?(path) ->
             {schema, []}
 
+          dependencies?(path) ->
+            {schema, []}
+
           true ->
             Enum.reduce(funcs, {schema, []}, fn func, {schema, path_changes} ->
               {new_schema, new_path_changes} = func.(schema, path)
