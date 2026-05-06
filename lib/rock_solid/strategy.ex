@@ -266,20 +266,36 @@ defmodule RockSolid.Strategy do
     |> StreamData.bind(fn current_map -> pattern_properties(schema, current_map) end)
     |> StreamData.bind(fn current_map -> additional_properties(schema, current_map) end)
     |> StreamData.map(fn current_map ->
-      conform_dependent_required(current_map, schema["dependentRequired"])
+      pop_dependent_required(current_map, Map.get(schema, "dependentRequired", %{}))
     end)
   end
 
-  defp conform_dependent_required(gen_value, nil), do: gen_value
+  defp pop_dependent_required(gen_value, dependent_required) do
+    pop_dependent_required(gen_value, dependent_required, Map.keys(dependent_required))
+  end
 
-  defp conform_dependent_required(gen_value, dependent_required) do
-    Enum.reduce(dependent_required, gen_value, fn {prop, deps}, acc ->
-      if Enum.any?(deps, &(not Map.has_key?(acc, &1))) do
-        Map.delete(acc, prop)
-      else
-        acc
-      end
-    end)
+  defp pop_dependent_required(gen_value, _, []), do: gen_value
+
+  defp pop_dependent_required(gen_value, dependent_required, [dep | rest]) do
+    if Enum.all?(Map.get(dependent_required, dep, []), &Map.has_key?(gen_value, &1)) do
+      pop_dependent_required(gen_value, dependent_required, rest)
+    else
+      # Search all the dependent_required that contain the key we just deleted, or nothing
+      # if we didn't delete anything
+      to_check =
+        if Map.has_key?(gen_value, dep) do
+          Enum.filter(dependent_required, fn {prop, deps} -> dep in deps and prop != dep end)
+          |> Enum.map(fn {prop, _} -> prop end)
+        else
+          []
+        end
+
+      pop_dependent_required(
+        Map.delete(gen_value, dep),
+        dependent_required,
+        Enum.uniq(rest ++ to_check)
+      )
+    end
   end
 
   defp pattern_properties(%{"patternProperties" => pattern_props} = schema, current_gen) do

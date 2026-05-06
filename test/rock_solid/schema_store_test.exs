@@ -66,7 +66,10 @@ defmodule RockSolid.SchemaStoreTest do
     # the then/else clauses, not at the top
     "typo3.json",
     # subschema has "type": "string" with "if": {"properties": ...} which always matches
-    "minecraft-dimension.json"
+    "minecraft-dimension.json",
+    # Incorrect "$ref" to object + "type": "array" instead of having the "$ref"
+    # as part of "items"
+    "ti8m-cdk-environment-definition.json"
   ]
 
   # Debug later
@@ -735,6 +738,7 @@ defmodule RockSolid.SchemaStoreTest do
     "lazygit.json",
     "markdownlint.json",
     "dss-2.0.0.json",
+    "sarif-1.0.0.json",
     # Modified to pass, original was likely auto generated and the
     # schema doesn't make sense or is incomplete
     "uxp-manifest-5.json",

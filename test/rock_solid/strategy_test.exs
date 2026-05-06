@@ -61,6 +61,26 @@ defmodule RockSolid.StrategyTest do
       })
     end
 
+    property "depedentRequired as dependencies" do
+      check_schema(%{
+        "additionalProperties" => false,
+        "dependentRequired" => %{
+          "foo" => ["bar"],
+          "bar" => ["baz"],
+          "qux" => ["baz"]
+        },
+        "properties" => %{
+          "foo" => %{"type" => "integer"},
+          "quux" => %{"type" => "string"},
+          "bar" => %{"type" => "integer"},
+          "baz" => %{"format" => "uri", "type" => "string"},
+          "qux" => %{"type" => "string"}
+        },
+        "required" => ["quux"],
+        "type" => "object"
+      })
+    end
+
     property "defined properties with minProperties" do
       check_schema(%{
         "type" => "object",
