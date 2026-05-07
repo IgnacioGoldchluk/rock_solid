@@ -21,11 +21,12 @@ defmodule RockSolid.SchemaStoreTest do
   # Generate correct schemas but don't validate because of mismatched `$ref` behaviour.
   # The schema has `$ref` + extra stuff but is in an older draft which ignores `$ref`
   @false_positives [
-    "example.json",
     "drupal-libraries.json",
     "yamllint.json",
     "staticwebapp.config.json",
-    "catalog-info.json"
+    "catalog-info.json",
+    "mineraft-recipe.json",
+    "schema-org-thing.json"
   ]
 
   @impossible [
@@ -75,7 +76,9 @@ defmodule RockSolid.SchemaStoreTest do
     # as part of "items"
     "ti8m-cdk-environment-definition.json",
     # Contains oneOf [{type: string}, {type: string}]
-    "jasonette.json"
+    "jasonette.json",
+    # {type: array, anyOf: [{type: object}, {type: object}]}
+    "bamboo-spec.json"
   ]
 
   # Debug later
@@ -767,7 +770,9 @@ defmodule RockSolid.SchemaStoreTest do
     "packer.json",
     "cloud-run-v1.json",
     "glazewm.json",
-    "codeship-steps.json"
+    "codeship-steps.json",
+    "golangci-lint.json",
+    "jfrog-pipelines.json"
   ]
 
   describe "regression schemas" do

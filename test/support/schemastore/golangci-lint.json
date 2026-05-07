@@ -2514,11 +2514,9 @@
               "propertyNames": {
                 "$ref": "#/definitions/govet-analyzers"
               },
-              "patternProperties": {
-                "^.*$": {
+              "additionalProperties": {
                   "description": "Run `go tool vet help <analyzer>` to see all settings.",
                   "type": "object"
-                }
               }
             },
             "enable": {

@@ -65,6 +65,7 @@
       "title": "Resource",
       "description": "https://www.jfrog.com/confluence/display/JFROG/Pipelines+Resources",
       "type": "object",
+      "required" : ["type"],
       "properties": {
         "name": {
           "type": "string"
@@ -1748,6 +1749,7 @@
       "title": "Step",
       "description": "https://www.jfrog.com/confluence/display/JFROG/Pipelines+Steps",
       "type": "object",
+      "required": ["type"],
       "properties": {
         "name": {
           "type": "string"
