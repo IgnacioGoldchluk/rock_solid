@@ -21,13 +21,17 @@ defmodule RockSolid.Traversal do
       false
   """
   @spec property?(list(String.t())) :: boolean()
-  def property?(reversed_path) do
+  def property?([]), do: false
+
+  def property?([_ | tail] = reversed_path) do
     property_keywords = ["properties", "patternProperties"]
 
     reversed_path
     |> Enum.take_while(&Enum.member?(property_keywords, &1))
     |> length()
-    |> then(fn props_len -> rem(props_len, 2) != 0 end)
+    |> then(fn props_len ->
+      rem(props_len, 2) != 0 and not definition?(tail) and not dependencies?(tail)
+    end)
   end
 
   @doc """
@@ -59,11 +63,17 @@ defmodule RockSolid.Traversal do
       true
   """
   @spec definition?(list(String.t())) :: boolean()
-  def definition?([last | rest]), do: last in ["$defs", "definitions"] and not property?(rest)
+  def definition?([last | rest]),
+    do:
+      last in ["$defs", "definitions"] and not property?(rest) and not definition?(rest) and
+        not dependencies?(rest)
+
   def definition?([]), do: false
 
   def dependencies?([last | rest]),
-    do: last in ["dependencies", "dependentSchemas", "dependentRequired"] and not property?(rest)
+    do:
+      last in ["dependencies", "dependentSchemas", "dependentRequired"] and not property?(rest) and
+        not definition?(rest) and not dependencies?(rest)
 
   @doc """
   Returns a map of all references ($id, $anchor, $ref) and their corresponding values

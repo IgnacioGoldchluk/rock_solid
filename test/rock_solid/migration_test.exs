@@ -8,6 +8,30 @@ defmodule RockSolid.MigrationTest do
   alias RockSolid.Resolvers.RemoteResolver
 
   describe "migrate/1" do
+    test "$ref inside properties as dependencies is updated" do
+      schema = %{
+        "$id" => schema_id(),
+        "definitions" => %{"bar" => %{"required" => ["baz"]}},
+        "type" => "object",
+        "dependencies" => %{"properties" => %{"$ref" => "#/definitions/bar"}}
+      }
+
+      expected = %{
+        "$defs" => %{"bar" => %{"required" => ["baz"]}},
+        "$id" => schema["$id"],
+        "dependentSchemas" => %{
+          "properties" => %{
+            "$ref" => "#{schema["$id"]}#/$defs/bar",
+            "type" => "object",
+            "x-rocksolid-refbehaviour" => "merge"
+          }
+        },
+        "type" => "object"
+      }
+
+      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+    end
+
     test "dependencies dependencies is treated as property" do
       schema = %{
         "$id" => schema_id(),

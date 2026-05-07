@@ -6,6 +6,19 @@ defmodule RockSolid.TraversalTest do
 
   doctest RockSolid.Traversal
 
+  describe "property?/1" do
+    test "properties and patternProperties as dependencies are not properties" do
+      refute Traversal.property?(["properties", "dependencies", "#"])
+      refute Traversal.property?(["patternProperties", "dependencies", "#"])
+      assert Traversal.property?(["properties", "dependencies", "properties", "#"])
+      assert Traversal.property?(["patternProperties", "dependencies", "properties", "#"])
+    end
+
+    test "properties is property of definition named dependencies" do
+      assert Traversal.property?(["properties", "dependencies", "definitions", "#"])
+    end
+  end
+
   describe "references/1" do
     test "ignores keywords inside literals and properties" do
       schema = %{
