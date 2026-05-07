@@ -1,8 +1,21 @@
 **This project is still in experimental stage**. See [Known bugs and issues](#knwon-bugs-and-issues) and the [roadmap](./ROADMAP.md)
 
+[![CI](https://github.com/IgnacioGoldchluk/rock_solid/actions/workflows/ci.yml/badge.svg)](https://github.com/IgnacioGoldchluk/rock_solid/actions/workflows/ci.yml)
+[![License](https://img.shields.io/hexpm/l/rock_solid)](https://github.com/IgnacioGoldchluk/rock_solid/blob/main/LICENSE.md)
+[![Version](https://img.shields.io/hexpm/v/rock_solid.svg)](https://hex.pm/packages/rock_solid)
+[![Docs](https://img.shields.io/badge/documentation-gray.svg)](https://hexdocs.pm/rock_solid)
+
 Data generation tool from JSON schemas.
 
 ## Usage
+Add to your list of dependencies
+```elixir
+def deps do
+  [
+    {:rock_solid, "~> 0.0.3", only: :test}
+  ]
+end
+```
 
 Inside a `property` test
 ```elixir
