@@ -36,6 +36,8 @@ defmodule RockSolid.SchemaStoreTest do
     "stylelintrc.json",
     ## Duplicate empty {"type": "object"} in oneOf
     "schema-org-place.json",
+    ## {oneOf: [{enum: []}, {enum: []}]}
+    "jscsrc.json",
     # This is a YAML...
     "semgrep.json",
     # Has $ref to local file, unsupported yet
@@ -66,6 +68,7 @@ defmodule RockSolid.SchemaStoreTest do
     # the then/else clauses, not at the top
     "typo3.json",
     "minecraft-biome.json",
+    "tunnelhub.json",
     # subschema has "type": "string" with "if": {"properties": ...} which always matches
     "minecraft-dimension.json",
     # Incorrect "$ref" to object + "type": "array" instead of having the "$ref"
@@ -91,7 +94,13 @@ defmodule RockSolid.SchemaStoreTest do
     "cargo-make.json",
     "github-workflow.json",
     "lsdlschema.json",
-    "specmatic.json"
+    "specmatic.json",
+    # Too large, don't even bother
+    "kestra-0.18.0.json",
+    "kestra-0.18.1.json",
+    "kestra-0.18.2.json",
+    "kestra-0.18.3.json",
+    "kestra-0.19.0.json"
   ]
 
   # Schemas that at some point passed and should still pass
@@ -742,15 +751,23 @@ defmodule RockSolid.SchemaStoreTest do
     "markdownlint.json",
     "dss-2.0.0.json",
     "sarif-1.0.0.json",
+    "tmlanguage.json",
     # Modified to pass, original was likely auto generated and the
-    # schema doesn't make sense or is incomplete
+    # schema doesn't make sense or is incomplete. The modified schemas
+    # are still equivalent or a stricter version of the originals
     "uxp-manifest-5.json",
     "minecraft-loot-table.json",
     "pyrseas-0.8.json",
     "datalogic-scan2deploy-ce.json",
+    "datalogic-scan2deploy-android.json",
     "gaspar-1.0.json",
     "gaspar-3.0.json",
-    "hatch.json"
+    "hatch.json",
+    "block.json",
+    "packer.json",
+    "cloud-run-v1.json",
+    "glazewm.json",
+    "codeship-steps.json"
   ]
 
   describe "regression schemas" do

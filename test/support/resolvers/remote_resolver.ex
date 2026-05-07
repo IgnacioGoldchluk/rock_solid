@@ -12,7 +12,8 @@ defmodule RockSolid.Resolvers.RemoteResolver do
       "azure-iot-edge-deployment-1.0.json",
     "https://json.schemastore.org/compilerdefaults.json" => "compilerdefaults.json",
     "https://json.schemastore.org/ava.json" => "ava.json",
-    "https://json.schemastore.org/semantic-release.json" => "semantic-release.json"
+    "https://json.schemastore.org/semantic-release.json" => "semantic-release.json",
+    "https://json.schemastore.org/kubernetes-definitions.json" => "kubernetes-definitions.json"
   }
 
   @doc """

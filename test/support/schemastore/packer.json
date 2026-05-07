@@ -232,6 +232,7 @@
     "provisioner-ansible-local": {
       "type": "object",
       "properties": {
+        "inline": false,
         "playbook_file": {
           "type": "string"
         }
@@ -241,6 +242,7 @@
     "provisioner-shell": {
       "type": "object",
       "properties": {
+        "playbook_file": false,
         "inline": {
           "type": "array",
           "items": {

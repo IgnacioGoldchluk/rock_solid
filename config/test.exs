@@ -4,3 +4,5 @@ config :rock_solid, client_options: [plug: {Req.Test, RockSolid.Client}, retry: 
 config :logger, :default_handler, false
 
 config :ex_unit, exclude: [:regression]
+
+config :stream_data, inspect_opts: [limit: :infinity]

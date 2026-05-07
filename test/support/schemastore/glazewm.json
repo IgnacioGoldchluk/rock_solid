@@ -271,6 +271,7 @@
             "$ref": "#/definitions/component.border-color-property"
           }
         },
+        "required": ["type"],
         "allOf": [
           {
             "if": {

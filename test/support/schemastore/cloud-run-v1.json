@@ -1040,6 +1040,21 @@
   },
   "title": "Cloud Run Admin API",
   "type": "object",
+  "required": ["kind"],
+  "properties" : {
+    "kind": {
+      "enum": [
+        "Revision",
+        "Configuration",
+        "DomainMapping",
+        "Task",
+        "Execution",
+        "Job",
+        "Route",
+        "Service"
+        ]
+      }
+  },
   "allOf": [
     {
       "if": { "properties": { "kind": { "const": "Revision" } } },

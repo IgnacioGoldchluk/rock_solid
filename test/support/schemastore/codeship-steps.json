@@ -5,6 +5,7 @@
     "ExternalStep": {
       "title": "CodeShip Pro Step",
       "description": "The definition of a step",
+      "required": ["type"],
       "properties": {
         "name": {
           "description": "The name of the step. Can be omitted.",

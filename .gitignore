@@ -25,5 +25,4 @@ rock_solid-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 
-# Schema store
-# /test/support/schemastore/*.json
+.iex.exs

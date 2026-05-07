@@ -728,6 +728,7 @@
       "type": "boolean"
     }
   },
+  "required": ["interface"],
   "title": "UI Test Automation Model Page Object",
   "type": "object"
 }
