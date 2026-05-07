@@ -107,3 +107,8 @@ Unsupported when not `false`, and not planning to support it.
 
 ### "contains" keyword
 The contains keyword is transformed by adding a `prefixItem` or intersecting with the first `prefixItem` that matches the `contains` condition. Additionally, `maxContains` is not supported. This current implementation is a quick workaround and causes failures. It must be rewritten.
+
+### dependentSchemas and oneOf
+Both keywords can often cause timeouts if the number of elements is too large:
+- For `dependentSchemas` we compute the power set of all the keys and then calculate each intersection. This is fine when there are few `dependentSchemas` but the number grows exponentially, the number of combinations is `2**length`, meaning that for 8 keys there will be 256 schemas. There is no current solution or alternative to this.
+- For `oneOf`, since it behaves as a XOR, we have to intersect each clause with the negation of the rest. Prefer `anyOf` instead which performs a single-pass intersection between all the schemas.

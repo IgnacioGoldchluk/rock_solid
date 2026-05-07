@@ -16,3 +16,5 @@ The current solution is a hack that places the `contains` value on the first ava
 ## error messages
 We are currently raising and letting the code throw a `MatchError` without much context. We should standarize the type of errors (`EmptyIntersection`, `EmptyAnyOf`, etc.) and provide context.
 
+## dependentSchemas
+Find an alternative to calculating the powerset and creating potentially thousands of schemas.
