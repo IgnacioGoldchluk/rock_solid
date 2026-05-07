@@ -57,6 +57,15 @@ defmodule RockSolid.Intersection do
   @doc """
   Peforms the safe intersection when the left subschema is applied before the right one
   """
+  def safe_post_intersection(left, right)
+
+  def safe_post_intersection(
+        %{"additionalProperties" => false} = left,
+        %{"properties" => _} = right
+      ) do
+    raise "Invalid schema. Cannot apply #{inspect(right)} to #{inspect(left)} because it does not allow for additionalProperties"
+  end
+
   def safe_post_intersection(
         %{"type" => "object"} = left,
         %{"additionalProperties" => additional_props} = right

@@ -353,6 +353,21 @@ defmodule RockSolid.TransformationTest do
   end
 
   describe "expand_if_then_else/1" do
+    test "raises when top level has additionalProperties false and then/else has properties" do
+      schema = %{
+        "type" => "object",
+        "properties" => %{"foo" => %{"type" => "string"}},
+        "required" => ["foo"],
+        "additionalProperties" => false,
+        "if" => %{"properties" => %{"foo" => %{"const" => "bar"}}},
+        "then" => %{"properties" => %{"baz" => %{"type" => "string"}}}
+      }
+
+      assert_raise RuntimeError, ~r/Invalid schema.*/, fn ->
+        Transformation.expand_if_then_else(schema)
+      end
+    end
+
     test "'then' with additionalProperties applies after regular intersection" do
       schema = %{
         "type" => "object",
