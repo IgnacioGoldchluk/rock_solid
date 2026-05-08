@@ -11,7 +11,7 @@ defmodule RockSolid.Transformation do
 
   require Logger
 
-  @reasonable_combinations 4
+  @reasonable_combinations 12
 
   @doc """
   Simplifies a JSON schema to a canonical format
@@ -315,10 +315,12 @@ defmodule RockSolid.Transformation do
   @spec one_of_to_any_of(list(Schema.t())) :: {:ok, Schema.t()} | {:error, any()}
   def one_of_to_any_of(schemas) when is_list(schemas) do
     num_clauses = length(schemas)
+
     if num_clauses > @reasonable_combinations do
       Logger.warning("""
-      Too many 'oneOf' clauses #{num_clauses} found. Generation might timeout.
-      Consider replacing by 'anyOf' with mutually exclusive subschemas.
+      Too many 'oneOf' clauses provided (#{num_clauses}). Generation might timeout if
+      the clauses are not mutually exclusive. Consider replacing by an 'anyOf' clause
+      with mutually exclusive subschemas.
       """)
     end
 
@@ -402,6 +404,7 @@ defmodule RockSolid.Transformation do
     dependent_schemas = schema |> Map.fetch!("dependentSchemas") |> Map.keys()
 
     num_props = length(dependent_schemas)
+
     if num_props > @reasonable_combinations do
       Logger.warning("""
       Too many 'dependentSchemas'/'dependencies' clauses #{num_props} found.
