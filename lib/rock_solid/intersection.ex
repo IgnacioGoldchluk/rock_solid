@@ -3,6 +3,7 @@ defmodule RockSolid.Intersection do
   Computes intersections
   """
   alias RockSolid.Context
+  alias RockSolid.Exceptions.InvalidSchema
   alias RockSolid.Intersection
   alias RockSolid.Schemas.Schema
   alias RockSolid.Transformation
@@ -63,7 +64,7 @@ defmodule RockSolid.Intersection do
         %{"additionalProperties" => false} = left,
         %{"properties" => _} = right
       ) do
-    raise "Invalid schema. Cannot apply #{inspect(right)} to #{inspect(left)} because it does not allow for additionalProperties"
+    raise InvalidSchema, reason: :additional_properties, schema: {left, right}
   end
 
   def safe_post_intersection(

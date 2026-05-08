@@ -6,6 +6,27 @@ defmodule RockSolid.Context do
   alias RockSolid.Transformation
   import RockSolid.Traversal
 
+  defmodule InvalidId do
+    defexception [:id]
+
+    def message(%{id: id} = _exception) do
+      "Schema with id '#{id}' not found in context"
+    end
+  end
+
+  defmodule InvalidRecursionError do
+    defexception []
+
+    def message(_) do
+      """
+      Recursion error when traversing schema. This happens because the schema, or
+      a schema referenced by the schema, contain a recursive "$ref" that depends
+      on itself from multiple paths. While recursive schemas are supported,
+      certain cases cannot be resolved currently.
+      """
+    end
+  end
+
   # Possible keys
   # - "http(s)://..." -> key for migrated (non simplified) schemas
   # - {:simplified, "https://..."} -> key for simplified schemas and subschemas
@@ -29,7 +50,7 @@ defmodule RockSolid.Context do
     schema = get_value(id)
 
     if is_nil(schema) do
-      raise "#{id} not found"
+      raise InvalidId, id: id
     end
 
     schema
@@ -51,7 +72,7 @@ defmodule RockSolid.Context do
     value = get_value({:placeholder, placeholder_name})
 
     if is_nil(value) do
-      raise "Placeholder #{placeholder_name} not found"
+      raise InvalidRecursionError
     end
 
     value

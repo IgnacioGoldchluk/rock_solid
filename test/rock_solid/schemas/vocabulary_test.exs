@@ -19,6 +19,14 @@ defmodule RockSolid.Schemas.VocabularyTest do
     test "normalizes vocabulary" do
       assert Vocabulary.vocabulary("http://json-schema.org/draft-07/schema") == :draft07
     end
+
+    test "raises for invalid vocabulary" do
+      invalid_vocabulary = "https://json-schema.org/custom-vocabulary/schema#"
+
+      assert_raise Vocabulary.InvalidVocabulary, ~r/Invalid vocabulary .*/, fn ->
+        Vocabulary.vocabulary(invalid_vocabulary)
+      end
+    end
   end
 
   test "returns URI for vocabulary atom" do

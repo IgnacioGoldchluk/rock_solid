@@ -2,11 +2,16 @@ defmodule RockSolid.Transformation do
   @moduledoc false
   alias RockSolid.Combinatorics
   alias RockSolid.Context
+  alias RockSolid.Exceptions.InvalidSchema
   alias RockSolid.Intersection
   alias RockSolid.Schemas
   alias RockSolid.Schemas.Schema
 
   import RockSolid.Traversal, only: [property?: 1, is_atomic: 1]
+
+  require Logger
+
+  @reasonable_combinations 4
 
   @doc """
   Simplifies a JSON schema to a canonical format
@@ -83,7 +88,7 @@ defmodule RockSolid.Transformation do
     # %{"anyOf" => [%{"enum" => [1, 2]}, %{"enum" => [2,1]}]}
     |> Enum.uniq()
     |> case do
-      [] -> raise "Empty simplification for #{inspect(schema)}"
+      [] -> raise InvalidSchema, reason: :empty_simplification, schema: schema
       [one_schema] -> one_schema
       schemas when is_list(schemas) -> %{"anyOf" => schemas}
     end
@@ -309,6 +314,14 @@ defmodule RockSolid.Transformation do
   """
   @spec one_of_to_any_of(list(Schema.t())) :: {:ok, Schema.t()} | {:error, any()}
   def one_of_to_any_of(schemas) when is_list(schemas) do
+    num_clauses = length(schemas)
+    if num_clauses > @reasonable_combinations do
+      Logger.warning("""
+      Too many 'oneOf' clauses #{num_clauses} found. Generation might timeout.
+      Consider replacing by 'anyOf' with mutually exclusive subschemas.
+      """)
+    end
+
     schemas
     |> Enum.with_index()
     |> Enum.map(fn {schema, i} -> to_mutually_exclusive(schema, List.delete_at(schemas, i)) end)
@@ -386,9 +399,17 @@ defmodule RockSolid.Transformation do
   """
   @spec expand_dependent_schemas(Schema.t()) :: [Schema.t()]
   def expand_dependent_schemas(%{"dependentSchemas" => _} = schema) do
-    schema
-    |> Map.get("dependentSchemas")
-    |> Map.keys()
+    dependent_schemas = schema |> Map.fetch!("dependentSchemas") |> Map.keys()
+
+    num_props = length(dependent_schemas)
+    if num_props > @reasonable_combinations do
+      Logger.warning("""
+      Too many 'dependentSchemas'/'dependencies' clauses #{num_props} found.
+      Generation might timeout
+      """)
+    end
+
+    dependent_schemas
     |> Combinatorics.power_set()
     |> Enum.map(fn req_props -> intersect_dependent_schemas(schema, req_props) end)
     |> discard_impossible_intersections()

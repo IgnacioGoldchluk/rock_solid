@@ -2,6 +2,7 @@ defmodule RockSolid.TransformationTest do
   use RockSolid.TestCase, async: true
 
   alias RockSolid.Context
+  alias RockSolid.Exceptions
   alias RockSolid.Transformation
 
   describe "to_any_of/1" do
@@ -363,7 +364,7 @@ defmodule RockSolid.TransformationTest do
         "then" => %{"properties" => %{"baz" => %{"type" => "string"}}}
       }
 
-      assert_raise RuntimeError, ~r/Invalid schema.*/, fn ->
+      assert_raise Exceptions.InvalidSchema, ~r/Cannot apply .*/, fn ->
         Transformation.expand_if_then_else(schema)
       end
     end
@@ -985,16 +986,25 @@ defmodule RockSolid.TransformationTest do
     # before it's inserted. Debug later how it happened
     @tag :skip
     test "recursive schema in multiple places" do
+      id = schema_id()
+
       schema = %{
+        "$id" => id,
         "additionalProperties" => %{
-          "anyOf" => [%{"type" => "string"}, %{"$ref" => "#/$defs/foo"}],
+          "anyOf" => [
+            %{"type" => "string"},
+            %{"$ref" => "#{id}#/$defs/foo", "x-rocksolid-refbehaviour" => "merge"}
+          ],
           "minProperties" => 1
         },
         "$defs" => %{
           "foo" => %{
             "type" => "object",
             "additionalProperties" => %{
-              "anyOf" => [%{"type" => "string"}, %{"$ref" => "#/$defs/foo"}]
+              "anyOf" => [
+                %{"type" => "string"},
+                %{"$ref" => "#{id}#/$defs/foo", "x-rocksolid-refbehaviour" => "merge"}
+              ]
             }
           }
         },
@@ -1272,7 +1282,9 @@ defmodule RockSolid.TransformationTest do
     test "raises for empty intersection" do
       schema = %{"allOf" => [%{"type" => "number"}, %{"type" => "string"}], "$id" => schema_id()}
 
-      assert_raise RuntimeError, fn -> Transformation.simplify(schema) end
+      assert_raise Exceptions.InvalidSchema, ~r/No values can be generated .*/, fn ->
+        Transformation.simplify(schema)
+      end
     end
 
     test "$ref not matching does not raise if behaviour is ignore (old draft)" do

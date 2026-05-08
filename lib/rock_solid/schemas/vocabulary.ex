@@ -9,6 +9,19 @@ defmodule RockSolid.Schemas.Vocabulary do
     :draft04 => "http://json-schema.org/draft-04/schema#"
   }
 
+  def supported_vocabularies, do: Map.values(@vocabularies)
+
+  defmodule InvalidVocabulary do
+    defexception [:vocabulary]
+
+    alias RockSolid.Schemas.Vocabulary
+
+    def message(%{vocabulary: vocabulary} = _exception) do
+      known_vocabularies = Enum.join(Vocabulary.supported_vocabularies(), ", ")
+      "Invalid vocabulary '#{vocabulary}'. Supported vocabularies are #{known_vocabularies}"
+    end
+  end
+
   @type t :: :draft04 | :draft05 | :draft06 | :draft07 | :draft2019_09 | :draft2020_12
   @doc """
   Returns the corresponding vocabulary for the URI
@@ -23,7 +36,7 @@ defmodule RockSolid.Schemas.Vocabulary do
            {vocabulary, ^vocabulary_uri} -> vocabulary
            _ -> nil
          end) do
-      nil -> raise "Unknown vocabulary: #{vocabulary_uri}"
+      nil -> raise InvalidVocabulary, vocabulary: vocabulary_uri
       vocabulary when is_atom(vocabulary) -> vocabulary
     end
   end

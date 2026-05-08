@@ -5,6 +5,14 @@ defmodule RockSolid.Traversal do
 
   alias RockSolid.Types
 
+  defmodule InvalidPath do
+    defexception [:key, :schema]
+
+    def message(%{key: key, schema: schema}) do
+      "Invalid key '#{key}' when traversing '#{inspect(schema, limit: :infinity)}"
+    end
+  end
+
   defguard is_atomic(v) when is_boolean(v) or is_nil(v) or is_number(v) or is_binary(v)
 
   @doc """
@@ -151,7 +159,8 @@ defmodule RockSolid.Traversal do
     if Map.has_key?(schema, key) do
       get_in_schema(schema[key], rest)
     else
-      raise "#{k} not found in #{inspect(schema)}"
+      # This one should never happen anyway
+      raise InvalidPath, key: key, schema: schema
     end
   end
 
