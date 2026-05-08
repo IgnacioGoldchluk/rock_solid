@@ -6,6 +6,7 @@ defmodule RockSolid.Migration do
   import RockSolid.Traversal
 
   alias RockSolid.Context
+  alias RockSolid.Exceptions.InvalidKeyword
   alias RockSolid.Resolution
   alias RockSolid.Schemas.Vocabulary
   alias RockSolid.Types
@@ -33,32 +34,31 @@ defmodule RockSolid.Migration do
   Additionally, the function checks that no unsupported keywords or patterns are present.
   """
   def migrate(schema, resolver) when is_map(schema) do
-    with {:ok, all_schemas} <- Resolution.fetch_all(schema, resolver),
-         :ok <- check_unsupported_keywords(Map.values(all_schemas)) do
-      {schemas, path_changes} =
-        all_schemas
-        |> Enum.map(&put_id/1)
-        |> Enum.map(&put_ref_behaviour/1)
-        |> Enum.reduce({[], []}, fn schema, {schemas, path_changes} ->
-          {new_schema, new_path_changes} = migrate(schema, root_path(), migrations(schema))
-          {[new_schema | schemas], [{Resolution.id(new_schema), new_path_changes} | path_changes]}
-        end)
+    all_schemas = Resolution.fetch_all!(schema, resolver)
+    check_unsupported_keywords(Map.values(all_schemas))
 
-      schemas =
-        schemas
-        |> Enum.map(&update_refs(&1, path_changes))
-        |> anchors_to_pointers()
-        |> relative_refs_to_absolute()
+    {schemas, path_changes} =
+      all_schemas
+      |> Enum.map(&put_id/1)
+      |> Enum.map(&put_ref_behaviour/1)
+      |> Enum.reduce({[], []}, fn schema, {schemas, path_changes} ->
+        {new_schema, new_path_changes} = migrate(schema, root_path(), migrations(schema))
+        {[new_schema | schemas], [{Resolution.id(new_schema), new_path_changes} | path_changes]}
+      end)
 
-      :ok = Enum.each(schemas, &Context.put_schema/1)
+    schemas =
+      schemas
+      |> Enum.map(&update_refs(&1, path_changes))
+      |> anchors_to_pointers()
+      |> relative_refs_to_absolute()
 
-      # Return the schema that contains the `$id` of the original, or with the default value
-      root = Enum.find(schemas, &(Resolution.id(&1) == Resolution.id(schema)))
+    :ok = Enum.each(schemas, &Context.put_schema/1)
 
-      if is_nil(root), do: raise("root not found")
+    # Return the schema that contains the `$id` of the original, or with the default value
+    root = Enum.find(schemas, &(Resolution.id(&1) == Resolution.id(schema)))
 
-      {:ok, root}
-    end
+    if is_nil(root), do: raise("root not found")
+    root
   end
 
   defp migrate(s, ["$schema" | _] = path, _funcs) when is_binary(s) do
@@ -379,19 +379,11 @@ defmodule RockSolid.Migration do
   end
 
   defp check_unsupported_keywords(schemas) when is_list(schemas) do
-    Enum.reduce_while(schemas, :ok, fn schema, :ok ->
-      case check_unsupported_keywords(schema) do
-        :ok -> {:cont, :ok}
-        {:error, _} = e -> {:halt, e}
-      end
-    end)
+    Enum.each(schemas, &check_unsupported_keywords/1)
   end
 
   defp check_unsupported_keywords(schema) when is_map(schema) do
     do_check_unsupported_keywords(schema, ["#"])
-    :ok
-  catch
-    {:error, _msg} = e -> e
   end
 
   defp do_check_unsupported_keywords(schema, _) when is_atomic(schema), do: :ok
@@ -415,13 +407,13 @@ defmodule RockSolid.Migration do
       Enum.each(unsuported_keywords(), fn
         kw when is_binary(kw) ->
           if kw in keys do
-            throw({:error, "unsupported keyword '#{kw}' in '#{pointer}'"})
+            raise InvalidKeyword, keyword: kw, path: pointer
           end
 
         {kw, check} when is_binary(kw) and is_function(check) ->
           if kw in keys and not check.(Map.fetch!(schema, kw)) do
             val = Map.fetch!(schema, kw)
-            throw({:error, "unsupported keyword '#{kw}': '#{inspect(val)}' in '#{pointer}'"})
+            raise InvalidKeyword, keyword: kw, value: val, path: pointer
           end
       end)
 

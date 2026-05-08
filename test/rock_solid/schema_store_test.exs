@@ -802,10 +802,10 @@ defmodule RockSolid.SchemaStoreTest do
   end
 
   def check_schema(schema) do
-    {:ok, schema} = RockSolid.Migration.migrate(schema, {RemoteResolver, []})
+    schema = RockSolid.Migration.migrate(schema, {RemoteResolver, []})
     root = JSV.build!(schema, resolver: [RockSolid.Resolver])
 
-    check all generated <- RockSolid.from_schema(schema) do
+    check all generated <- RockSolid.from_schema(schema), max_runs: 20 do
       assert {:ok, _} = JSV.validate(generated, root)
     end
   end

@@ -3,6 +3,14 @@ defmodule RockSolid.Resolution do
   import RockSolid.Traversal
   alias RockSolid.Resolution.Cache
 
+  defmodule ResolutionError do
+    defexception [:error, :id]
+
+    def message(%{error: error, id: id}) do
+      "Failed fetching schema '#{id}' with #{inspect(error)}"
+    end
+  end
+
   defp missing_root_id, do: "root://no-uri"
 
   @doc """
@@ -20,6 +28,20 @@ defmodule RockSolid.Resolution do
   def id(%{"$id" => id}), do: id |> base_id()
   # Delete after ensuring every schema has `$id`
   def id(s) when is_map(s), do: missing_root_id()
+
+  @doc """
+  Fetches all schemas referenced directly or indirectly by the base schema.
+  Raises if fetching any schema fails
+  """
+  def fetch_all!(base_schema, resolver) when is_map(base_schema) do
+    case fetch_all(base_schema, resolver) do
+      {:ok, schemas} ->
+        schemas
+
+      {:error, %{error: error, id: failed_schema}} ->
+        raise ResolutionError, id: failed_schema, error: error
+    end
+  end
 
   @doc """
   Fetches all schemas referenced directly or indirectly by the base schema
@@ -40,7 +62,7 @@ defmodule RockSolid.Resolution do
       fetch_schemas(rest ++ refs, Map.put(schemas, base_id, updated_schema), resolver)
     else
       {:fetched?, true} -> fetch_schemas(rest, schemas, resolver)
-      {:error, _} = error -> error
+      {:error, _} = error -> {:error, %{error: error, id: base_id}}
     end
   end
 

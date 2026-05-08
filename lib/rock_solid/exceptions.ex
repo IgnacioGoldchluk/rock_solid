@@ -13,4 +13,16 @@ defmodule RockSolid.Exceptions do
 
     defp inf_inspect(value), do: inspect(value, limit: :infinity)
   end
+
+  defmodule InvalidKeyword do
+    defexception [:keyword, :path, :value]
+
+    def message(%{keyword: keyword, path: path, value: nil}) do
+      "Unsupported keyword '#{keyword}' in #{path}"
+    end
+
+    def message(%{keyword: keyword, path: path, value: value}) do
+      "Unsupported keyword-value pair {'#{keyword}', #{inspect(value)}} in #{path}"
+    end
+  end
 end

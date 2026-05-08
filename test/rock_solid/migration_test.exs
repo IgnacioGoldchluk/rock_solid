@@ -29,7 +29,7 @@ defmodule RockSolid.MigrationTest do
         "type" => "object"
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "dependencies dependencies is treated as property" do
@@ -53,7 +53,7 @@ defmodule RockSolid.MigrationTest do
         "type" => "object"
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "unevaluatedProperties overrides additionalProperties if not set" do
@@ -81,7 +81,7 @@ defmodule RockSolid.MigrationTest do
         "unevaluatedProperties" => false
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "$ref at top level inserts behaviour" do
@@ -102,7 +102,7 @@ defmodule RockSolid.MigrationTest do
         "x-rocksolid-refbehaviour" => "ignore"
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "ignores redundant ids" do
@@ -122,7 +122,7 @@ defmodule RockSolid.MigrationTest do
         "properties" => %{"name" => %{"type" => "string"}}
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "top level ref '#' is unmodified" do
@@ -139,7 +139,7 @@ defmodule RockSolid.MigrationTest do
       }
 
       expected = put_in(schema, ["properties", "other", "x-rocksolid-refbehaviour"], "merge")
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "unevaluatedProperties and unevaluatedItems are allowed to be false" do
@@ -157,7 +157,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, schema} == Migration.migrate(schema, DummyResolver)
+      assert schema == Migration.migrate(schema, DummyResolver)
     end
 
     test "unevaluatedProperties and unevaluatedItems return error if not false" do
@@ -173,8 +173,9 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:error, "unsupported keyword 'unevaluatedProperties'" <> _} =
-               Migration.migrate(schema, DummyResolver)
+      assert_raise RockSolid.Exceptions.InvalidKeyword,
+                   ~r/Unsupported keyword-value pair .*/,
+                   fn -> Migration.migrate(schema, DummyResolver) end
     end
 
     test "returns error for unsupported keywords" do
@@ -185,8 +186,9 @@ defmodule RockSolid.MigrationTest do
         "maxContains" => 20
       }
 
-      assert {:error, "unsupported keyword 'maxContains' in '#'"} ==
-               Migration.migrate(schema, DummyResolver)
+      assert_raise RockSolid.Exceptions.InvalidKeyword,
+                   "Unsupported keyword 'maxContains' in #",
+                   fn -> Migration.migrate(schema, DummyResolver) end
     end
 
     test "replaces '$anchor' id with path in ref" do
@@ -237,13 +239,13 @@ defmodule RockSolid.MigrationTest do
         "$id" => schema["$id"]
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "ignores empty $defs" do
       schema = %{"$defs" => %{}, "type" => "object", "$id" => schema_id()}
 
-      assert {:ok, %{"type" => "object", "$id" => schema["$id"]}} ==
+      assert %{"type" => "object", "$id" => schema["$id"]} ==
                Migration.migrate(schema, DummyResolver)
     end
 
@@ -262,7 +264,7 @@ defmodule RockSolid.MigrationTest do
         "$defs" => %{"person" => %{"type" => "string"}}
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "replaces 'definitions' with '$defs'" do
@@ -293,7 +295,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "replaces boolean exclusiveMinimum and exclusiveMaximum" do
@@ -316,7 +318,7 @@ defmodule RockSolid.MigrationTest do
         "properties" => %{"age" => %{"exclusiveMinimum" => 0, "exclusiveMaximum" => 130}}
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "converts dependencies to dependentRequired and dependentSchemas" do
@@ -348,7 +350,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "replaces empty dicts by true except for properties and patternProperties" do
@@ -378,7 +380,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "items as array with additionalItems are converted to prefixItems" do
@@ -420,7 +422,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "does not modify example '$ref'" do
@@ -451,7 +453,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "does not modify examples or defaults" do
@@ -468,7 +470,7 @@ defmodule RockSolid.MigrationTest do
       }
 
       expected = %{"$id" => schema["id"], "properties" => schema["properties"]}
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
   end
 
@@ -512,7 +514,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, {RemoteResolver, []})
+      assert expected == Migration.migrate(schema, {RemoteResolver, []})
     end
 
     test "'$ref' as dependencies is treated as literal" do
@@ -521,14 +523,14 @@ defmodule RockSolid.MigrationTest do
         "dependencies" => %{"$ref" => %{"required" => []}}
       }
 
-      {:ok, value} = Migration.migrate(schema, {DummyResolver, []})
+      value = Migration.migrate(schema, {DummyResolver, []})
 
       assert value["dependentSchemas"]["$ref"] == %{"required" => [], "type" => "object"}
     end
 
     test "empty enum map is kept as is" do
       schema = %{"enum" => [%{}, [], true, false]}
-      {:ok, value} = Migration.migrate(schema, {DummyResolver, []})
+      value = Migration.migrate(schema, {DummyResolver, []})
 
       assert value["enum"] == [%{}, [], true, false]
     end
@@ -555,7 +557,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, {DummyResolver, []})
+      assert expected == Migration.migrate(schema, {DummyResolver, []})
     end
 
     test "ref points to property named 'default'" do
@@ -578,7 +580,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, {DummyResolver, []})
+      assert expected == Migration.migrate(schema, {DummyResolver, []})
     end
 
     test "ref points to relative remote schema" do
@@ -621,7 +623,7 @@ defmodule RockSolid.MigrationTest do
         "$id" => "https://example.com/schema.json"
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, {RemoteResolver, []})
+      assert expected == Migration.migrate(schema, {RemoteResolver, []})
     end
 
     test "ref points to entire schema" do
@@ -637,7 +639,7 @@ defmodule RockSolid.MigrationTest do
 
       Req.Test.expect(RockSolid.Client, &Req.Test.json(&1, remote))
 
-      assert {:ok, expected_schema} == Migration.migrate(schema, {RemoteResolver, []})
+      assert expected_schema == Migration.migrate(schema, {RemoteResolver, []})
       assert remote == RockSolid.Context.fetch_schema!(remote_uri)
     end
 
@@ -663,7 +665,7 @@ defmodule RockSolid.MigrationTest do
       }
 
       Req.Test.expect(RockSolid.Client, &Req.Test.json(&1, remote))
-      assert {:ok, expected_schema} == Migration.migrate(schema, {RemoteResolver, []})
+      assert  expected_schema == Migration.migrate(schema, {RemoteResolver, []})
 
       expected_remote = %{
         "$id" => remote_uri,
@@ -716,7 +718,7 @@ defmodule RockSolid.MigrationTest do
         "$id" => schema["$id"]
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
 
     test "ref behaviour is adapted to the most immediate top $schema" do
@@ -752,7 +754,7 @@ defmodule RockSolid.MigrationTest do
         }
       }
 
-      assert {:ok, expected} == Migration.migrate(schema, DummyResolver)
+      assert expected == Migration.migrate(schema, DummyResolver)
     end
   end
 end

@@ -14,9 +14,10 @@ defmodule RockSolid.Strategy do
   """
   @spec from_schema(map(), Keyword.t()) :: StreamData.t()
   def from_schema(schema, opts) do
-    {:ok, migrated} = Migration.migrate(schema, Keyword.fetch!(opts, :resolver))
-
-    migrated |> Transformation.simplify() |> from_json_schema()
+    schema
+    |> Migration.migrate(Keyword.fetch!(opts, :resolver))
+    |> Transformation.simplify()
+    |> from_json_schema()
   end
 
   defp from_json_schema(true), do: json()
