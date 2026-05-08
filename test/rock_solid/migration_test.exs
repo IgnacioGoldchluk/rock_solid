@@ -665,7 +665,7 @@ defmodule RockSolid.MigrationTest do
       }
 
       Req.Test.expect(RockSolid.Client, &Req.Test.json(&1, remote))
-      assert  expected_schema == Migration.migrate(schema, {RemoteResolver, []})
+      assert expected_schema == Migration.migrate(schema, {RemoteResolver, []})
 
       expected_remote = %{
         "$id" => remote_uri,
