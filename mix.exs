@@ -52,7 +52,7 @@ defmodule RockSolid.MixProject do
       {:req, "~> 0.5.0", only: [:dev, :test]},
       # Data generation
       {:stream_data, "~> 1.0"},
-      {:more_stream_data, "~> 0.7"},
+      {:more_stream_data, "~> 0.8"},
       {:plug, "~> 1.0", only: :test},
       {:excoveralls, "~> 0.18", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
