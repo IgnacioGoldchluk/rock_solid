@@ -772,7 +772,8 @@ defmodule RockSolid.SchemaStoreTest do
     "glazewm.json",
     "codeship-steps.json",
     "golangci-lint.json",
-    "jfrog-pipelines.json"
+    "jfrog-pipelines.json",
+    "map-file.v1.json"
   ]
 
   describe "regression schemas" do
