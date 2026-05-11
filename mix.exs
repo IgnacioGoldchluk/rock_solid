@@ -2,7 +2,7 @@ defmodule RockSolid.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/IgnacioGoldchluk/rock_solid"
-  @version "0.0.3"
+  @version "0.0.4"
 
   def project do
     [
@@ -46,7 +46,7 @@ defmodule RockSolid.MixProject do
   defp deps do
     [
       {:zoi, "~> 0.17"},
-      {:jsv, "~> 0.18.3"},
+      {:jsv, "~> 0.19"},
       {:pythonx, "~> 0.4.0"},
       {:nimble_options, "~> 1.1"},
       {:req, "~> 0.5.0", only: [:dev, :test]},

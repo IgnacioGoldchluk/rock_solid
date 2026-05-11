@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.0.4 [2026-05-11]
+Implements all possible unrecoverable exceptions and adds improved error messages.
+
 ## 0.0.3 [2026-05-07]
 This version contains several bug fixes and optimisations, mainly for handling of `object` types.
 

@@ -755,6 +755,7 @@ defmodule RockSolid.SchemaStoreTest do
     "dss-2.0.0.json",
     "sarif-1.0.0.json",
     "tmlanguage.json",
+    "tizen_workspace.json",
     # Modified to pass, original was likely auto generated and the
     # schema doesn't make sense or is incomplete. The modified schemas
     # are still equivalent or a stricter version of the originals
