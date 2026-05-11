@@ -7,6 +7,25 @@ defmodule RockSolid.StrategyTest do
       check_schema(%{"type" => "number", "multipleOf" => 0.1})
     end
 
+    property "generates from OpenAPI format" do
+      check_schema(%{
+        "$ref" => "#/components/schemas/Person",
+        "components" => %{
+          "schemas" => %{
+            "Person" => %{
+              "type" => "object",
+              "properties" => %{
+                "name" => %{"type" => "string"},
+                "age" => %{"type" => "integer", "minimum" => 0}
+              },
+              "additionalProperties" => false,
+              "required" => ["name", "age"]
+            }
+          }
+        }
+      })
+    end
+
     property "does not generate additionalProperties that match patternProperties" do
       check_schema(%{
         "patternProperties" => %{

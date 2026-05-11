@@ -4,5 +4,5 @@ defmodule RockSolid.Resolution.Resolvers.DummyResolver do
   """
   @behaviour RockSolid.Resolution.Resolver
 
-  def resolve(id, _opts), do: {:error, "unexpectded call to DummyResolver with #{id}"}
+  def resolve(id, _opts), do: {:error, "unexpected call to DummyResolver with #{id}"}
 end

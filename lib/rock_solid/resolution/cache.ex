@@ -5,14 +5,20 @@ defmodule RockSolid.Resolution.Cache do
 
   require Logger
 
+  defp cache_enabled?, do: Application.get_env(:rock_solid, :cache_enabled, true)
+
   @doc """
   Returns a schema from cache directory, or nil if it is not present
   """
   def get_schema(base_id) do
-    path = expected_cache_filename(base_id)
+    if cache_enabled?() do
+      path = expected_cache_filename(base_id)
 
-    if File.exists?(path) do
-      path |> File.read!() |> JSON.decode!()
+      if File.exists?(path) do
+        path |> File.read!() |> JSON.decode!()
+      end
+    else
+      nil
     end
   end
 
@@ -29,6 +35,10 @@ defmodule RockSolid.Resolution.Cache do
   end
 
   def store_in_local_dir(base_id, schema) do
+    if cache_enabled?(), do: do_store(base_id, schema), else: :ok
+  end
+
+  defp do_store(base_id, schema) do
     if not File.exists?(cache_dir()) do
       # Fails in CI, doesn't matter
       File.mkdir(cache_dir())
