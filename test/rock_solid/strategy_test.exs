@@ -508,6 +508,10 @@ defmodule RockSolid.StrategyTest do
         }
       })
     end
+
+    property "pattern with maxLength" do
+      check_schema(%{"type" => "string", "pattern" => "^[A-Z]$", "maxLength" => 2})
+    end
   end
 
   defp check_schema(schema) do

@@ -74,10 +74,8 @@ defmodule RockSolid.Strategy do
   # pattern always takes priority above format, because format is not stanarized
   # in the newer drafts.
   defp gen(%{"type" => "string", "pattern" => pattern} = schema) do
-    pattern
-    |> MoreStreamData.from_regex(character_set: :printable)
-    |> filter_min_length(schema["minLength"])
-    |> filter_max_length(schema["maxLength"])
+    opts = to_keyword(schema, max_length: "maxLength") |> Keyword.put(:character_set, :printable)
+    pattern |> MoreStreamData.from_regex(opts) |> filter_min_length(schema["minLength"])
   end
 
   defp gen(%{"type" => "string", "format" => "email"} = schema) do

@@ -3,8 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+
+## 0.0.5 [2026-05-12]
 - Fix `contains` not being generated
 - Generate only a sublist of `prefixItems` when `minItems` is not specified, or is smaller than `prefixItems` length
+- Improve `pattern` with `maxLength` generations
 
 ## 0.0.4 [2026-05-11]
 Implements all possible unrecoverable exceptions and adds improved error messages.
