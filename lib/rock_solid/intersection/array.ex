@@ -100,7 +100,17 @@ defmodule RockSolid.Intersection.Array do
     Enum.reduce_while(contains_clauses, {:ok, schema}, fn contains, {:ok, schema} ->
       case matching_prefix_item(Map.get(schema, "prefixItems", []), contains) do
         {value, idx} ->
-          {:cont, {:ok, Map.update!(schema, "prefixItems", &List.replace_at(&1, idx, value))}}
+          {:cont,
+           {:ok,
+            schema
+            |> Map.update!("prefixItems", &List.replace_at(&1, idx, value))
+            # Since we're adding contains as part of prefixItems, we have to make sure
+            # to generate items until the position to where the `contains` clause was
+            # intersected
+            |> Map.update("minItems", idx, fn
+              nil -> idx + 1
+              min_items -> max(idx + 1, min_items)
+            end)}}
 
         nil ->
           case Intersection.intersection(Map.get(schema, "items", true), contains) do
@@ -112,6 +122,7 @@ defmodule RockSolid.Intersection.Array do
                   %{"anyOf" => contains} -> %{"anyOf" => [value | contains]}
                   contains -> %{"anyOf" => [value, contains]}
                 end)
+                |> ensure_contains_is_generated()
 
               {:cont, {:ok, updated}}
 
@@ -132,6 +143,13 @@ defmodule RockSolid.Intersection.Array do
         {:ok, value} -> {value, idx}
         {:error, _} -> nil
       end
+    end)
+  end
+
+  defp ensure_contains_is_generated(%{"prefixItems" => prefix_items} = schema) do
+    Map.update(schema, "minItems", length(prefix_items), fn
+      nil -> length(prefix_items)
+      min_items -> max(min_items, length(prefix_items))
     end)
   end
 end

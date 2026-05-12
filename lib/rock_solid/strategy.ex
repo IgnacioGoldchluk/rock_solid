@@ -186,19 +186,41 @@ defmodule RockSolid.Strategy do
   # Temporal until we can generate real regexes
   defp from_format("regex"), do: StreamData.constant("^[A-Z]_[a-z]+$")
 
-  defp array_gen(%{"prefixItems" => prefix_items} = schema) do
-    lpf = length(prefix_items)
+  defp gen_array_length(schema) do
+    schema
+    |> Map.put_new("minItems", 0)
+    |> to_keyword(min: "minItems", max: "maxItems")
+    |> Keyword.reject(fn {_k, v} -> is_nil(v) end)
+    |> MoreStreamData.more_integer()
+  end
 
-    StreamData.tuple({
-      StreamData.fixed_list(Enum.map(prefix_items, &from_json_schema/1)),
-      from_json_schema(
-        schema
-        |> Map.delete("prefixItems")
-        |> Map.update("minItems", nil, &max(0, &1 - lpf))
-        |> Map.update("maxItems", nil, &max(0, &1 - lpf))
-      )
-    })
-    |> StreamData.map(fn {prefix_items, items} -> prefix_items ++ items end)
+  defp array_gen(%{"prefixItems" => prefix_items} = schema) do
+    # Decide the length in advance. This forces schemas using prefixItems
+    # to be more explicit if they actually expect all prefixItems to be present
+    schema
+    |> gen_array_length()
+    |> StreamData.bind(fn array_length ->
+      if array_length <= length(prefix_items) do
+        prefix_items
+        |> Enum.take(array_length)
+        |> Enum.map(&from_json_schema/1)
+        |> StreamData.fixed_list()
+      else
+        prefix_items
+        |> Enum.map(&from_json_schema/1)
+        |> StreamData.fixed_list()
+        |> StreamData.bind(fn prefix_items_gen ->
+          items_length = array_length - length(prefix_items)
+
+          schema
+          |> Map.delete("prefixItems")
+          |> Map.put("minItems", items_length)
+          |> Map.put("maxItems", items_length)
+          |> from_json_schema()
+          |> StreamData.map(fn items -> prefix_items_gen ++ items end)
+        end)
+      end
+    end)
   end
 
   defp array_gen(%{"items" => false}), do: StreamData.constant([])

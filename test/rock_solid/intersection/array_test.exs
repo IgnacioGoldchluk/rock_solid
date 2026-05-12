@@ -146,6 +146,7 @@ defmodule RockSolid.Intersection.ArrayTest do
                "items" => false,
                "prefixItems" => [%{"enum" => ["ENV"]}],
                "type" => "array",
+               "minItems" => 1,
                "maxItems" => 1
              }
     end
@@ -170,7 +171,8 @@ defmodule RockSolid.Intersection.ArrayTest do
       assert schema == %{
                "items" => %{"type" => "string"},
                "prefixItems" => [%{"enum" => [123]}, %{"enum" => [456]}],
-               "type" => "array"
+               "type" => "array",
+               "minItems" => 2
              }
     end
 
@@ -226,7 +228,8 @@ defmodule RockSolid.Intersection.ArrayTest do
                  %{"enum" => ["mycontains1"]},
                  %{"enum" => ["mycontains2"]}
                ],
-               "type" => "array"
+               "type" => "array",
+               "minItems" => 4
              }
     end
 
@@ -245,7 +248,8 @@ defmodule RockSolid.Intersection.ArrayTest do
                "contains" => %{"enum" => ["ENV"]},
                "items" => %{"maxLength" => 10, "pattern" => "^ENV", "type" => "string"},
                "prefixItems" => [%{"enum" => ["ENV"]}],
-               "type" => "array"
+               "type" => "array",
+               "minItems" => 1
              }
     end
   end

@@ -2,6 +2,8 @@ defmodule RockSolid.StrategyTest do
   use ExUnit.Case
   use ExUnitProperties
 
+  alias RockSolid.Schemas.Vocabulary
+
   describe "from_json_schema/1" do
     property "number with decimal multipleOf" do
       check_schema(%{"type" => "number", "multipleOf" => 0.1})
@@ -492,6 +494,17 @@ defmodule RockSolid.StrategyTest do
         "properties" => %{"foo" => %{"type" => "string"}},
         "dependencies" => %{
           "foo" => %{"anyOf" => [%{"required" => ["bar"]}, %{"required" => ["baz"]}]}
+        }
+      })
+    end
+
+    property "legacy items as array representing prefixItems" do
+      check_schema(%{
+        "type" => "array",
+        "$schema" => Vocabulary.draft07(),
+        "items" => %{
+          "type" => ["string", "array"],
+          "items" => [%{"type" => "string"}, %{"type" => "number"}]
         }
       })
     end
