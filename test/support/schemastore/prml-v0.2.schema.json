@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec.falsify.dev/schema/prml-v0.2.schema.json",
+  "title": "PRML v0.2 — Pre-Registered ML Manifest (RFC, freeze 2026-05-22)",
+  "description": "Formal JSON Schema for the PRML v0.2 RFC (https://spec.falsify.dev/v0.2-rfc). v0.2 adds optional fields (streaming variant, runner attestation, revocation) over v0.1. Every v0.1 manifest is a valid v0.2 manifest. Fully backwards-compatible at the hash level. CC BY 4.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "claim_id",
+    "metric",
+    "comparator",
+    "threshold",
+    "dataset",
+    "seed",
+    "producer"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "enum": [
+        "prml/0.1",
+        "prml/0.2"
+      ],
+      "description": "Specification version. v0.2 verifiers MUST accept v0.1 manifests; v0.1 verifiers MAY reject v0.2-only fields."
+    },
+    "claim_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 timestamp. Required for static-mode manifests; replaced by pre_registered_from/to in streaming mode."
+    },
+    "metric": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "comparator": {
+      "type": "string",
+      "enum": [
+        "\u003E=",
+        "\u003C=",
+        "\u003E",
+        "\u003C",
+        "=="
+      ]
+    },
+    "threshold": {
+      "type": "number"
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "hash"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "seed": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1.8446744073709552e+19
+        },
+        {
+          "type": "integer",
+          "minimum": -9.223372036854776e+18,
+          "maximum": -1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signature": {
+          "type": "string"
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hash": {
+          "type": "string"
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "compute_envelope": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "prior_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 4096
+    },
+    "prml_mode": {
+      "type": "string",
+      "enum": [
+        "static",
+        "streaming"
+      ],
+      "description": "v0.2 P-01. Default 'static' (v0.1 behaviour). 'streaming' enables window-based commitments."
+    },
+    "value_method": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "v0.2 P-01. Aggregation rule identifier in streaming mode (e.g. 'lmsys_anonymous_chat_arena_v1', 'mean_over_window')."
+    },
+    "sample_size": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "v0.2 P-01. In static mode: exact eval set size. In streaming mode: minimum sample size below which the verdict is undefined."
+    },
+    "pre_registered_from": {
+      "type": "string",
+      "format": "date-time",
+      "description": "v0.2 P-01. Streaming mode start of window."
+    },
+    "pre_registered_to": {
+      "type": "string",
+      "format": "date-time",
+      "description": "v0.2 P-01. Streaming mode end of window."
+    },
+    "runner_attestation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "v0.2 P-02. Opaque URI to an out-of-band execution attestation (Sigstore, in-toto, TEE). PRML records that an attestation was emitted; the URI is not interpreted by canonicalisation."
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "v0.2 P-03. Timestamp at which the publisher revoked this manifest. The hash still verifies; verifiers MUST surface revocation status separately from hash status."
+    },
+    "revocation_reason": {
+      "type": "string",
+      "enum": [
+        "dataset_compromised",
+        "model_recalled",
+        "author_request",
+        "other"
+      ],
+      "description": "v0.2 P-03. Controlled vocabulary for the reason the publisher revoked the manifest."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "prml_mode": {
+            "const": "streaming"
+          }
+        },
+        "required": [
+          "prml_mode"
+        ]
+      },
+      "then": {
+        "required": [
+          "pre_registered_from",
+          "pre_registered_to",
+          "value_method",
+          "sample_size"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "revoked_at"
+        ]
+      },
+      "then": {
+        "required": [
+          "revocation_reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "prml_mode": {
+            "const": "static"
+          }
+        },
+        "required": [
+          "prml_mode"
+        ]
+      },
+      "then": {
+        "required": [
+          "created_at"
+        ]
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "required": [
+            "prml_mode"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "created_at"
+        ]
+      }
+    }
+  ],
+  "examples": [
+    {
+      "version": "prml/0.2",
+      "claim_id": "01900000-0000-7000-8000-000000000014",
+      "prml_mode": "streaming",
+      "metric": "elo_rating",
+      "value_method": "lmsys_anonymous_chat_arena_v1",
+      "comparator": "\u003E=",
+      "threshold": 1300,
+      "dataset": {
+        "id": "lmsys-arena-live",
+        "hash": "n/a-streaming"
+      },
+      "seed": null,
+      "producer": {
+        "id": "studio-11.co"
+      },
+      "model": {
+        "id": "claude-3.5-sonnet@2025-10-01"
+      },
+      "sample_size": 1000,
+      "pre_registered_from": "2026-05-01T00:00:00Z",
+      "pre_registered_to": "2026-06-01T00:00:00Z"
+    },
+    {
+      "version": "prml/0.2",
+      "claim_id": "01900000-0000-7000-8000-000000000016",
+      "created_at": "2026-04-01T12:00:00Z",
+      "metric": "accuracy",
+      "comparator": "\u003E=",
+      "threshold": 0.92,
+      "dataset": {
+        "id": "imagenet-val-2012",
+        "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "seed": 42,
+      "producer": {
+        "id": "studio-11.co"
+      },
+      "revoked_at": "2026-05-15T10:00:00Z",
+      "revocation_reason": "dataset_compromised"
+    }
+  ]
+}

@@ -1,0 +1,1939 @@
+{
+  "title": "list of expectations",
+  "type": "array",
+  "additionalProperties": false,
+  "items": {
+    "$ref": "#/definitions/expectation"
+  },
+  "definitions": {
+    "afterAction": {
+      "title": "afterAction",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "httpRequest": {
+          "$ref": "#/definitions/httpRequest"
+        },
+        "httpClassCallback": {
+          "$ref": "#/definitions/httpClassCallback"
+        },
+        "httpObjectCallback": {
+          "$ref": "#/definitions/httpObjectCallback"
+        },
+        "delay": {
+          "$ref": "#/definitions/delay"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "httpRequest"
+          ]
+        },
+        {
+          "required": [
+            "httpClassCallback"
+          ]
+        },
+        {
+          "required": [
+            "httpObjectCallback"
+          ]
+        }
+      ]
+    },
+    "body": {
+      "title": "request body matcher",
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "BINARY"
+              ]
+            },
+            "base64Bytes": {
+              "type": "string"
+            },
+            "contentType": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "JSON"
+              ]
+            },
+            "json": {
+              "type": "string"
+            },
+            "contentType": {
+              "type": "string"
+            },
+            "matchType": {
+              "enum": [
+                "STRICT",
+                "ONLY_MATCHING_FIELDS"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
+        },
+        {
+          "type": "array",
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "JSON_SCHEMA"
+              ]
+            },
+            "jsonSchema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/draft-07"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "JSON_PATH"
+              ]
+            },
+            "jsonPath": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "PARAMETERS"
+              ]
+            },
+            "parameters": {
+              "$ref": "#/definitions/keyToMultiValue"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "REGEX"
+              ]
+            },
+            "regex": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "STRING"
+              ]
+            },
+            "string": {
+              "type": "string"
+            },
+            "subString": {
+              "type": "boolean"
+            },
+            "contentType": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "XML"
+              ]
+            },
+            "xml": {
+              "type": "string"
+            },
+            "contentType": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "XML_SCHEMA"
+              ]
+            },
+            "xmlSchema": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "XPATH"
+              ]
+            },
+            "xpath": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "JSON_RPC"
+              ]
+            },
+            "method": {
+              "type": "string"
+            },
+            "paramsSchema": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "bodyWithContentType": {
+      "title": "response body",
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "BINARY"
+              ]
+            },
+            "base64Bytes": {
+              "type": "string"
+            },
+            "contentType": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "JSON"
+              ]
+            },
+            "json": {
+              "type": "string"
+            },
+            "contentType": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
+        },
+        {
+          "type": "array",
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "PARAMETERS"
+              ]
+            },
+            "parameters": {
+              "$ref": "#/definitions/keyToMultiValue"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "STRING"
+              ]
+            },
+            "string": {
+              "type": "string"
+            },
+            "contentType": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "type": {
+              "enum": [
+                "XML"
+              ]
+            },
+            "xml": {
+              "type": "string"
+            },
+            "contentType": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "connectionOptions": {
+      "title": "connection options",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "suppressContentLengthHeader": {
+          "type": "boolean"
+        },
+        "contentLengthHeaderOverride": {
+          "type": "integer"
+        },
+        "suppressConnectionHeader": {
+          "type": "boolean"
+        },
+        "chunkSize": {
+          "type": "integer"
+        },
+        "keepAliveOverride": {
+          "type": "boolean"
+        },
+        "closeSocket": {
+          "type": "boolean"
+        },
+        "closeSocketDelay": {
+          "$ref": "#/definitions/delay"
+        }
+      }
+    },
+    "delay": {
+      "title": "response delay",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timeUnit": {
+          "enum": [
+            "DAYS",
+            "HOURS",
+            "MINUTES",
+            "SECONDS",
+            "MILLISECONDS",
+            "MICROSECONDS",
+            "NANOSECONDS"
+          ]
+        },
+        "value": {
+          "type": "integer"
+        },
+        "distribution": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "distribution for variable delays: UNIFORM requires min and max, LOG_NORMAL requires median and p99, GAUSSIAN requires mean and stdDev",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "UNIFORM",
+                "LOG_NORMAL",
+                "GAUSSIAN"
+              ]
+            },
+            "min": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "median": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "p99": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "mean": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "stdDev": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "draft-07": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "http://json-schema.org/draft-07/schema#",
+      "title": "Core schema meta-schema",
+      "definitions": {
+        "schemaArray": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#"
+          }
+        },
+        "nonNegativeInteger": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nonNegativeIntegerDefault0": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/nonNegativeInteger"
+            },
+            {
+              "default": 0
+            }
+          ]
+        },
+        "simpleTypes": {
+          "enum": [
+            "array",
+            "boolean",
+            "integer",
+            "null",
+            "number",
+            "object",
+            "string"
+          ]
+        },
+        "stringArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": []
+        }
+      },
+      "type": [
+        "object",
+        "boolean"
+      ],
+      "properties": {
+        "$id": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "$schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "$ref": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "$comment": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "default": true,
+        "readOnly": {
+          "type": "boolean",
+          "default": false
+        },
+        "writeOnly": {
+          "type": "boolean",
+          "default": false
+        },
+        "examples": {
+          "type": "array",
+          "items": true
+        },
+        "multipleOf": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maximum": {
+          "type": "number"
+        },
+        "exclusiveMaximum": {
+          "type": "number"
+        },
+        "minimum": {
+          "type": "number"
+        },
+        "exclusiveMinimum": {
+          "type": "number"
+        },
+        "maxLength": {
+          "$ref": "#/definitions/nonNegativeInteger"
+        },
+        "minLength": {
+          "$ref": "#/definitions/nonNegativeIntegerDefault0"
+        },
+        "pattern": {
+          "type": "string",
+          "format": "regex"
+        },
+        "additionalItems": {
+          "$ref": "#"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "$ref": "#"
+            },
+            {
+              "$ref": "#/definitions/schemaArray"
+            }
+          ],
+          "default": true
+        },
+        "maxItems": {
+          "$ref": "#/definitions/nonNegativeInteger"
+        },
+        "minItems": {
+          "$ref": "#/definitions/nonNegativeIntegerDefault0"
+        },
+        "uniqueItems": {
+          "type": "boolean",
+          "default": false
+        },
+        "contains": {
+          "$ref": "#"
+        },
+        "maxProperties": {
+          "$ref": "#/definitions/nonNegativeInteger"
+        },
+        "minProperties": {
+          "$ref": "#/definitions/nonNegativeIntegerDefault0"
+        },
+        "required": {
+          "$ref": "#/definitions/stringArray"
+        },
+        "additionalProperties": {
+          "$ref": "#"
+        },
+        "definitions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#"
+          },
+          "default": {
+
+          }
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#"
+          },
+          "default": {
+
+          }
+        },
+        "patternProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#"
+          },
+          "propertyNames": {
+            "format": "regex"
+          },
+          "default": {
+
+          }
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#"
+              },
+              {
+                "$ref": "#/definitions/stringArray"
+              }
+            ]
+          }
+        },
+        "propertyNames": {
+          "$ref": "#"
+        },
+        "const": true,
+        "enum": {
+          "type": "array",
+          "items": true,
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/simpleTypes"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/simpleTypes"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          ]
+        },
+        "format": {
+          "type": "string"
+        },
+        "contentMediaType": {
+          "type": "string"
+        },
+        "contentEncoding": {
+          "type": "string"
+        },
+        "if": {
+          "$ref": "#"
+        },
+        "then": {
+          "$ref": "#"
+        },
+        "else": {
+          "$ref": "#"
+        },
+        "allOf": {
+          "$ref": "#/definitions/schemaArray"
+        },
+        "anyOf": {
+          "$ref": "#/definitions/schemaArray"
+        },
+        "oneOf": {
+          "$ref": "#/definitions/schemaArray"
+        },
+        "not": {
+          "$ref": "#"
+        }
+      },
+      "default": true
+    },
+    "schemaArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#"
+      }
+    },
+    "nonNegativeInteger": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nonNegativeIntegerDefault0": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/nonNegativeInteger"
+        },
+        {
+          "default": 0
+        }
+      ]
+    },
+    "simpleTypes": {
+      "enum": [
+        "array",
+        "boolean",
+        "integer",
+        "null",
+        "number",
+        "object",
+        "string"
+      ]
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "expectation": {
+      "title": "expectation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer"
+        },
+        "httpRequest": {
+          "$ref": "#/definitions/requestDefinition"
+        },
+        "httpResponse": {
+          "$ref": "#/definitions/httpResponse"
+        },
+        "httpResponseTemplate": {
+          "$ref": "#/definitions/httpTemplate"
+        },
+        "httpResponseClassCallback": {
+          "$ref": "#/definitions/httpClassCallback"
+        },
+        "httpResponseObjectCallback": {
+          "$ref": "#/definitions/httpObjectCallback"
+        },
+        "httpForward": {
+          "$ref": "#/definitions/httpForward"
+        },
+        "httpForwardTemplate": {
+          "$ref": "#/definitions/httpTemplate"
+        },
+        "httpForwardClassCallback": {
+          "$ref": "#/definitions/httpClassCallback"
+        },
+        "httpForwardObjectCallback": {
+          "$ref": "#/definitions/httpObjectCallback"
+        },
+        "httpOverrideForwardedRequest": {
+          "$ref": "#/definitions/httpOverrideForwardedRequest"
+        },
+        "httpForwardValidateAction": {
+          "$ref": "#/definitions/httpForwardValidateAction"
+        },
+        "httpError": {
+          "$ref": "#/definitions/httpError"
+        },
+        "httpSseResponse": {
+          "$ref": "#/definitions/httpSseResponse"
+        },
+        "httpWebSocketResponse": {
+          "$ref": "#/definitions/httpWebSocketResponse"
+        },
+        "afterActions": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/afterAction"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/afterAction"
+              },
+              "minItems": 1
+            }
+          ]
+        },
+        "times": {
+          "$ref": "#/definitions/times"
+        },
+        "timeToLive": {
+          "$ref": "#/definitions/timeToLive"
+        },
+        "timestamp": {
+          "description": "added to allow request and response log output to be used to create expectations",
+          "type": "string"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "httpResponse"
+          ]
+        },
+        {
+          "required": [
+            "httpResponseTemplate"
+          ]
+        },
+        {
+          "required": [
+            "httpResponseObjectCallback"
+          ]
+        },
+        {
+          "required": [
+            "httpResponseClassCallback"
+          ]
+        },
+        {
+          "required": [
+            "httpForward"
+          ]
+        },
+        {
+          "required": [
+            "httpForwardTemplate"
+          ]
+        },
+        {
+          "required": [
+            "httpForwardObjectCallback"
+          ]
+        },
+        {
+          "required": [
+            "httpForwardClassCallback"
+          ]
+        },
+        {
+          "required": [
+            "httpOverrideForwardedRequest"
+          ]
+        },
+        {
+          "required": [
+            "httpForwardValidateAction"
+          ]
+        },
+        {
+          "required": [
+            "httpError"
+          ]
+        },
+        {
+          "required": [
+            "httpSseResponse"
+          ]
+        },
+        {
+          "required": [
+            "httpWebSocketResponse"
+          ]
+        }
+      ],
+      "definitions": {
+
+      }
+    },
+    "expectationId": {
+      "title": "pointer to existing expectation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "httpClassCallback": {
+      "title": "class callback",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "callbackClass": {
+          "type": "string"
+        },
+        "primary": {
+          "type": "boolean"
+        }
+      }
+    },
+    "httpError": {
+      "title": "error behaviour",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "dropConnection": {
+          "type": "boolean"
+        },
+        "responseBytes": {
+          "type": "string"
+        },
+        "primary": {
+          "type": "boolean"
+        }
+      }
+    },
+    "httpForward": {
+      "title": "host and port to forward to",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "scheme": {
+          "enum": [
+            "HTTP",
+            "HTTPS"
+          ]
+        },
+        "primary": {
+          "type": "boolean"
+        }
+      },
+      "definitions": {
+
+      }
+    },
+    "httpForwardValidateAction": {
+      "title": "forward and validate against OpenAPI spec",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "specUrlOrPayload": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "scheme": {
+          "enum": [
+            "HTTP",
+            "HTTPS"
+          ]
+        },
+        "validateRequest": {
+          "type": "boolean"
+        },
+        "validateResponse": {
+          "type": "boolean"
+        },
+        "validationMode": {
+          "enum": [
+            "STRICT",
+            "LOG_ONLY"
+          ]
+        },
+        "primary": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "specUrlOrPayload",
+        "host"
+      ],
+      "definitions": {
+
+      }
+    },
+    "httpObjectCallback": {
+      "title": "object / method callback",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "responseCallback": {
+          "type": "boolean"
+        },
+        "primary": {
+          "type": "boolean"
+        }
+      }
+    },
+    "httpOverrideForwardedRequest": {
+      "title": "override forwarded request",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "delay": {
+              "$ref": "#/definitions/delay"
+            },
+            "requestOverride": {
+              "$ref": "#/definitions/httpRequest"
+            },
+            "requestModifier": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "regex": {
+                      "type": "string"
+                    },
+                    "substitution": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "regex"
+                  ]
+                },
+                "queryStringParameters": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "add": {
+                      "$ref": "#/definitions/keyToMultiValue"
+                    },
+                    "replace": {
+                      "$ref": "#/definitions/keyToMultiValue"
+                    },
+                    "remove": {
+                      "type": "array",
+                      "additionalProperties": false,
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "headers": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "add": {
+                      "$ref": "#/definitions/keyToMultiValue"
+                    },
+                    "replace": {
+                      "$ref": "#/definitions/keyToMultiValue"
+                    },
+                    "remove": {
+                      "type": "array",
+                      "additionalProperties": false,
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "cookies": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "add": {
+                      "$ref": "#/definitions/keyToValue"
+                    },
+                    "replace": {
+                      "$ref": "#/definitions/keyToValue"
+                    },
+                    "remove": {
+                      "type": "array",
+                      "additionalProperties": false,
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "responseOverride": {
+              "$ref": "#/definitions/httpResponse"
+            },
+            "responseModifier": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "headers": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "add": {
+                      "$ref": "#/definitions/keyToMultiValue"
+                    },
+                    "replace": {
+                      "$ref": "#/definitions/keyToMultiValue"
+                    },
+                    "remove": {
+                      "type": "array",
+                      "additionalProperties": false,
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "cookies": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "add": {
+                      "$ref": "#/definitions/keyToValue"
+                    },
+                    "replace": {
+                      "$ref": "#/definitions/keyToValue"
+                    },
+                    "remove": {
+                      "type": "array",
+                      "additionalProperties": false,
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "responseTemplate": {
+              "$ref": "#/definitions/httpTemplate"
+            },
+            "primary": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "delay": {
+              "$ref": "#/definitions/delay"
+            },
+            "httpRequest": {
+              "$ref": "#/definitions/httpRequest"
+            },
+            "httpResponse": {
+              "$ref": "#/definitions/httpResponse"
+            },
+            "primary": {
+              "type": "boolean"
+            }
+          }
+        }
+      ],
+      "definitions": {
+
+      }
+    },
+    "httpRequest": {
+      "title": "request properties matcher",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "secure": {
+          "type": "boolean"
+        },
+        "keepAlive": {
+          "type": "boolean"
+        },
+        "method": {
+          "$ref": "#/definitions/stringOrJsonSchema"
+        },
+        "path": {
+          "$ref": "#/definitions/stringOrJsonSchema"
+        },
+        "pathParameters": {
+          "$ref": "#/definitions/keyToMultiValue"
+        },
+        "queryStringParameters": {
+          "$ref": "#/definitions/keyToMultiValue"
+        },
+        "body": {
+          "$ref": "#/definitions/body"
+        },
+        "headers": {
+          "$ref": "#/definitions/keyToMultiValue"
+        },
+        "cookies": {
+          "$ref": "#/definitions/keyToValue"
+        },
+        "socketAddress": {
+          "$ref": "#/definitions/socketAddress"
+        },
+        "protocol": {
+          "$ref": "#/definitions/protocol"
+        },
+        "localAddress": {
+          "type": "string"
+        },
+        "remoteAddress": {
+          "type": "string"
+        },
+        "clientCertificateChain": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "issuerDistinguishedName": {
+                "type": "string"
+              },
+              "subjectDistinguishedName": {
+                "type": "string"
+              },
+              "serialNumber": {
+                "type": "string"
+              },
+              "signatureAlgorithmName": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "definitions": {
+
+      }
+    },
+    "httpRequestAndHttpResponse": {
+      "title": "request and response",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "httpRequest": {
+          "$ref": "#/definitions/httpRequest"
+        },
+        "httpResponse": {
+          "$ref": "#/definitions/httpResponse"
+        }
+      },
+      "definitions": {
+
+      }
+    },
+    "httpResponse": {
+      "title": "response to return",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "body": {
+          "$ref": "#/definitions/bodyWithContentType"
+        },
+        "cookies": {
+          "$ref": "#/definitions/keyToValue"
+        },
+        "connectionOptions": {
+          "$ref": "#/definitions/connectionOptions"
+        },
+        "headers": {
+          "$ref": "#/definitions/keyToMultiValue"
+        },
+        "statusCode": {
+          "type": "integer"
+        },
+        "reasonPhrase": {
+          "type": "string"
+        },
+        "primary": {
+          "type": "boolean"
+        }
+      },
+      "definitions": {
+
+      }
+    },
+    "httpSseResponse": {
+      "title": "SSE response to return",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "headers": {
+          "$ref": "#/definitions/keyToMultiValue"
+        },
+        "statusCode": {
+          "type": "integer"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "event": {
+                "type": "string"
+              },
+              "data": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "retry": {
+                "type": "integer"
+              },
+              "delay": {
+                "$ref": "#/definitions/delay"
+              }
+            }
+          }
+        },
+        "closeConnection": {
+          "type": "boolean"
+        },
+        "primary": {
+          "type": "boolean"
+        }
+      },
+      "definitions": {
+
+      }
+    },
+    "httpTemplate": {
+      "title": "template to generate response / request",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "templateType": {
+          "enum": [
+            "VELOCITY",
+            "JAVASCRIPT",
+            "MUSTACHE"
+          ]
+        },
+        "template": {
+          "type": "string"
+        },
+        "primary": {
+          "type": "boolean"
+        },
+        "responseOverride": {
+          "$ref": "#/definitions/httpResponse"
+        },
+        "responseModifier": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "headers": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "add": {
+                  "$ref": "#/definitions/keyToMultiValue"
+                },
+                "replace": {
+                  "$ref": "#/definitions/keyToMultiValue"
+                },
+                "remove": {
+                  "type": "array",
+                  "additionalProperties": false,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "cookies": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "add": {
+                  "$ref": "#/definitions/keyToValue"
+                },
+                "replace": {
+                  "$ref": "#/definitions/keyToValue"
+                },
+                "remove": {
+                  "type": "array",
+                  "additionalProperties": false,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "definitions": {
+
+      }
+    },
+    "httpWebSocketResponse": {
+      "title": "WebSocket response to return",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "delay": {
+          "$ref": "#/definitions/delay"
+        },
+        "subprotocol": {
+          "type": "string"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "binary": {
+                "type": "string",
+                "format": "byte"
+              },
+              "delay": {
+                "$ref": "#/definitions/delay"
+              }
+            }
+          }
+        },
+        "closeConnection": {
+          "type": "boolean"
+        },
+        "primary": {
+          "type": "boolean"
+        }
+      },
+      "definitions": {
+
+      }
+    },
+    "keyToMultiValue": {
+      "oneOf": [
+        {
+          "type": "array",
+          "additionalProperties": false,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "values": {
+                "type": "array",
+                "additionalProperties": false,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "keyMatchStyle": {
+              "type": "string",
+              "enum": [
+                "MATCHING_KEY",
+                "SUB_SET"
+              ],
+              "default": "SUB_SET"
+            }
+          },
+          "patternProperties": {
+            "^(?!keyMatchStyle)\\S+$": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "additionalProperties": false,
+                  "items": {
+                    "$ref": "#/definitions/stringOrJsonSchema"
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "parameterStyle": {
+                      "type": "string",
+                      "enum": [
+                        "SIMPLE",
+                        "SIMPLE_EXPLODED",
+                        "LABEL",
+                        "LABEL_EXPLODED",
+                        "MATRIX",
+                        "MATRIX_EXPLODED",
+                        "FORM_EXPLODED",
+                        "FORM",
+                        "SPACE_DELIMITED_EXPLODED",
+                        "SPACE_DELIMITED",
+                        "PIPE_DELIMITED_EXPLODED",
+                        "PIPE_DELIMITED",
+                        "DEEP_OBJECT"
+                      ],
+                      "default": ""
+                    },
+                    "values": {
+                      "type": "array",
+                      "additionalProperties": false,
+                      "items": {
+                        "$ref": "#/definitions/stringOrJsonSchema"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "keyToValue": {
+      "oneOf": [
+        {
+          "type": "array",
+          "additionalProperties": false,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "patternProperties": {
+            "^\\S+$": {
+              "$ref": "#/definitions/stringOrJsonSchema"
+            }
+          }
+        }
+      ]
+    },
+    "openAPIDefinition": {
+      "title": "open api or swagger request matcher",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "specUrlOrPayload": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "operationId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "specUrlOrPayload"
+      ]
+    },
+    "openAPIExpectation": {
+      "title": "open api or swagger expectation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "specUrlOrPayload": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        },
+        "operationsAndResponses": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "statusCode": {
+                    "type": "string"
+                  },
+                  "exampleName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "statusCode"
+                ]
+              }
+            ]
+          }
+        },
+        "contextPathPrefix": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "specUrlOrPayload"
+      ]
+    },
+    "ports": {
+      "title": "list of ports",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ports": {
+          "type": "array",
+          "additionalProperties": false,
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "protocol": {
+      "title": "protocol matcher",
+      "enum": [
+        "HTTP_1_1",
+        "HTTP_2"
+      ],
+      "definitions": {
+
+      }
+    },
+    "requestDefinition": {
+      "title": "request definition",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/httpRequest"
+        },
+        {
+          "$ref": "#/definitions/openAPIDefinition"
+        }
+      ],
+      "definitions": {
+
+      }
+    },
+    "socketAddress": {
+      "title": "remote address to send request to",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer"
+        },
+        "scheme": {
+          "enum": [
+            "HTTP",
+            "HTTPS"
+          ]
+        }
+      },
+      "definitions": {
+
+      }
+    },
+    "stringOrJsonSchema": {
+      "title": "string value that can be support nottable, optional or a json schema",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "type": "boolean"
+            },
+            "optional": {
+              "type": "boolean"
+            },
+            "value": {
+              "type": "string"
+            },
+            "schema": {
+              "$ref": "#/definitions/draft-07"
+            },
+            "parameterStyle": {
+              "type": "string",
+              "enum": [
+                "SIMPLE",
+                "SIMPLE_EXPLODED",
+                "LABEL",
+                "LABEL_EXPLODED",
+                "MATRIX",
+                "MATRIX_EXPLODED",
+                "FORM_EXPLODED",
+                "FORM",
+                "SPACE_DELIMITED_EXPLODED",
+                "SPACE_DELIMITED",
+                "PIPE_DELIMITED_EXPLODED",
+                "PIPE_DELIMITED",
+                "DEEP_OBJECT"
+              ],
+              "default": ""
+            }
+          }
+        }
+      ],
+      "definitions": {
+
+      }
+    },
+    "timeToLive": {
+      "title": "time expectation is valid for",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timeUnit": {
+          "enum": [
+            "DAYS",
+            "HOURS",
+            "MINUTES",
+            "SECONDS",
+            "MILLISECONDS",
+            "MICROSECONDS",
+            "NANOSECONDS"
+          ]
+        },
+        "timeToLive": {
+          "type": "integer"
+        },
+        "endDate": {
+          "type": "integer"
+        },
+        "unlimited": {
+          "type": "boolean"
+        }
+      }
+    },
+    "times": {
+      "title": "number of responses",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "remainingTimes": {
+          "type": "integer"
+        },
+        "unlimited": {
+          "type": "boolean"
+        }
+      }
+    },
+    "verification": {
+      "title": "verification",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expectationId": {
+          "$ref": "#/definitions/expectationId"
+        },
+        "httpRequest": {
+          "$ref": "#/definitions/requestDefinition"
+        },
+        "times": {
+          "$ref": "#/definitions/verificationTimes"
+        },
+        "maximumNumberOfRequestToReturnInVerificationFailure": {
+          "type": "integer"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "expectationId"
+          ]
+        },
+        {
+          "required": [
+            "httpRequest"
+          ]
+        }
+      ],
+      "definitions": {
+
+      }
+    },
+    "verificationSequence": {
+      "title": "verification sequence",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expectationIds": {
+          "type": "array",
+          "additionalProperties": false,
+          "items": {
+            "$ref": "#/definitions/expectationId"
+          }
+        },
+        "httpRequests": {
+          "type": "array",
+          "additionalProperties": false,
+          "items": {
+            "$ref": "#/definitions/requestDefinition"
+          }
+        },
+        "maximumNumberOfRequestToReturnInVerificationFailure": {
+          "type": "integer"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "expectationIds"
+          ]
+        },
+        {
+          "required": [
+            "httpRequests"
+          ]
+        }
+      ],
+      "definitions": {
+
+      }
+    },
+    "verificationTimes": {
+      "title": "number of request to verify",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "atLeast": {
+          "type": "integer"
+        },
+        "atMost": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "$id": "https://www.mock-server.com/schema/expectations.json",
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
