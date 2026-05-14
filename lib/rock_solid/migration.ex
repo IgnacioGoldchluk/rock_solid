@@ -242,15 +242,6 @@ defmodule RockSolid.Migration do
     {[old | path], [new | path]}
   end
 
-  defp to_pointer(["#" | _] = path) when is_list(path),
-    do: path |> Enum.map_join("/", &escape/1)
-
-  defp to_pointer(reversed_path) when is_list(reversed_path) do
-    reversed_path |> Enum.reverse() |> to_pointer()
-  end
-
-  defp escape(k) when is_binary(k), do: String.replace(k, "~", "~0") |> String.replace("/", "~1")
-
   @doc """
   Updates all old "$ref" paths by the new paths. Returns a new schema with the new "$ref"
   """

@@ -124,12 +124,39 @@ defmodule RockSolid.Traversal do
   def root_path, do: ["#"]
 
   @doc """
+  Converts a JSON path list to a pointer.
+
+  If the list does not start with "#" it is assumed to be a reversed path
+
+  ## Examples
+
+      iex> RockSolid.Traversal.to_pointer(["#", "$defs", "foo"])
+      "#/$defs/foo"
+
+      iex> RockSolid.Traversal.to_pointer(["bar", "$defs", "#"])
+      "#/$defs/bar"
+
+      iex> RockSolid.Traversal.to_pointer(["#", "/users", "GET"])
+      "#/~1users/GET"
+  """
+  def to_pointer(["#" | _] = path) when is_list(path), do: path |> Enum.map_join("/", &escape/1)
+
+  def to_pointer(reversed_path) when is_list(reversed_path) do
+    reversed_path |> Enum.reverse() |> to_pointer()
+  end
+
+  defp escape(k) when is_binary(k), do: String.replace(k, "~", "~0") |> String.replace("/", "~1")
+
+  @doc """
   Converts a JSON pointer to a path
 
   ## Examples
 
       iex> RockSolid.Traversal.to_path("#/$defs/something")
       ["#", "$defs", "something"]
+
+      iex> RockSolid.Traversal.to_path("#/paths/~1users")
+      ["#", "paths", "/users"]
 
   ## Options
 
