@@ -78,4 +78,25 @@ defmodule RockSolid.TraversalTest do
       assert expected == Traversal.references(schema)
     end
   end
+
+  describe "update_in_schema/3" do
+    test "update when path is list index replaces the element" do
+      schema = %{
+        "type" => "array",
+        "items" => false,
+        "prefixItems" => [%{"type" => "string"}, %{"type" => "number"}]
+      }
+
+      new_prefix_item = %{"type" => "boolean"}
+
+      expected = %{
+        "type" => "array",
+        "items" => false,
+        "prefixItems" => [%{"type" => "string"}, %{"type" => "boolean"}]
+      }
+
+      assert expected ==
+               Traversal.update_in_schema(schema, ["#", "prefixItems", "1"], new_prefix_item)
+    end
+  end
 end

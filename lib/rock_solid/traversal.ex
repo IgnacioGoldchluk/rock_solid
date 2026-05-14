@@ -167,6 +167,10 @@ defmodule RockSolid.Traversal do
   def get_in_schema(schema, [k | rest]) when is_list(schema),
     do: get_in_schema(Enum.at(schema, String.to_integer(k)), rest)
 
+  def update_in_schema(schema, [k], val) when is_list(schema) do
+    List.replace_at(schema, String.to_integer(k), val)
+  end
+
   def update_in_schema(schema, [path], val), do: Map.put(schema, path, val)
   def update_in_schema(schema, ["#" | rest], val), do: update_in_schema(schema, rest, val)
 
