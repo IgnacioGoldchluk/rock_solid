@@ -36,12 +36,12 @@ defmodule RockSolid.Strategy do
   defp gen(%{"type" => "boolean"}), do: StreamData.boolean()
   defp gen(%{"type" => "null"}), do: StreamData.constant(nil)
 
-  defp gen(%{"multipleOf" => multiple_of} = schema) do
+  defp gen(%{"multipleOf" => multiple_of} = schema) when is_number(multiple_of) do
     schema
     |> Map.delete("multipleOf")
     |> Map.put("type", "integer")
-    |> Map.update("minimum", nil, &trunc(&1 / multiple_of))
-    |> Map.update("maximum", nil, &trunc(&1 / multiple_of))
+    |> scale_limit("minimum", multiple_of)
+    |> scale_limit("maximum", multiple_of)
     |> gen()
     |> StreamData.map(fn generated ->
       if is_integer(multiple_of) do
@@ -480,6 +480,13 @@ defmodule RockSolid.Strategy do
       ])
     end)
     |> StreamData.resize(2)
+  end
+
+  defp scale_limit(schema, key, multiple_of) do
+    case Map.get(schema, key) do
+      val when is_number(val) -> Map.put(schema, key, trunc(val / multiple_of))
+      nil -> schema
+    end
   end
 
   defp scale_log(gen, length_opts \\ []) do
