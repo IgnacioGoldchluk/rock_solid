@@ -69,6 +69,7 @@ defmodule RockSolid.MixProject do
       filter_modules: fn module, _meta ->
         module in [
           RockSolid,
+          RockSolid.Traversal,
           RockSolid.Resolution.Resolvers.DummyResolver,
           RockSolid.Resolution.Resolver
         ]
@@ -92,6 +93,7 @@ defmodule RockSolid.MixProject do
   defp groups_for_modules do
     [
       "Main API": [RockSolid],
+      Utils: [RockSolid.Traversal],
       Resolvers: [
         RockSolid.Resolution.Resolvers.DummyResolver,
         RockSolid.Resolution.Resolver

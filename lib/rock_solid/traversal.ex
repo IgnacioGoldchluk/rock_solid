@@ -3,7 +3,9 @@ defmodule RockSolid.Traversal do
   Utilities and functions to traverse schemas, collect keywords, etc.
   """
 
-  alias RockSolid.Types
+  @type path_t :: [String.t()]
+
+  @root_path ["#"]
 
   defmodule InvalidPath do
     defexception [:key, :schema]
@@ -60,7 +62,7 @@ defmodule RockSolid.Traversal do
   end
 
   @doc """
-  Returns whether the current (reversed) path is a definiiton.
+  Returns whether the reversed path is a definiiton.
 
   ## Examples
 
@@ -71,12 +73,27 @@ defmodule RockSolid.Traversal do
       true
   """
   @spec definition?(list(String.t())) :: boolean()
+  def definition?(reversed_path)
+
   def definition?([last | rest]),
     do:
       last in ["$defs", "definitions"] and not property?(rest) and not definition?(rest) and
         not dependencies?(rest)
 
   def definition?([]), do: false
+
+  @doc """
+  Returns whether the reversed path is part of a dependency definition
+
+  ## Examples
+
+      iex> RockSolid.Traversal.dependencies?(["dependentSchemas", "#"])
+      true
+
+      iex> RockSolid.Traversal.dependencies?(["dependentSchemas", "properties", "#"])
+      false
+  """
+  def dependencies?(reversed_path)
 
   def dependencies?([last | rest]),
     do:
@@ -85,12 +102,15 @@ defmodule RockSolid.Traversal do
 
   @doc """
   Returns a map of all references ($id, $anchor, $ref) and their corresponding values
-  in the format of `%{"$ref" => %{["#", "path"] => value},  "$id" => %{}}`
+  in the format
+  ```
+  %{"$ref" => %{["#", "path"] => value},  "$id" => %{}}
+  ```
   """
-  @spec references(map()) :: %{String.t() => %{Types.path_t() => any()}}
+  @spec references(map()) :: %{String.t() => %{path_t() => any()}}
   def references(schema) when is_map(schema) do
     schema
-    |> collect_references(root_path())
+    |> collect_references(@root_path)
     |> Enum.reduce(Map.new(), fn {key, reversed_path, val}, acc ->
       path = Enum.reverse(reversed_path)
       Map.update(acc, key, %{path => val}, fn keyword_map -> Map.put(keyword_map, path, val) end)
@@ -120,8 +140,6 @@ defmodule RockSolid.Traversal do
   end
 
   defp collect_references(_, _), do: []
-
-  def root_path, do: ["#"]
 
   @doc """
   Converts a JSON path list to a pointer.
@@ -177,6 +195,20 @@ defmodule RockSolid.Traversal do
     end
   end
 
+  @doc """
+  Returns the value at the given location in the schema.
+
+  The path argument may contain a leading "#". You can convert a JSON Pointer string
+  to a valid path by calling `to_path/1`
+
+  ## Examples
+      iex> RockSolid.Traversal.get_in_schema(%{"foo" => %{"bar" => "baz"}}, ["#", "foo", "bar"])
+      "baz"
+
+      iex> RockSolid.Traversal.get_in_schema(%{"foo" => ["a", "b"]}, ["#", "foo", "1"])
+      "b"
+  """
+  @spec get_in_schema(any(), list(String.t())) :: any()
   def get_in_schema(schema, []), do: schema
   def get_in_schema(schema, ["#" | rest]), do: get_in_schema(schema, rest)
 
@@ -193,6 +225,16 @@ defmodule RockSolid.Traversal do
 
   def get_in_schema(schema, [k | rest]) when is_list(schema),
     do: get_in_schema(Enum.at(schema, String.to_integer(k)), rest)
+
+  @doc """
+  Sets a value in the given (existing) path and returns the updated schema
+
+  ## Examples
+
+      iex> RockSolid.Traversal.update_in_schema(%{"foo" => ["a", "b"]}, ["#", "foo", "1"], "c")
+      %{"foo" => ["a", "c"]}
+  """
+  def update_in_schema(schema, path, new_value)
 
   def update_in_schema(schema, [k], val) when is_list(schema) do
     List.replace_at(schema, String.to_integer(k), val)

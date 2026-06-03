@@ -5,5 +5,4 @@ defmodule RockSolid.Types do
   @type value :: map() | list() | String.t() | number() | boolean() | nil
 
   @type error_list :: list(Zoi.Errors.t())
-  @type path_t() :: list(String.t())
 end

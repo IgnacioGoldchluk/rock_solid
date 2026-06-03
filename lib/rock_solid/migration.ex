@@ -9,10 +9,11 @@ defmodule RockSolid.Migration do
   alias RockSolid.Exceptions.InvalidKeyword
   alias RockSolid.Resolution
   alias RockSolid.Schemas.Vocabulary
-  alias RockSolid.Types
 
-  @type path_rename() :: {Types.path_t(), Types.path_t()}
+  @type path_rename() :: {RockSolid.Traversal.path_t(), RockSolid.Traversal.path_t()}
   @type paths_rename() :: list(path_rename())
+
+  @root_path ["#"]
 
   @doc """
   Migrates a schema to latest 2020-12 draft.
@@ -42,7 +43,7 @@ defmodule RockSolid.Migration do
       |> Enum.map(&put_id/1)
       |> Enum.map(&put_ref_behaviour/1)
       |> Enum.reduce({[], []}, fn schema, {schemas, path_changes} ->
-        {new_schema, new_path_changes} = migrate(schema, root_path(), migrations(schema))
+        {new_schema, new_path_changes} = migrate(schema, @root_path, migrations(schema))
         {[new_schema | schemas], [{Resolution.id(new_schema), new_path_changes} | path_changes]}
       end)
 
@@ -213,7 +214,8 @@ defmodule RockSolid.Migration do
 
   defp rename_exclusive_maximum(schema, _), do: {schema, []}
 
-  @spec rename(map(), Types.path_t(), String.t(), String.t()) :: {map(), paths_rename()}
+  @spec rename(map(), RockSolid.Traversal.path_t(), String.t(), String.t()) ::
+          {map(), paths_rename()}
   defp rename(schema, path, old, new) do
     if Map.has_key?(schema, old) do
       {Map.put(schema, new, schema[old]) |> Map.delete(old), [path_change(path, old, new)]}
@@ -252,7 +254,7 @@ defmodule RockSolid.Migration do
     path_changes
     |> Enum.reverse()
     |> Enum.map(fn {old, new} -> {to_pointer(old), to_pointer(new)} end)
-    |> do_update_refs(schema, root_path())
+    |> do_update_refs(schema, @root_path)
   end
 
   @doc """
@@ -268,7 +270,7 @@ defmodule RockSolid.Migration do
         prefix = if Resolution.id(schema) == id, do: "", else: id
         {prefix <> to_pointer(old), prefix <> to_pointer(new)}
       end)
-      |> do_update_refs(schema, root_path())
+      |> do_update_refs(schema, @root_path)
     end)
   end
 
