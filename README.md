@@ -3,7 +3,7 @@
 [![CI](https://github.com/IgnacioGoldchluk/rock_solid/actions/workflows/ci.yaml/badge.svg)](https://github.com/IgnacioGoldchluk/rock_solid/actions/workflows/ci.yml)
 [![License](https://img.shields.io/hexpm/l/rock_solid)](https://github.com/IgnacioGoldchluk/rock_solid/blob/main/LICENSE.md)
 [![Version](https://img.shields.io/hexpm/v/rock_solid.svg)](https://hex.pm/packages/rock_solid)
-[![Docs](https://img.shields.io/badge/documentation-gray.svg)](https://hexdocs.pm/rock_solid)
+[![Docs](https://img.shields.io/badge/documentation-gray.svg)](https://rock-solid.hexdocs.pm)
 
 Data generation tool from JSON schemas.
 
