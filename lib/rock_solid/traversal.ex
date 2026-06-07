@@ -233,8 +233,6 @@ defmodule RockSolid.Traversal do
   def get_in_schema(schema, [k | rest]) when is_list(schema),
     do: get_in_schema(Enum.at(schema, String.to_integer(k)), rest)
 
-
-
   @doc """
   Sets a value in the given (existing) path and returns the updated schema
 
@@ -258,5 +256,15 @@ defmodule RockSolid.Traversal do
 
   def put_in_schema!(schema, [k | rest], val) when is_list(schema) do
     List.update_at(schema, String.to_integer(k), &put_in_schema!(&1, rest, val))
+  end
+
+  @doc """
+  Same as `put_in_schema!/3` but returns a tuple
+  """
+  @spec put_in_schema(any(), [String.t()], any()) :: {:ok, any()} | {:error, Exception.t()}
+  def put_in_schema(schema, path, value) do
+    {:ok, put_in_schema!(schema, path, value)}
+  rescue
+    error -> {:error, error}
   end
 end
