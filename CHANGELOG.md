@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.6 [2026-06-07]
+- Support JSON Pointers starting without "#" in `RockSolid.Traversal.to_path/1`
+- Fix `RockSolid.Traversal.update_in_schema/3` when last element in path is a list
+
 ## 0.0.5 [2026-05-12]
 - Fix `contains` not being generated
 - Generate only a sublist of `prefixItems` when `minItems` is not specified, or is smaller than `prefixItems` length

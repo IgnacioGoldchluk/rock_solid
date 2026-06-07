@@ -176,12 +176,19 @@ defmodule RockSolid.Traversal do
       iex> RockSolid.Traversal.to_path("#/paths/~1users")
       ["#", "paths", "/users"]
 
+      iex> RockSolid.Traversal.to_path("/path/to/0/foo")
+      ["path", "to", "0", "foo"]
+
   ## Options
 
     - `:include_root?` - `t:boolean/0` whether to include the root `"#"`. Defaults to `true`
   """
   @spec to_path(String.t(), Keyword.t()) :: list(String.t())
-  def to_path(json_pointer, opts \\ []) when is_binary(json_pointer) do
+  def to_path(json_pointer, opts \\ [])
+
+  def to_path("/" <> rest = _json_pointer, opts), do: to_path(rest, opts)
+
+  def to_path(json_pointer, opts) when is_binary(json_pointer) do
     path =
       json_pointer
       |> String.split("/")
