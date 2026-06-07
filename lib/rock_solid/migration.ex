@@ -335,7 +335,7 @@ defmodule RockSolid.Migration do
         new_full_path = base <> "#" <> pointer
         ["#" | map_path] = ref_rev_path
 
-        update_in_schema(schema, map_path ++ ["$ref"], to_string(new_full_path))
+        put_in_schema!(schema, map_path ++ ["$ref"], to_string(new_full_path))
       end)
     end)
   end
@@ -356,7 +356,7 @@ defmodule RockSolid.Migration do
 
       {_base, fragment} = Resolution.base_fragment(relative_ptr)
       full_ref = base_id <> "#" <> fragment
-      update_in_schema(schema, full_path, full_ref)
+      put_in_schema!(schema, full_path, full_ref)
     end)
   end
 
@@ -443,7 +443,7 @@ defmodule RockSolid.Migration do
     |> Map.keys()
     |> Enum.reduce(schema, fn path, new_schema ->
       # We have to try to find the $schema key, or until no schema exists and we default to 2020-12
-      update_in_schema(new_schema, path ++ [key], ref_behaviour(schema, path))
+      put_in_schema!(new_schema, path ++ [key], ref_behaviour(schema, path))
     end)
   end
 

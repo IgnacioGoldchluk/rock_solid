@@ -233,28 +233,30 @@ defmodule RockSolid.Traversal do
   def get_in_schema(schema, [k | rest]) when is_list(schema),
     do: get_in_schema(Enum.at(schema, String.to_integer(k)), rest)
 
+
+
   @doc """
   Sets a value in the given (existing) path and returns the updated schema
 
   ## Examples
 
-      iex> RockSolid.Traversal.update_in_schema(%{"foo" => ["a", "b"]}, ["#", "foo", "1"], "c")
+      iex> RockSolid.Traversal.put_in_schema!(%{"foo" => ["a", "b"]}, ["#", "foo", "1"], "c")
       %{"foo" => ["a", "c"]}
   """
-  def update_in_schema(schema, path, new_value)
+  def put_in_schema!(schema, path, new_value)
 
-  def update_in_schema(schema, [k], val) when is_list(schema) do
+  def put_in_schema!(schema, [k], val) when is_list(schema) do
     List.replace_at(schema, String.to_integer(k), val)
   end
 
-  def update_in_schema(schema, [path], val), do: Map.put(schema, path, val)
-  def update_in_schema(schema, ["#" | rest], val), do: update_in_schema(schema, rest, val)
+  def put_in_schema!(schema, [path], val), do: Map.put(schema, path, val)
+  def put_in_schema!(schema, ["#" | rest], val), do: put_in_schema!(schema, rest, val)
 
-  def update_in_schema(schema, [k | rest], val) when is_map(schema) do
-    Map.put(schema, k, update_in_schema(schema[k], rest, val))
+  def put_in_schema!(schema, [k | rest], val) when is_map(schema) do
+    Map.put(schema, k, put_in_schema!(schema[k], rest, val))
   end
 
-  def update_in_schema(schema, [k | rest], val) when is_list(schema) do
-    List.update_at(schema, String.to_integer(k), &update_in_schema(&1, rest, val))
+  def put_in_schema!(schema, [k | rest], val) when is_list(schema) do
+    List.update_at(schema, String.to_integer(k), &put_in_schema!(&1, rest, val))
   end
 end

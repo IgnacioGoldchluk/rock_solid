@@ -81,7 +81,7 @@ defmodule RockSolid.Resolution do
     # We also have to update all the schemas that contain `path`
     updated_schema =
       Enum.reduce(refs, schema, fn {path_as_list, value}, schema ->
-        update_in_schema(
+        put_in_schema!(
           schema,
           path_as_list ++ ["$ref"],
           to_absolute_schema(URI.parse(value), base_uri)
