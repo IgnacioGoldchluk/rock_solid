@@ -1,0 +1,471 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/JasonFinestone/runspec/main/schema/runspec.schema.json",
+  "title": "runspec.toml",
+  "description": "Interface specification for anything runnable — scripts, apps, MCP tools. See https://JasonFinestone.github.io/runspec",
+  "type": "object",
+  "properties": {
+    "config": { "$ref": "#/$defs/config" }
+  },
+  "additionalProperties": { "$ref": "#/$defs/runnable" },
+  "$defs": {
+    "autonomy_level": {
+      "type": "string",
+      "enum": ["autonomous", "confirm", "supervised", "manual"],
+      "description": "How much agent autonomy is permitted. Most restrictive level wins when multiple apply."
+    },
+    "config": {
+      "type": "object",
+      "description": "Project-wide defaults. The only reserved top-level key — all other keys are runnable names.",
+      "properties": {
+        "autonomy-default": {
+          "$ref": "#/$defs/autonomy_level",
+          "description": "Default autonomy level for runnables that don't declare one.",
+          "default": "confirm"
+        },
+        "lang": {
+          "type": "string",
+          "description": "Preferred language for runspec generate."
+        },
+        "version": {
+          "type": "string",
+          "description": "runspec spec version.",
+          "default": "1"
+        },
+        "name": {
+          "type": "string",
+          "description": "MCP server name reported by runspec serve. Defaults to the venv directory name."
+        },
+        "logging": {
+          "type": "object",
+          "description": "When present, the language pack configures structured logging automatically on parse().",
+          "properties": {
+            "rotate": {
+              "type": "string",
+              "description": "Log rotation policy: a time keyword (midnight, daily, weekly) or a size like '10 MB'.",
+              "default": "midnight",
+              "anyOf": [
+                { "enum": ["midnight", "daily", "weekly"] },
+                { "pattern": "^[0-9]+\\s*(KB|MB|GB)$" }
+              ]
+            },
+            "keep": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of rotated log files to keep.",
+              "default": 7
+            },
+            "summary": {
+              "type": "boolean",
+              "description": "Emit a closing summary line after each run.",
+              "default": true
+            },
+            "store": {
+              "type": "string",
+              "enum": ["single", "per-run"],
+              "default": "single",
+              "description": "Log file layout. 'single' = one rotating {runnable}.log per runnable (default). 'per-run' = one {runnable}.{utc-ts}.{run_id}.log per invocation — multi-writer safe (no in-process rotation; use 'runspec logs' to view/compact/prune)."
+            }
+          },
+          "additionalProperties": false
+        },
+        "jump-hosts": {
+          "type": "object",
+          "description": "Named jump host aliases for runspec jump. Each key is an alias name.",
+          "additionalProperties": { "$ref": "#/$defs/jump_host" }
+        },
+        "runspec_env": {
+          "type": "string",
+          "description": "Path to a .runspec_env file (KEY=VALUE dotenv format). Loaded at parse time; existing env vars win. Relative paths resolve from sys.prefix. Per-runnable runspec_env wins over this setting."
+        }
+      },
+      "additionalProperties": false
+    },
+    "jump_host": {
+      "type": "object",
+      "description": "A target host for runspec jump.",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "Hostname or IP address to SSH to."
+        },
+        "user": {
+          "type": "string",
+          "description": "SSH username. Defaults to the current user."
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "SSH port.",
+          "default": 22
+        },
+        "ssh-key": {
+          "type": "string",
+          "description": "Path to the SSH private key file."
+        },
+        "bin": {
+          "type": "string",
+          "description": "Path to the runspec binary on the remote host."
+        },
+        "use-ssh-config": {
+          "type": "boolean",
+          "description": "Pass -F ~/.ssh/config to the SSH command.",
+          "default": false
+        },
+        "ssh-options": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Extra arguments passed to the SSH command (e.g. [\"-o\", \"StrictHostKeyChecking=no\"])."
+        },
+        "jump-host": {
+          "type": "string",
+          "description": "ProxyJump alias — route through another named jump-host entry."
+        }
+      },
+      "required": ["host"],
+      "additionalProperties": false
+    },
+    "runnable": {
+      "type": "object",
+      "description": "A runnable tool — a script, application, or MCP tool described by this file.",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Human and agent readable description of what this tool does."
+        },
+        "autonomy": {
+          "$ref": "#/$defs/autonomy_level"
+        },
+        "autonomy-reason": {
+          "type": "string",
+          "description": "Explanation of why this autonomy level was chosen."
+        },
+        "output": {
+          "type": "string",
+          "enum": ["text", "json", "html"],
+          "description": "Declares what the runnable writes to stdout. Surfaces as x-output in emitted schemas.",
+          "default": "text"
+        },
+        "serve": {
+          "description": "Controls whether runspec serve exposes this runnable as an MCP tool. true/false or a list of contexts ('local', 'remote').",
+          "oneOf": [
+            {
+              "type": "boolean",
+              "description": "true (default) — always exposed; false — never exposed."
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["local", "remote"]
+              },
+              "minItems": 1,
+              "description": "Expose only in the listed serve contexts. 'local' = not over SSH; 'remote' = over SSH."
+            }
+          ],
+          "default": true
+        },
+        "hosts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Restrict this runnable to specific hostnames. Absent means available everywhere it is installed."
+        },
+        "run_as": {
+          "$ref": "#/$defs/run_as"
+        },
+        "become_method": {
+          "type": "string",
+          "enum": ["sudo", "su", "pbrun", "dzdo"],
+          "description": "Privilege escalation method used when run_as is set.",
+          "default": "sudo"
+        },
+        "become_flags": {
+          "type": "string",
+          "description": "Optional flags passed to the become method (e.g. \"-H\" for sudo)."
+        },
+        "examples": {
+          "type": "array",
+          "description": "Usage examples rendered by --help.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Bare string shorthand for {cmd = <string>}."
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "cmd": {
+                    "type": "string",
+                    "description": "The example command string."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Optional explanation shown alongside the example."
+                  }
+                },
+                "required": ["cmd"],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "args": {
+          "type": "object",
+          "description": "Argument definitions. Each value is a bare default (type inferred) or a full arg definition.",
+          "additionalProperties": { "$ref": "#/$defs/arg_value" }
+        },
+        "groups": {
+          "type": "object",
+          "description": "Argument group constraints (exclusive, inclusive, at-least-one, exactly-one, conditional).",
+          "additionalProperties": { "$ref": "#/$defs/group" }
+        },
+        "require-command": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, invoking this runnable without naming one of its commands errors with the list of available commands (like argparse add_subparsers(required=True))."
+        },
+        "commands": {
+          "type": "object",
+          "description": "Subcommands. Each key is a subcommand name with its own args, groups, autonomy, and description.",
+          "additionalProperties": { "$ref": "#/$defs/subcommand" }
+        },
+        "runspec_env": {
+          "type": "string",
+          "description": "Path to a .runspec_env file for this runnable. Overrides [config] runspec_env. Relative paths resolve from sys.prefix."
+        }
+      },
+      "additionalProperties": false
+    },
+    "run_as": {
+      "description": "The OS user to run the command as on the remote host.",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Username or environment variable reference (e.g. \"oracle\" or \"$ORACLE_RUN_AS\")."
+        },
+        {
+          "type": "object",
+          "description": "Per-host or pattern-based user resolution.",
+          "properties": {
+            "default": {
+              "type": "string",
+              "description": "Fallback user when no host or pattern matches. Empty string means no escalation."
+            },
+            "hosts": {
+              "type": "object",
+              "description": "Exact hostname → username mapping. Empty string means no escalation on that host.",
+              "additionalProperties": { "type": "string" }
+            },
+            "patterns": {
+              "type": "object",
+              "description": "Regex pattern → username mapping. Evaluated top-to-bottom, first match wins.",
+              "additionalProperties": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "arg_value": {
+      "description": "A bare default value (type inferred) or a full argument definition object.",
+      "oneOf": [
+        {
+          "type": "boolean",
+          "description": "Bare boolean — inferred as flag type with this default."
+        },
+        {
+          "type": "integer",
+          "description": "Bare integer — inferred as int type with this default."
+        },
+        {
+          "type": "number",
+          "not": { "type": "integer" },
+          "description": "Bare float — inferred as float type with this default."
+        },
+        {
+          "type": "string",
+          "description": "Bare string — inferred as str type with this default."
+        },
+        { "$ref": "#/$defs/arg_def" }
+      ]
+    },
+    "arg_def": {
+      "type": "object",
+      "description": "Full argument definition (inline table or full [runnable.args.name] block).",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["str", "password", "int", "float", "bool", "flag", "path", "choice", "rest"],
+          "description": "Argument type. Inferred from default or options if omitted. 'password' marks a secret: masked in UIs, refused on the command line, omitted from agent schemas, and kept out of logs."
+        },
+        "default": {
+          "description": "Default value. Absence implies required = true (unless required is explicitly set)."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the argument is required. Inferred from missing default if omitted."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human and agent readable description. Doubles as a form label."
+        },
+        "options": {
+          "type": "array",
+          "description": "Valid choices. Infers type = \"choice\" when present.",
+          "items": {}
+        },
+        "range": {
+          "type": "array",
+          "description": "Valid range for numeric types: [min, max].",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Regex the value must fully match (re.fullmatch semantics). str type only."
+        },
+        "min-length": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum string length. str type only."
+        },
+        "max-length": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum string length. str type only."
+        },
+        "multiple": {
+          "type": "boolean",
+          "description": "Accept multiple values (repeated --flag style). Serialised as newline-delimited in RUNSPEC_* env vars."
+        },
+        "delimiter": {
+          "type": "string",
+          "description": "Split a single value by this delimiter (e.g. \",\" for --fields a,b,c)."
+        },
+        "short": {
+          "type": "string",
+          "description": "Short flag alias (e.g. \"-v\"). -h is reserved for --help.",
+          "pattern": "^-[a-gi-zA-Z]$"
+        },
+        "position": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-based positional index. Makes the arg positional rather than a --flag. Must be unique within a runnable."
+        },
+        "env": {
+          "description": "Environment variable fallback(s). Checked after RUNSPEC_<RUNNABLE>_ARG_* and before the spec default.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+          ]
+        },
+        "deprecated": {
+          "type": "string",
+          "description": "Deprecation message shown when this arg is used."
+        },
+        "autonomy": {
+          "$ref": "#/$defs/autonomy_level",
+          "description": "Per-arg autonomy override. Escalates to this level if more restrictive than the runnable level."
+        },
+        "ui": {
+          "type": "string",
+          "enum": ["text", "password", "number", "file", "directory", "checkbox", "radio", "select", "multiselect", "slider"],
+          "description": "Form control hint. Inferred from type and properties if omitted."
+        },
+        "hint": {
+          "type": "string",
+          "description": "Placeholder / hint text shown in a UI form field (e.g. an example value). Advisory for str/path/password types; never affects parsing or validation."
+        },
+        "meta": {
+          "type": "object",
+          "description": "Developer-defined metadata. Pass-through — runspec never interprets the contents."
+        }
+      },
+      "additionalProperties": false
+    },
+    "group": {
+      "type": "object",
+      "description": "An argument group constraint.",
+      "properties": {
+        "args": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of arg names in this group (used by exclusive, inclusive, at-least-one, exactly-one)."
+        },
+        "exclusive": {
+          "type": "boolean",
+          "description": "At most one arg from the group may be provided."
+        },
+        "inclusive": {
+          "type": "boolean",
+          "description": "If any arg is provided, all must be provided."
+        },
+        "at-least-one": {
+          "type": "boolean",
+          "description": "One or more args from the group must be provided."
+        },
+        "exactly-one": {
+          "type": "boolean",
+          "description": "Strictly one arg from the group must be provided."
+        },
+        "if": {
+          "type": "string",
+          "description": "Trigger arg for a conditional group — when this arg is provided, requires are enforced."
+        },
+        "requires": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Args that become required when the 'if' trigger arg is provided."
+        }
+      },
+      "additionalProperties": false
+    },
+    "subcommand": {
+      "type": "object",
+      "description": "A subcommand under a runnable (e.g. [pipeline.commands.run]).",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Human and agent readable description."
+        },
+        "autonomy": {
+          "$ref": "#/$defs/autonomy_level"
+        },
+        "autonomy-reason": {
+          "type": "string",
+          "description": "Explanation of why this autonomy level was chosen."
+        },
+        "output": {
+          "type": "string",
+          "enum": ["text", "json", "html"],
+          "description": "Declares what this subcommand writes to stdout.",
+          "default": "text"
+        },
+        "args": {
+          "type": "object",
+          "description": "Argument definitions for this subcommand.",
+          "additionalProperties": { "$ref": "#/$defs/arg_value" }
+        },
+        "groups": {
+          "type": "object",
+          "description": "Argument group constraints for this subcommand.",
+          "additionalProperties": { "$ref": "#/$defs/group" }
+        },
+        "require-command": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, invoking this subcommand without naming one of its nested commands errors with the list of available commands (like argparse add_subparsers(required=True))."
+        },
+        "commands": {
+          "type": "object",
+          "description": "Nested subcommands.",
+          "additionalProperties": { "$ref": "#/$defs/subcommand" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

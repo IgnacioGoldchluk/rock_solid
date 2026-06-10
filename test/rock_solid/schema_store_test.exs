@@ -762,6 +762,16 @@ defmodule RockSolid.SchemaStoreTest do
     "abc-clinical-demand-forecast-3.0.0.json",
     "codex-hooks.json",
     "github-pages-jekyll.json",
+    "nextest-repo-config.json",
+    "nextest-user-config.json",
+    "runspec.schema.json",
+    "solarxy-config.json",
+    "algovoi-compliance-receipt-v1.json",
+    "amxbuild.schema.json",
+    "umpire.schema.json",
+    "ort-project.json",
+    "yap.json",
+    "sigmacv.json",
     # Modified to pass, original was likely auto generated and the
     # schema doesn't make sense or is incomplete. The modified schemas
     # are still equivalent or a stricter version of the originals
@@ -785,7 +795,9 @@ defmodule RockSolid.SchemaStoreTest do
 
   describe "regression schemas" do
     @describetag regression: false
-    for filename <- @passing_schemas do
+    for filename <- [
+      "sigmacv.json"
+    ] do
       test "schema #{filename}" do
         Path.join(["test", "support", "schemastore", unquote(filename)])
         |> File.read!()

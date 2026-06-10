@@ -1,0 +1,1052 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spec.umpire.tools/umpire.schema.json",
+  "title": "Umpire JSON Schema",
+  "description": "Validates .umpire.json files — the language-agnostic authoring surface for Umpire logic.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "conditions": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/json-condition-def"
+      }
+    },
+    "fields": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/definitions/json-field-def"
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/json-rule"
+      }
+    },
+    "validators": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/json-validator-def"
+      }
+    },
+    "excluded": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/excluded-rule"
+      }
+    }
+  },
+  "required": [
+    "version",
+    "fields",
+    "rules"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "json-primitive": {
+      "type": [
+        "string",
+        "number",
+        "boolean",
+        "null"
+      ]
+    },
+    "json-field-def": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "default": {
+          "$ref": "#/definitions/json-primitive"
+        },
+        "isEmpty": {
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "array",
+            "object",
+            "present"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "json-condition-def": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "boolean",
+            "string",
+            "number",
+            "string[]",
+            "number[]"
+          ]
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "json-validator-spec": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "email",
+                "url",
+                "integer"
+              ]
+            }
+          },
+          "required": [
+            "op"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "matches"
+            },
+            "pattern": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "pattern"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "minLength",
+                "maxLength",
+                "min",
+                "max"
+              ]
+            },
+            "value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "op",
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "range"
+            },
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "op",
+            "min",
+            "max"
+          ]
+        }
+      ]
+    },
+    "json-validator-def": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "email",
+                "url",
+                "integer"
+              ]
+            },
+            "error": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "matches"
+            },
+            "pattern": {
+              "type": "string"
+            },
+            "error": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "pattern"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "enum": [
+                "minLength",
+                "maxLength",
+                "min",
+                "max"
+              ]
+            },
+            "value": {
+              "type": "number"
+            },
+            "error": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "range"
+            },
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "error": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "min",
+            "max"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "excluded-rule": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "json-expr": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "eq"
+            },
+            "field": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/definitions/json-primitive"
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "neq"
+            },
+            "field": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/definitions/json-primitive"
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "gt"
+            },
+            "field": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "gte"
+            },
+            "field": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "lt"
+            },
+            "field": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "lte"
+            },
+            "field": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "present"
+            },
+            "field": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "field"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "absent"
+            },
+            "field": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "field"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "truthy"
+            },
+            "field": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "field"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "falsy"
+            },
+            "field": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "field"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "in"
+            },
+            "field": {
+              "type": "string"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/json-primitive"
+              }
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "values"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "notIn"
+            },
+            "field": {
+              "type": "string"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/json-primitive"
+              }
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "values"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "cond"
+            },
+            "condition": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "condition"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "condEq"
+            },
+            "condition": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "#/definitions/json-primitive"
+            }
+          },
+          "required": [
+            "op",
+            "condition",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "condIn"
+            },
+            "condition": {
+              "type": "string"
+            },
+            "values": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/json-primitive"
+              }
+            }
+          },
+          "required": [
+            "op",
+            "condition",
+            "values"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "fieldInCond"
+            },
+            "field": {
+              "type": "string"
+            },
+            "condition": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "condition"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "and"
+            },
+            "exprs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/json-expr"
+              }
+            }
+          },
+          "required": [
+            "op",
+            "exprs"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "or"
+            },
+            "exprs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/json-expr"
+              }
+            }
+          },
+          "required": [
+            "op",
+            "exprs"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "not"
+            },
+            "expr": {
+              "$ref": "#/definitions/json-expr"
+            }
+          },
+          "required": [
+            "op",
+            "expr"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "check"
+            },
+            "field": {
+              "type": "string"
+            },
+            "check": {
+              "$ref": "#/definitions/json-validator-spec"
+            }
+          },
+          "required": [
+            "op",
+            "field",
+            "check"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "json-requires-dependency": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/definitions/json-expr"
+        }
+      ]
+    },
+    "json-rule": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "requires"
+            },
+            "field": {
+              "type": "string"
+            },
+            "dependency": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "field",
+            "dependency"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "requires"
+            },
+            "field": {
+              "type": "string"
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/json-requires-dependency"
+              }
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "field",
+            "dependencies"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "requires"
+            },
+            "field": {
+              "type": "string"
+            },
+            "when": {
+              "$ref": "#/definitions/json-expr"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "field",
+            "when"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "enabledWhen"
+            },
+            "field": {
+              "type": "string"
+            },
+            "when": {
+              "$ref": "#/definitions/json-expr"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "field",
+            "when"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "disables"
+            },
+            "source": {
+              "type": "string"
+            },
+            "targets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "source",
+            "targets"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "disables"
+            },
+            "when": {
+              "$ref": "#/definitions/json-expr"
+            },
+            "targets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "when",
+            "targets"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "oneOf"
+            },
+            "group": {
+              "type": "string"
+            },
+            "branches": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": [
+            "type",
+            "group",
+            "branches"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "eitherOf"
+            },
+            "group": {
+              "type": "string"
+            },
+            "branches": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/json-rule"
+                }
+              }
+            }
+          },
+          "required": [
+            "type",
+            "group",
+            "branches"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "fairWhen"
+            },
+            "field": {
+              "type": "string"
+            },
+            "when": {
+              "$ref": "#/definitions/json-expr"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "field",
+            "when"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "anyOf"
+            },
+            "rules": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/json-rule"
+              }
+            }
+          },
+          "required": [
+            "type",
+            "rules"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "check"
+                },
+                "field": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "op": {
+                  "enum": [
+                    "email",
+                    "url",
+                    "integer"
+                  ]
+                }
+              },
+              "required": [
+                "type",
+                "field",
+                "op"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "check"
+                },
+                "field": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "op": {
+                  "const": "matches"
+                },
+                "pattern": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "field",
+                "op",
+                "pattern"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "check"
+                },
+                "field": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "op": {
+                  "enum": [
+                    "minLength",
+                    "maxLength",
+                    "min",
+                    "max"
+                  ]
+                },
+                "value": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "type",
+                "field",
+                "op",
+                "value"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "check"
+                },
+                "field": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "op": {
+                  "const": "range"
+                },
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "type",
+                "field",
+                "op",
+                "min",
+                "max"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
