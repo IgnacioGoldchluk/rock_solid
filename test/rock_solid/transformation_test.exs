@@ -982,6 +982,32 @@ defmodule RockSolid.TransformationTest do
       Transformation.simplify(schema)
     end
 
+    test "required as property that must be simplified" do
+      schema = %{
+        "$id" => schema_id(),
+        "type" => "object",
+        "properties" => %{
+          "required" => %{
+            "type" => ["boolean", "null"]
+          }
+        }
+      }
+
+      expected = %{
+        "type" => "object",
+        "properties" => %{
+          "required" => %{
+            "anyOf" => [
+              %{"type" => "boolean"},
+              %{"type" => "null"}
+            ]
+          }
+        }
+      }
+
+      assert expected == Transformation.simplify(schema)
+    end
+
     # There is a bug here because we're reaching for the `#/PLACEHOLDER_${NUM}`
     # before it's inserted. Debug later how it happened
     @tag :skip

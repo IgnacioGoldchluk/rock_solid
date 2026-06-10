@@ -795,9 +795,7 @@ defmodule RockSolid.SchemaStoreTest do
 
   describe "regression schemas" do
     @describetag regression: false
-    for filename <- [
-      "sigmacv.json"
-    ] do
+    for filename <- @passing_schemas do
       test "schema #{filename}" do
         Path.join(["test", "support", "schemastore", unquote(filename)])
         |> File.read!()

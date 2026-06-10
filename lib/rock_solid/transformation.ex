@@ -32,7 +32,7 @@ defmodule RockSolid.Transformation do
       is_atomic(schema) ->
         schema
 
-      hd(rev_path) in ["dependentRequired", "required"] ->
+      hd(rev_path) in ["dependentRequired", "required"] and not property?(tl(rev_path)) ->
         schema
 
       is_list(schema) ->
