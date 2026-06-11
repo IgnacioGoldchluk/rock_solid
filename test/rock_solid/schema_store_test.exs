@@ -772,6 +772,8 @@ defmodule RockSolid.SchemaStoreTest do
     "ort-project.json",
     "yap.json",
     "sigmacv.json",
+    "anodizer.json",
+    "pgrls.json",
     # Modified to pass, original was likely auto generated and the
     # schema doesn't make sense or is incomplete. The modified schemas
     # are still equivalent or a stricter version of the originals

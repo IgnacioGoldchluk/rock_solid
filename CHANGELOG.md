@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.8 [2026-06-11]
+- Fix bug where properties named `"required"` and `"dependentRequired"` weren't being simplified
+
 ## 0.0.7 [2026-06-07]
 - Rename `RockSolid.Traversal.update_in_schema/3` to `RockSolid.Traversal.put_in_schema!/3` and also implement `RockSolid.Traversal.put_in_schema/3`
 

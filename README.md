@@ -12,7 +12,7 @@ Add to your list of dependencies
 ```elixir
 def deps do
   [
-    {:rock_solid, "~> 0.0.7", only: :test}
+    {:rock_solid, "~> 0.0.8", only: :test}
   ]
 end
 ```
