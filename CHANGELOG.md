@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.9 [2026-06-15]
+- Fix regex intersection timeouts by replacing `greenery`/`pythonx` with rustler precompiled `regex_solver`
+
 ## 0.0.8 [2026-06-11]
 - Fix bug where properties named `"required"` and `"dependentRequired"` weren't being simplified
 

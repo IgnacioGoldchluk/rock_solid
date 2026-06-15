@@ -2,13 +2,13 @@ defmodule RockSolid.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/IgnacioGoldchluk/rock_solid"
-  @version "0.0.8"
+  @version "0.0.9"
 
   def project do
     [
       app: :rock_solid,
       version: @version,
-      elixir: "~> 1.16",
+      elixir: "~> 1.18",
       description: description(),
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -47,7 +47,7 @@ defmodule RockSolid.MixProject do
     [
       {:zoi, "~> 0.17"},
       {:jsv, "~> 0.19"},
-      {:pythonx, "~> 0.4.0"},
+      {:regex_solver, "~> 0.1"},
       {:nimble_options, "~> 1.1"},
       {:req, "~> 0.5.0", only: [:dev, :test]},
       # Data generation

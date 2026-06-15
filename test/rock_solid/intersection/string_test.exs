@@ -61,7 +61,7 @@ defmodule RockSolid.Intersection.StringTest do
       s1 = %{"type" => "string", "pattern" => "[A-Z]+"}
       s2 = %{"type" => "string", "pattern" => "\d+"}
 
-      assert {:error, "invalid regex intersection" <> _} = Intersection.intersection(s1, s2)
+      assert {:error, :empty_intersection} == Intersection.intersection(s1, s2)
     end
   end
 end

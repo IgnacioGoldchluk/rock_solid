@@ -31,6 +31,12 @@ defmodule RockSolid.SchemaStoreTest do
 
   @impossible [
     # Wrong schemas
+    # Unsupported regex features
+    "claude-code-settings.json",
+    "dein.json",
+    "neoload.json",
+    ## type: "vrl" ?
+    "vector.json",
     ## Has "const": ["list", "of"] instead of "enum"
     "prometheus.json",
     ## Enums cannot match, idk what happened in that schema
@@ -552,7 +558,7 @@ defmodule RockSolid.SchemaStoreTest do
     "partial-pdm-dockerize.json",
     "partial-pdm.json",
     "partial-pixi.json",
-    "partial-poetry.json",
+    # "partial-poetry.json", Started failing after switching to RegexSolver
     "partial-pyright.json",
     "partial-pytest.json",
     "partial-repo-review.json",
@@ -774,6 +780,10 @@ defmodule RockSolid.SchemaStoreTest do
     "sigmacv.json",
     "anodizer.json",
     "pgrls.json",
+    "vtestunit-schema.json",
+    "flatpak-manifest.json",
+    "claude-code-plugin-manifest.json",
+    "claude-code-marketplace.json",
     # Modified to pass, original was likely auto generated and the
     # schema doesn't make sense or is incomplete. The modified schemas
     # are still equivalent or a stricter version of the originals

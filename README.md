@@ -1,5 +1,3 @@
-**This project is still in experimental stage**. See [Known bugs and issues](#knwon-bugs-and-issues) and the [roadmap](./ROADMAP.md)
-
 [![CI](https://github.com/IgnacioGoldchluk/rock_solid/actions/workflows/ci.yaml/badge.svg)](https://github.com/IgnacioGoldchluk/rock_solid/actions/workflows/ci.yml)
 [![License](https://img.shields.io/hexpm/l/rock_solid)](https://github.com/IgnacioGoldchluk/rock_solid/blob/main/LICENSE.md)
 [![Version](https://img.shields.io/hexpm/v/rock_solid.svg)](https://hex.pm/packages/rock_solid)
@@ -7,12 +5,16 @@
 
 Data generation tool from JSON schemas.
 
+> [!IMPORTANT]
+> This project is still in experimental stage. See [Known bugs and issues](#knwon-bugs-and-issues) and the [roadmap](./ROADMAP.md)
+
+
 ## Usage
 Add to your list of dependencies
 ```elixir
 def deps do
   [
-    {:rock_solid, "~> 0.0.8", only: :test}
+    {:rock_solid, "~> 0.0.9", only: :test}
   ]
 end
 ```
@@ -107,7 +109,7 @@ When reaching the data generation step, `StreamData` throws an error because too
 Another case are schemas containing a `not` clause that overlaps with most elements generated. Aside from implementing a smarter `not` intersection there is not much to do.
 
 ### Timeout
-Usually due to heavy recursive definitions where the recursive schemas also contain many fields and options to generate from. One possible solution is to peek at the next value, if it is a `$ref` then geenrate with "less chance" if it's a property, or if it's an array of `$ref` scale down the generation size even further. The other case where this often happens are regex intersections, [`greenery`](https://github.com/qntm/greenery) is quite slow sometimes and can cause timeouts.
+Usually due to heavy recursive definitions where the recursive schemas also contain many fields and options to generate from. One possible solution is to peek at the next value, if it is a `$ref` then geenrate with "less chance" if it's a property, or if it's an array of `$ref` scale down the generation size even further.
 
 ### Recursive intersection
 In order to perform intersection of recurisve schemas, we create a placeholder, and when we reach it again we return it and create a new schema on demand. The problem is that sometimes recursive schemas are reached from different branches, the code tries to return the placeholder but it doesn't exist yet because we are in the process of creating it.
