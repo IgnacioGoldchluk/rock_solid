@@ -457,7 +457,7 @@ defmodule RockSolid.Migration do
     if property?(reversed_path) or definition?(reversed_path) do
       ref_behaviour(schema, reversed_path |> tl() |> Enum.reverse())
     else
-      case get_in_schema(schema, path) do
+      case fetch_in_schema!(schema, path) do
         %{"$schema" => value} -> ref_behaviour(Vocabulary.vocabulary(value))
         _ -> ref_behaviour(schema, remove_last(path))
       end

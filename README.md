@@ -14,7 +14,7 @@ Add to your list of dependencies
 ```elixir
 def deps do
   [
-    {:rock_solid, "~> 0.0.9", only: :test}
+    {:rock_solid, "~> 0.0.10", only: :test}
   ]
 end
 ```

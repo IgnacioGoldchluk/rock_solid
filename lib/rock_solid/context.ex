@@ -91,7 +91,7 @@ defmodule RockSolid.Context do
         path = to_path(relative_pointer)
         reversed_path = Enum.reverse(path)
 
-        non_simplified = get_in_schema(base_schema, path)
+        non_simplified = fetch_in_schema!(base_schema, path)
         simplified = Transformation.simplify(non_simplified, reversed_path)
         put_simplified(pointer, simplified)
         get_ref(pointer)

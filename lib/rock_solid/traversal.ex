@@ -203,35 +203,58 @@ defmodule RockSolid.Traversal do
   end
 
   @doc """
+  Same as `fetch_in_schema/2` but raises on error
+  """
+  @spec fetch_in_schema!(any(), list(String.t())) :: any()
+  def fetch_in_schema!(schema, path) do
+    case fetch_in_schema(schema, path) do
+      {:ok, value} -> value
+      {:error, exc} when is_exception(exc) -> raise exc
+    end
+  end
+
+  @doc """
   Returns the value at the given location in the schema.
 
   The path argument may contain a leading "#". You can convert a JSON Pointer string
   to a valid path by calling `to_path/1`
 
   ## Examples
-      iex> RockSolid.Traversal.get_in_schema(%{"foo" => %{"bar" => "baz"}}, ["#", "foo", "bar"])
-      "baz"
 
-      iex> RockSolid.Traversal.get_in_schema(%{"foo" => ["a", "b"]}, ["#", "foo", "1"])
-      "b"
+      iex> RockSolid.Traversal.fetch_in_schema(%{"foo" => %{"bar" => "baz"}}, ["#", "foo", "bar"])
+      {:ok, "baz"}
+
+      iex> RockSolid.Traversal.fetch_in_schema(%{"foo" => ["a", "b"]}, ["#", "foo", "1"])
+      {:ok, "b"}
+
+      iex> RockSolid.Traversal.fetch_in_schema(%{"foo" => ["a", "b"]}, ["#", "foo", "3"])
+      {:error, %RockSolid.Traversal.InvalidPath{key: "3", schema: ["a", "b"]}}
+
+      iex> RockSolid.Traversal.fetch_in_schema(%{"foo" => 2}, ["#","bar"])
+      {:error, %RockSolid.Traversal.InvalidPath{key: "bar", schema: %{"foo" => 2}}}
   """
-  @spec get_in_schema(any(), list(String.t())) :: any()
-  def get_in_schema(schema, []), do: schema
-  def get_in_schema(schema, ["#" | rest]), do: get_in_schema(schema, rest)
+  @spec fetch_in_schema(any(), list(String.t())) :: {:ok, any()} | {:error, Exception.t()}
+  def fetch_in_schema(schema, []), do: {:ok, schema}
+  def fetch_in_schema(schema, ["#" | rest]), do: fetch_in_schema(schema, rest)
 
-  def get_in_schema(schema, [k | rest]) when is_map(schema) do
+  def fetch_in_schema(schema, [k | rest]) when is_map(schema) do
     key = if Map.has_key?(schema, k), do: k, else: URI.decode(k)
 
     if Map.has_key?(schema, key) do
-      get_in_schema(schema[key], rest)
+      fetch_in_schema(schema[key], rest)
     else
-      # This one should never happen anyway
-      raise InvalidPath, key: key, schema: schema
+      {:error, %InvalidPath{key: key, schema: schema}}
     end
   end
 
-  def get_in_schema(schema, [k | rest]) when is_list(schema),
-    do: get_in_schema(Enum.at(schema, String.to_integer(k)), rest)
+  def fetch_in_schema(schema, [k | rest]) when is_list(schema) do
+    with {index, ""} <- Integer.parse(k),
+         {:ok, element} <- Enum.fetch(schema, index) do
+      fetch_in_schema(element, rest)
+    else
+      _ -> {:error, %InvalidPath{key: k, schema: schema}}
+    end
+  end
 
   @doc """
   Sets a value in the given (existing) path and returns the updated schema

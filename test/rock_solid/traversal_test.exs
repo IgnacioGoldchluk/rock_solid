@@ -6,13 +6,13 @@ defmodule RockSolid.TraversalTest do
 
   doctest RockSolid.Traversal
 
-  describe "get_in_schema/2" do
+  describe "fetch_in_schema!/2" do
     test "raiss for invalid path" do
       schema = %{"properties" => %{"foo" => %{"type" => "string"}}}
       wrong_path = ["#", "properties", "bar"]
 
       assert_raise Traversal.InvalidPath, ~r/Invalid key 'bar' .*/, fn ->
-        Traversal.get_in_schema(schema, wrong_path)
+        Traversal.fetch_in_schema!(schema, wrong_path)
       end
     end
   end
