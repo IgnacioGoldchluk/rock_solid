@@ -1,0 +1,781 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/ColumbusLabs/DebtLens/main/schema/debtlens.config.schema.json",
+  "title": "DebtLens configuration",
+  "description": "Configuration for the DebtLens static-analysis CLI.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "include": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Glob patterns to scan."
+    },
+    "exclude": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Glob patterns to skip."
+    },
+    "minSeverity": {
+      "enum": ["info", "low", "medium", "high"],
+      "description": "Lowest severity to report."
+    },
+    "pack": {
+      "anyOf": [
+        {
+          "enum": [
+            "core",
+            "react",
+            "react-native",
+            "next",
+            "expo",
+            "node",
+            "python",
+            "python-web",
+            "vue",
+            "svelte",
+            "kotlin",
+            "compose",
+            "ai-assisted-maintainer",
+            "oss-maintainer"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^\\s*(?:core|react|react-native|next|expo|node|python|python-web|vue|svelte|kotlin|compose|ai-assisted-maintainer|oss-maintainer)(?:\\s*,\\s*(?:core|react|react-native|next|expo|node|python|python-web|vue|svelte|kotlin|compose|ai-assisted-maintainer|oss-maintainer))*\\s*$"
+        }
+      ],
+      "description": "Built-in rule pack preset, or a comma-separated list of presets. Explicit rules override the pack."
+    },
+    "rules": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "anyOf": [
+          {
+            "enum": [
+              "large-component",
+              "large-function",
+              "state-sprawl",
+              "effect-complexity",
+              "hook-dependency-smell",
+              "context-provider-sprawl",
+              "rn-host-forwarding",
+              "server-client-boundary",
+              "route-handler-size",
+              "data-loader-sprawl",
+              "handler-depth",
+              "route-sprawl",
+              "duplicate-logic",
+              "test-duplication",
+              "duplicated-literal",
+              "import-cycle",
+              "complex-control-flow",
+              "config-drift",
+              "dead-abstraction",
+              "prop-drilling",
+              "todo-comment",
+              "naming-drift",
+              "barrel-file",
+              "weak-test-boundary",
+              "api-surface-sprawl",
+              "story-only-component",
+              "python-todo-comment",
+              "python-large-function",
+              "python-complex-control-flow",
+              "python-duplicate-logic",
+              "python-dead-abstraction",
+              "python-route-sprawl",
+              "vue-todo-comment",
+              "vue-large-script",
+              "vue-duplicate-logic",
+              "svelte-todo-comment",
+              "svelte-large-script",
+              "svelte-duplicate-logic",
+              "kotlin-todo-comment",
+              "kotlin-large-function",
+              "kotlin-duplicate-logic",
+              "kotlin-dead-abstraction",
+              "compose-large-composable",
+              "compose-state-hoisting"
+            ]
+          },
+          {
+            "type": "string",
+            "description": "A plugin-provided rule id."
+          }
+        ]
+      },
+      "description": "Rule ids to run. Omit to run all rules. May include plugin rule ids when plugins are configured."
+    },
+    "pluginApiVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Plugin API version this config targets; must match the DebtLens runtime version."
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Paths to local ESM plugin modules, resolved relative to the config file directory."
+    },
+    "maxFiles": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum number of files to scan."
+    },
+    "respectGitignore": {
+      "type": "boolean",
+      "description": "When true, skip files ignored by git in addition to configured exclude globs."
+    },
+    "thresholds": {
+      "type": "object",
+      "description": "Per-rule numeric threshold overrides.",
+      "properties": {
+        "large-component.maxLines": {
+          "type": "number"
+        },
+        "large-component.maxBranches": {
+          "type": "number"
+        },
+        "large-component.maxHooks": {
+          "type": "number"
+        },
+        "large-function.maxLines": {
+          "type": "number"
+        },
+        "large-function.maxBranches": {
+          "type": "number"
+        },
+        "state-sprawl.maxStatefulHooks": {
+          "type": "number"
+        },
+        "effect-complexity.maxLines": {
+          "type": "number"
+        },
+        "effect-complexity.maxDependencies": {
+          "type": "number"
+        },
+        "context-provider-sprawl.maxProviders": {
+          "type": "number"
+        },
+        "rn-host-forwarding.maxForwardedProps": {
+          "type": "number"
+        },
+        "rn-host-forwarding.maxHostTargets": {
+          "type": "number"
+        },
+        "route-handler-size.maxLines": {
+          "type": "number"
+        },
+        "route-handler-size.maxBranches": {
+          "type": "number"
+        },
+        "route-handler-size.maxAwaits": {
+          "type": "number"
+        },
+        "data-loader-sprawl.maxAwaits": {
+          "type": "number"
+        },
+        "data-loader-sprawl.maxFetches": {
+          "type": "number"
+        },
+        "data-loader-sprawl.maxBranches": {
+          "type": "number"
+        },
+        "data-loader-sprawl.maxLines": {
+          "type": "number"
+        },
+        "handler-depth.maxDepth": {
+          "type": "number"
+        },
+        "handler-depth.maxMiddleware": {
+          "type": "number"
+        },
+        "route-sprawl.maxRoutes": {
+          "type": "number"
+        },
+        "python-route-sprawl.maxRoutes": {
+          "type": "number"
+        },
+        "vue-large-script.maxLines": {
+          "type": "number"
+        },
+        "vue-large-script.maxFunctionLines": {
+          "type": "number"
+        },
+        "vue-large-script.maxBranches": {
+          "type": "number"
+        },
+        "svelte-large-script.maxLines": {
+          "type": "number"
+        },
+        "svelte-large-script.maxFunctionLines": {
+          "type": "number"
+        },
+        "svelte-large-script.maxBranches": {
+          "type": "number"
+        },
+        "duplicate-logic.minSimilarity": {
+          "type": "number"
+        },
+        "duplicate-logic.minLines": {
+          "type": "number"
+        },
+        "duplicate-logic.maxSnippets": {
+          "type": "number"
+        },
+        "test-duplication.minSimilarity": {
+          "type": "number"
+        },
+        "test-duplication.minStructuralSimilarity": {
+          "type": "number"
+        },
+        "test-duplication.minLines": {
+          "type": "number"
+        },
+        "duplicated-literal.minLength": {
+          "type": "number"
+        },
+        "duplicated-literal.minCount": {
+          "type": "number"
+        },
+        "dead-abstraction.maxWrapperLines": {
+          "type": "number"
+        },
+        "prop-drilling.maxForwardedProps": {
+          "type": "number"
+        },
+        "naming-drift.minVariants": {
+          "type": "number"
+        },
+        "duplicate-logic.minStructuralSimilarity": {
+          "type": "number"
+        },
+        "barrel-file.maxReExports": {
+          "type": "number"
+        },
+        "weak-test-boundary.allowTypeOnly": {
+          "type": "number"
+        },
+        "api-surface-sprawl.maxExports": {
+          "type": "number"
+        },
+        "import-cycle.minCycleSize": {
+          "type": "number"
+        },
+        "import-cycle.allowTypeOnly": {
+          "type": "number"
+        },
+        "complex-control-flow.maxComplexity": {
+          "type": "number"
+        },
+        "complex-control-flow.maxDepth": {
+          "type": "number"
+        },
+        "config-drift.maxConfigFiles": {
+          "type": "number"
+        },
+        "compose-large-composable.maxLines": {
+          "type": "number"
+        },
+        "compose-large-composable.maxBranches": {
+          "type": "number"
+        },
+        "compose-large-composable.maxLocalState": {
+          "type": "number"
+        },
+        "compose-state-hoisting.maxLocalState": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "vocabulary": {
+      "type": "object",
+      "description": "Naming-drift concept groups (concept id -> competing terms).",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "ruleSeverities": {
+      "type": "object",
+      "description": "Rule id -> severity reported for that rule's issues, replacing the detector's choice. May include plugin rule ids.",
+      "properties": {
+        "large-component": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "large-function": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "state-sprawl": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "effect-complexity": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "hook-dependency-smell": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "context-provider-sprawl": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "rn-host-forwarding": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "server-client-boundary": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "route-handler-size": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "data-loader-sprawl": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "handler-depth": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "route-sprawl": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "duplicate-logic": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "test-duplication": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "duplicated-literal": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "import-cycle": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "complex-control-flow": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "config-drift": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "dead-abstraction": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "prop-drilling": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "todo-comment": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "naming-drift": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "barrel-file": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "weak-test-boundary": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "api-surface-sprawl": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "story-only-component": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "python-todo-comment": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "python-large-function": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "python-complex-control-flow": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "python-duplicate-logic": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "python-dead-abstraction": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "python-route-sprawl": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "vue-todo-comment": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "vue-large-script": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "vue-duplicate-logic": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "svelte-todo-comment": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "svelte-large-script": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "svelte-duplicate-logic": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "kotlin-todo-comment": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "kotlin-large-function": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "kotlin-duplicate-logic": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "kotlin-dead-abstraction": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "compose-large-composable": {
+          "enum": ["info", "low", "medium", "high"]
+        },
+        "compose-state-hoisting": {
+          "enum": ["info", "low", "medium", "high"]
+        }
+      },
+      "additionalProperties": {
+        "enum": ["info", "low", "medium", "high"]
+      }
+    },
+    "ruleConfidenceFloors": {
+      "type": "object",
+      "description": "Rule id -> minimum confidence (0-1); issues from that rule below the floor are not reported. May include plugin rule ids.",
+      "properties": {
+        "large-component": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "large-function": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "state-sprawl": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "effect-complexity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "hook-dependency-smell": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "context-provider-sprawl": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "rn-host-forwarding": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "server-client-boundary": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "route-handler-size": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "data-loader-sprawl": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "handler-depth": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "route-sprawl": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "duplicate-logic": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "test-duplication": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "duplicated-literal": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "import-cycle": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "complex-control-flow": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "config-drift": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "dead-abstraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "prop-drilling": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "todo-comment": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "naming-drift": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "barrel-file": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "weak-test-boundary": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "api-surface-sprawl": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "story-only-component": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "python-todo-comment": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "python-large-function": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "python-complex-control-flow": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "python-duplicate-logic": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "python-dead-abstraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "python-route-sprawl": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "vue-todo-comment": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "vue-large-script": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "vue-duplicate-logic": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "svelte-todo-comment": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "svelte-large-script": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "svelte-duplicate-logic": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "kotlin-todo-comment": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "kotlin-large-function": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "kotlin-duplicate-logic": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "kotlin-dead-abstraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "compose-large-composable": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "compose-state-hoisting": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "propDrilling": {
+      "type": "object",
+      "description": "Prop-drilling rule configuration.",
+      "properties": {
+        "ignoreComponents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional UI primitive component names to ignore (extends built-in host components)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "duplicatedLiteral": {
+      "type": "object",
+      "description": "Duplicated-literal rule configuration.",
+      "properties": {
+        "ignoreStrings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Exact string literal values to ignore, such as framework directives."
+        }
+      },
+      "additionalProperties": false
+    },
+    "todoComment": {
+      "type": "object",
+      "description": "Todo-comment rule configuration.",
+      "properties": {
+        "markers": {
+          "type": "array",
+          "description": "Additional or replacement comment marker patterns.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "pattern": {
+                "type": "string",
+                "description": "Case-insensitive regex pattern."
+              },
+              "severity": {
+                "enum": ["info", "low", "medium", "high"],
+                "description": "Severity when this marker matches."
+              },
+              "label": {
+                "type": "string",
+                "description": "Human-readable marker label for reports."
+              }
+            },
+            "required": ["pattern"]
+          }
+        },
+        "replaceDefaults": {
+          "type": "boolean",
+          "description": "When true, built-in marker patterns are not used."
+        },
+        "disableDefaults": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Built-in marker labels to disable (e.g. \"todo marker\")."
+        }
+      },
+      "additionalProperties": false
+    },
+    "namingDrift": {
+      "type": "object",
+      "description": "Naming-drift rule configuration.",
+      "properties": {
+        "disableBuiltInVocabulary": {
+          "type": "boolean",
+          "description": "When true, skip built-in concept groups; only user vocabulary applies."
+        }
+      },
+      "additionalProperties": false
+    },
+    "failOn": {
+      "enum": ["info", "low", "medium", "high"],
+      "description": "Exit with code 1 when any reported issue meets this severity. The --fail-on CLI flag overrides this."
+    },
+    "failOnConfidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "With fail-on severity policy, require at least this confidence to exit with code 1."
+    },
+    "gatePreset": {
+      "enum": ["advisory", "new-code", "strict-new-code", "legacy-baseline"],
+      "description": "Named quality-gate rollout preset. Explicit CLI flags override preset defaults."
+    }
+  }
+}

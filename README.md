@@ -100,8 +100,7 @@ The transformed schema is used to generate valid data using `StreamData` and `Mo
 
 
 ## Knwon bugs and issues
-
-Ordered by most common to least common based on testing schemas from [Schemastore](https://github.com/SchemaStore/schemastore)
+The library can generate valid payloads for most schemas, with a 87% passing rate when testing the entire catalog from [Schemastore](https://github.com/SchemaStore/schemastore). The following are a list of known bugs, limitations and issues, ordered from most common to least common.
 
 ### Too many elements filtered out
 When reaching the data generation step, `StreamData` throws an error because too many elements have been filtered out. This happens mostly for `"string"` type when `pattern` or `format` are specified, along with `maxLength` and/or `minLength`. Since the underlying `from_regex` and `from_format` lack options to set min/max length, we first have to generate the string and then filter them. The solution requires generating from regex or from format that are length-aware.

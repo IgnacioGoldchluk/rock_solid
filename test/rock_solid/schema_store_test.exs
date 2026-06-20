@@ -784,6 +784,9 @@ defmodule RockSolid.SchemaStoreTest do
     "flatpak-manifest.json",
     "claude-code-plugin-manifest.json",
     "claude-code-marketplace.json",
+    "bosh-bpm-config.json",
+    "debtlens.config.json",
+    "commit-check.json",
     # Modified to pass, original was likely auto generated and the
     # schema doesn't make sense or is incomplete. The modified schemas
     # are still equivalent or a stricter version of the originals
