@@ -97,7 +97,7 @@ If you don't expect any extra properties in addition to the defined ones then se
 ```json
 {"type": "object", "properties": {"foo": {"type": "number"}}}
 ```
-matches all of the follwing
+matches all of the following
 - `{"foo": 1}`
 - `{"foo": 1, "bar": "baz"}`
 - `{"foo": 1, "bar": "baz", "qux": {"a nested": "object"}}`

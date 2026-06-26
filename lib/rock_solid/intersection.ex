@@ -56,7 +56,7 @@ defmodule RockSolid.Intersection do
   end
 
   @doc """
-  Peforms the safe intersection when the left subschema is applied before the right one
+  Performs the safe intersection when the left subschema is applied before the right one
   """
   def safe_post_intersection(left, right)
 

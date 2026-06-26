@@ -231,7 +231,7 @@ defmodule RockSolid.TransformationTest do
       assert {:ok, schema} == Transformation.one_of_to_any_of([schema])
     end
 
-    test "non-ovelapping schemas are returned without changes" do
+    test "non-overlapping schemas are returned without changes" do
       schemas = [%{"type" => "number", "minimum" => 0}, %{"type" => "integer", "maximum" => -1}]
 
       assert {:ok, %{"anyOf" => results}} = Transformation.one_of_to_any_of(schemas)
@@ -1370,7 +1370,7 @@ defmodule RockSolid.TransformationTest do
       assert expected == Transformation.simplify(schema)
     end
 
-    test "additionalPropertis are ignored if $ref already has key" do
+    test "additionalProperties are ignored if $ref already has key" do
       id = schema_id()
 
       schema = %{

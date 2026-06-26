@@ -16,7 +16,7 @@ defmodule RockSolid.Intersection.ObjectTest do
       assert {:ok, schema} == Intersection.intersection(schema, schema)
     end
 
-    test "const property intesection" do
+    test "const property intersection" do
       s1 = %{"type" => "object", "properties" => %{"name" => %{"const" => "Alice"}}}
       s2 = %{"type" => "object", "properties" => %{"name" => %{"type" => "string"}}}
 
@@ -105,7 +105,7 @@ defmodule RockSolid.Intersection.ObjectTest do
       assert [%Zoi.Error{message: "ENV_SYSTEM missing" <> _}] = msg
     end
 
-    test "impossible properties with minProperties retuns error" do
+    test "impossible properties with minProperties returns error" do
       s1 = %{
         "minProperties" => 1,
         "type" => "object",

@@ -99,7 +99,7 @@ defmodule RockSolid.StrategyTest do
       })
     end
 
-    property "depedentRequired as dependencies" do
+    property "dependentRequired as dependencies" do
       check_schema(%{
         "additionalProperties" => false,
         "dependentRequired" => %{

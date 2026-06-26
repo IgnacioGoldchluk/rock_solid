@@ -89,7 +89,7 @@ defmodule RockSolid.Migration do
   defp migrate(schema, path, funcs) when is_map(schema) do
     if literal?(path) do
       # Reached an `enum`, `const`, `default` or `examples`, do early return
-      # because everything past this shoul be treated as literal, we don't want
+      # because everything past this should be treated as literal, we don't want
       # to accidentally migrate `"const": {"id": "foo"} to {"$id": "foo"}`
       {schema, []}
     else
@@ -397,7 +397,7 @@ defmodule RockSolid.Migration do
       pointer = to_pointer(rev_path)
       keys = Map.keys(schema)
 
-      Enum.each(unsuported_keywords(), fn
+      Enum.each(unsupported_keywords(), fn
         kw when is_binary(kw) ->
           if kw in keys do
             raise InvalidKeyword, keyword: kw, path: pointer
@@ -414,7 +414,7 @@ defmodule RockSolid.Migration do
     end
   end
 
-  defp unsuported_keywords do
+  defp unsupported_keywords do
     [
       "$dynamicAnchor",
       "$dynamicRef",

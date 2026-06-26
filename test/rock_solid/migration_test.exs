@@ -300,7 +300,7 @@ defmodule RockSolid.MigrationTest do
 
     test "replaces boolean exclusiveMinimum and exclusiveMaximum" do
       schema = %{
-        "type" => "obect",
+        "type" => "object",
         "$id" => schema_id(),
         "properties" => %{
           "age" => %{
@@ -314,7 +314,7 @@ defmodule RockSolid.MigrationTest do
 
       expected = %{
         "$id" => schema["$id"],
-        "type" => "obect",
+        "type" => "object",
         "properties" => %{"age" => %{"exclusiveMinimum" => 0, "exclusiveMaximum" => 130}}
       }
 

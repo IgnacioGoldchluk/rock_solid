@@ -105,7 +105,7 @@ defmodule RockSolid.Transformation do
   end
 
   @doc """
-  Converts a schema that indirectly supports muliple types to an equivalent `anyOf`
+  Converts a schema that indirectly supports multiple types to an equivalent `anyOf`
   schema
   """
   @spec to_any_of(Schema.t()) :: Schema.t()

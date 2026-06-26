@@ -71,9 +71,9 @@ iex(2)> specs |> RockSolid.from_schema() |> Enum.take(3)
 ]
 ```
 
-## Knwon bugs and issues
+## Known bugs and issues
 The library can generate valid payloads for most schemas, with a 87% passing rate when testing the entire catalog from [Schemastore](https://github.com/SchemaStore/schemastore). The following are a list of known bugs, limitations and issues, ordered from most common to least common.
 - Failing to generate data when possible value set is too narrow. For example strings with `"pattern"` and `minLength`/`maxLength`, or a `not` clause that overlaps with many of the positive cases. To prevent this issue, encode the string length as part of the `"pattern"` keyword, and try to be specific when using `"not"` keywords. 
-- Timemouts. Caused when defining multiple `"if"/"then"/"else"`, `"dependentSchemas"`, and `"oneOf"`. To prevent timeouts, express branching logic as `"anyOf"` instead.
+- Timeouts. Caused when defining multiple `"if"/"then"/"else"`, `"dependentSchemas"`, and `"oneOf"`. To prevent timeouts, express branching logic as `"anyOf"` instead.
 - Recursive schemas. While recursive schemas are supported, the algorithm often needs to find the intersection of a recursive schema and another subschema, which might throw an error. There is no workaround for this issue at the moment.
 - `"$dynamicRef"`, `"$dynamicAnchor"`, `"unevaluatedItems"`, `"unevaluatedProperties"`, `"maxContains"` keywords are not supported currently, since their behavior is defined at runtime.
