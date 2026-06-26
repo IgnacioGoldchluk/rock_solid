@@ -14,7 +14,7 @@ Add to your list of dependencies
 ```elixir
 def deps do
   [
-    {:rock_solid, "~> 0.0.10", only: :test}
+    {:rock_solid, "~> 0.0.11", only: :test}
   ]
 end
 ```
@@ -46,7 +46,7 @@ defmodule MyTest do
 end
 ```
 
-or as a generator, since `RockSolid.from_schema/1` returns elements of `StreamData.t()`
+or as a generator, since `RockSolid.from_schema/2` returns elements of `StreamData.t()`
 
 ```elixir
 iex(1)> specs = %{

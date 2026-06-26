@@ -5,6 +5,25 @@ defmodule RockSolid.StrategyTest do
   alias RockSolid.Schemas.Vocabulary
 
   describe "from_json_schema/1" do
+    property "generates strings of the specified codepoints" do
+      schema = %{
+        "type" => "object",
+        "required" => ["email", "password"],
+        "additionalProperties" => false,
+        "properties" => %{
+          "email" => %{"type" => "string", "format" => "email"},
+          "password" => %{"type" => "string", "minLength" => 8, "maxLength" => 32}
+        }
+      }
+
+      root = JSV.build!(schema, resolver: [RockSolid.Resolver])
+
+      check all generated <- RockSolid.from_schema(schema, string_kind: :ascii) do
+        assert {:ok, _} = JSV.validate(generated, root)
+        assert Enum.all?(to_charlist(generated["password"]), &(&1 in 32..126))
+      end
+    end
+
     property "number with decimal multipleOf" do
       check_schema(%{"type" => "number", "multipleOf" => 0.1})
     end

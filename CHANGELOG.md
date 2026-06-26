@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.11 [2026-06-26]
+- Add `:string_kind` option to `RockSolid.from_schema/2`
+
 ## 0.0.10 [2026-06-17]
 - Rename `Traversal.get_in_schema/2` to `Traversal.fetch_in_schema!/2` and add safe `Traversal.fetch_in_schema/2`
 

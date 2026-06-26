@@ -17,32 +17,32 @@ defmodule RockSolid.Strategy do
     schema
     |> Migration.migrate(Keyword.fetch!(opts, :resolver))
     |> Transformation.simplify()
-    |> from_json_schema()
+    |> from_json_schema(opts)
   end
 
-  defp from_json_schema(true), do: json()
+  defp from_json_schema(true, _), do: json()
 
-  defp from_json_schema(schema) when is_map(schema) do
+  defp from_json_schema(schema, opts) when is_map(schema) do
     {not_clause, schema_without_not} = Map.pop(schema, "not", nil)
-    schema_without_not |> gen() |> filter_not(not_clause)
+    schema_without_not |> gen(opts) |> filter_not(not_clause)
   end
 
-  defp gen(true), do: json()
-  defp gen(s) when map_size(s) == 0, do: json()
-  defp gen(%{"$ref" => pointer}), do: Context.get_ref(pointer) |> from_json_schema()
-  defp gen(%{"const" => value}), do: StreamData.constant(value)
-  defp gen(%{"enum" => values}) when is_list(values), do: StreamData.member_of(values)
+  defp gen(true, _), do: json()
+  defp gen(s, _) when map_size(s) == 0, do: json()
+  defp gen(%{"$ref" => pointer}, opts), do: Context.get_ref(pointer) |> from_json_schema(opts)
+  defp gen(%{"const" => value}, _), do: StreamData.constant(value)
+  defp gen(%{"enum" => values}, _) when is_list(values), do: StreamData.member_of(values)
 
-  defp gen(%{"type" => "boolean"}), do: StreamData.boolean()
-  defp gen(%{"type" => "null"}), do: StreamData.constant(nil)
+  defp gen(%{"type" => "boolean"}, _), do: StreamData.boolean()
+  defp gen(%{"type" => "null"}, _), do: StreamData.constant(nil)
 
-  defp gen(%{"multipleOf" => multiple_of} = schema) when is_number(multiple_of) do
+  defp gen(%{"multipleOf" => multiple_of} = schema, opts) when is_number(multiple_of) do
     schema
     |> Map.delete("multipleOf")
     |> Map.put("type", "integer")
     |> scale_limit("minimum", multiple_of)
     |> scale_limit("maximum", multiple_of)
-    |> gen()
+    |> gen(opts)
     |> StreamData.map(fn generated ->
       if is_integer(multiple_of) do
         generated * multiple_of
@@ -53,7 +53,7 @@ defmodule RockSolid.Strategy do
     end)
   end
 
-  defp gen(%{"type" => "integer"} = schema) do
+  defp gen(%{"type" => "integer"} = schema, _) do
     [min: Schemas.Number.min_value(schema), max: Schemas.Number.max_value(schema)]
     |> Keyword.filter(fn {_, v} -> not is_nil(v) end)
     |> MoreStreamData.more_integer()
@@ -61,7 +61,7 @@ defmodule RockSolid.Strategy do
     |> filter_value(schema["exclusiveMaximum"])
   end
 
-  defp gen(%{"type" => "number"} = schema) do
+  defp gen(%{"type" => "number"} = schema, _) do
     [
       min: Schemas.Number.min_value(schema),
       max: Schemas.Number.max_value(schema),
@@ -73,37 +73,37 @@ defmodule RockSolid.Strategy do
 
   # pattern always takes priority above format, because format is not stanarized
   # in the newer drafts.
-  defp gen(%{"type" => "string", "pattern" => pattern} = schema) do
+  defp gen(%{"type" => "string", "pattern" => pattern} = schema, _) do
     opts = to_keyword(schema, max_length: "maxLength") |> Keyword.put(:character_set, :printable)
     pattern |> MoreStreamData.from_regex(opts) |> filter_min_length(schema["minLength"])
   end
 
-  defp gen(%{"type" => "string", "format" => "email"} = schema) do
+  defp gen(%{"type" => "string", "format" => "email"} = schema, _) do
     # Handle separately because `email` supports `maxLength`
     MoreStreamData.email(to_keyword(schema, max_length: "maxLength"))
   end
 
-  defp gen(%{"type" => "string", "format" => format} = schema) do
+  defp gen(%{"type" => "string", "format" => format} = schema, _) do
     format
     |> from_format()
     |> filter_min_length(schema["minLength"])
     |> filter_max_length(schema["maxLength"])
   end
 
-  defp gen(%{"type" => "string"} = schema) do
+  defp gen(%{"type" => "string"} = schema, opts) do
     StreamData.string(
-      :printable,
+      Keyword.fetch!(opts, :string_kind),
       to_keyword(schema, min_length: "minLength", max_length: "maxLength")
     )
     |> filter_min_length(schema["minLength"])
   end
 
-  defp gen(%{"anyOf" => schemas}) when is_list(schemas) do
-    StreamData.one_of(Enum.map(schemas, &from_json_schema/1))
+  defp gen(%{"anyOf" => schemas}, opts) when is_list(schemas) do
+    StreamData.one_of(Enum.map(schemas, &from_json_schema(&1, opts)))
   end
 
-  defp gen(%{"type" => "array"} = schema), do: array_gen(schema)
-  defp gen(%{"type" => "object"} = schema), do: object_gen(schema)
+  defp gen(%{"type" => "array"} = schema, opts), do: array_gen(schema, opts)
+  defp gen(%{"type" => "object"} = schema, opts), do: object_gen(schema, opts)
 
   defp filter_value(generator, nil), do: generator
   defp filter_value(generator, value), do: StreamData.filter(generator, &(&1 != value))
@@ -192,7 +192,7 @@ defmodule RockSolid.Strategy do
     |> MoreStreamData.more_integer()
   end
 
-  defp array_gen(%{"prefixItems" => prefix_items} = schema) do
+  defp array_gen(%{"prefixItems" => prefix_items} = schema, opts) do
     # Decide the length in advance. This forces schemas using prefixItems
     # to be more explicit if they actually expect all prefixItems to be present
     schema
@@ -201,11 +201,11 @@ defmodule RockSolid.Strategy do
       if array_length <= length(prefix_items) do
         prefix_items
         |> Enum.take(array_length)
-        |> Enum.map(&from_json_schema/1)
+        |> Enum.map(&from_json_schema(&1, opts))
         |> StreamData.fixed_list()
       else
         prefix_items
-        |> Enum.map(&from_json_schema/1)
+        |> Enum.map(&from_json_schema(&1, opts))
         |> StreamData.fixed_list()
         |> StreamData.bind(fn prefix_items_gen ->
           items_length = array_length - length(prefix_items)
@@ -214,53 +214,53 @@ defmodule RockSolid.Strategy do
           |> Map.delete("prefixItems")
           |> Map.put("minItems", items_length)
           |> Map.put("maxItems", items_length)
-          |> from_json_schema()
+          |> from_json_schema(opts)
           |> StreamData.map(fn items -> prefix_items_gen ++ items end)
         end)
       end
     end)
   end
 
-  defp array_gen(%{"items" => false}), do: StreamData.constant([])
+  defp array_gen(%{"items" => false}, _), do: StreamData.constant([])
 
-  defp array_gen(%{"items" => %{"enum" => values}, "uniqueItems" => true} = array) do
+  defp array_gen(%{"items" => %{"enum" => values}, "uniqueItems" => true} = array, _) do
     MoreStreamData.sample(
       values,
       to_keyword(array, min_length: "minItems", max_length: "maxItems")
     )
   end
 
-  defp array_gen(%{"items" => items, "uniqueItems" => true} = array) do
+  defp array_gen(%{"items" => items, "uniqueItems" => true} = array, opts) do
     if Map.has_key?(array, "minItems") and array["minItems"] > 0 do
       length_opts = to_keyword(array, min_length: "minItems", max_length: "maxItems")
 
-      StreamData.uniq_list_of(from_json_schema(items), length_opts)
+      StreamData.uniq_list_of(from_json_schema(items, opts), length_opts)
       |> scale_log(length_opts)
     else
       # This is to avoid the "TooManyDuplicatesError" from StreamData.
       # If there is no `minItems` constraint then create a list and then
       # keep only the unique ones
-      StreamData.list_of(from_json_schema(items), to_keyword(array, max_length: "maxItems"))
+      StreamData.list_of(from_json_schema(items, opts), to_keyword(array, max_length: "maxItems"))
       |> scale_log()
       |> StreamData.map(&Enum.uniq/1)
     end
   end
 
-  defp array_gen(%{"items" => items} = array) do
+  defp array_gen(%{"items" => items} = array, opts) do
     length_opts = to_keyword(array, min_length: "minItems", max_length: "maxItems")
 
-    StreamData.list_of(from_json_schema(items), length_opts)
+    StreamData.list_of(from_json_schema(items, opts), length_opts)
     |> scale_log(length_opts)
   end
 
   # No items, default to random integers for now
-  defp array_gen(array), do: gen(Map.put(array, "items", true))
+  defp array_gen(array, opts), do: gen(Map.put(array, "items", true), opts)
 
   defp can_generate_props?(s) do
     s["additionalProperties"] != false or s["patternProperties"] not in [nil, %{}, false]
   end
 
-  defp object_gen(schema) do
+  defp object_gen(schema, opts) do
     possible_properties = Schemas.Object.possible_properties(schema)
 
     properties =
@@ -281,11 +281,11 @@ defmodule RockSolid.Strategy do
     MoreStreamData.sample(optional, min_length: min_optionals, max_length: max_optionals)
     |> StreamData.bind(fn optionals_chosen ->
       (required ++ optionals_chosen)
-      |> Map.new(fn name -> {name, from_json_schema(properties[name])} end)
+      |> Map.new(fn name -> {name, from_json_schema(properties[name], opts)} end)
       |> StreamData.fixed_map()
     end)
-    |> StreamData.bind(fn current_map -> pattern_properties(schema, current_map) end)
-    |> StreamData.bind(fn current_map -> additional_properties(schema, current_map) end)
+    |> StreamData.bind(fn current_map -> pattern_properties(schema, current_map, opts) end)
+    |> StreamData.bind(fn current_map -> additional_properties(schema, current_map, opts) end)
     |> StreamData.map(fn current_map ->
       pop_dependent_required(current_map, Map.get(schema, "dependentRequired", %{}))
     end)
@@ -319,35 +319,37 @@ defmodule RockSolid.Strategy do
     end
   end
 
-  defp pattern_properties(%{"patternProperties" => pattern_props} = schema, current_gen) do
+  defp pattern_properties(%{"patternProperties" => pattern_props} = schema, current_gen, opts) do
     defined_properties = Map.get(schema, "properties", %{}) |> Map.keys()
 
-    opts = pattern_properties_length(schema, map_size(current_gen))
+    pattern_properties_opts = pattern_properties_length(schema, map_size(current_gen))
 
     Enum.map(pattern_props, fn {pattern, subschema} ->
       key_gen =
         MoreStreamData.from_regex(pattern, character_set: :printable)
         |> StreamData.filter(&(&1 not in defined_properties))
 
-      value_gen = from_json_schema(subschema)
+      value_gen = from_json_schema(subschema, opts)
 
       StreamData.tuple({key_gen, value_gen})
     end)
     |> StreamData.one_of()
     |> then(fn pattern_props_gen ->
-      if opts[:min_length] == 0 do
+      if pattern_properties_opts[:min_length] == 0 do
         # Duplicate keys don't matter, will be discarded when we create the map
         StreamData.list_of(pattern_props_gen)
       else
-        opts_with_uniq_fun = Keyword.put(opts, :uniq_fun, fn {key, _val} -> key end)
+        opts_with_uniq_fun =
+          Keyword.put(pattern_properties_opts, :uniq_fun, fn {key, _val} -> key end)
+
         StreamData.uniq_list_of(pattern_props_gen, opts_with_uniq_fun)
       end
     end)
-    |> scale_log(opts)
+    |> scale_log(pattern_properties_opts)
     |> StreamData.map(fn key_value_pairs -> Map.merge(Map.new(key_value_pairs), current_gen) end)
   end
 
-  defp pattern_properties(_, current_gen), do: StreamData.constant(current_gen)
+  defp pattern_properties(_, current_gen, _), do: StreamData.constant(current_gen)
 
   defp pattern_properties_length(schema, current_length) do
     additional_props = schema["additionalProperties"]
@@ -374,11 +376,11 @@ defmodule RockSolid.Strategy do
     end
   end
 
-  defp additional_properties(%{"additionalProperties" => false}, current_gen) do
+  defp additional_properties(%{"additionalProperties" => false}, current_gen, _) do
     StreamData.constant(current_gen)
   end
 
-  defp additional_properties(schema, current_gen) do
+  defp additional_properties(schema, current_gen, opts) do
     current_length = map_size(current_gen)
 
     min_length =
@@ -405,14 +407,14 @@ defmodule RockSolid.Strategy do
         StreamData.constant(current_gen)
 
       length_opts[:min_length] == 0 ->
-        additional_properties_no_min(schema, current_gen, length_opts)
+        additional_properties_no_min(schema, current_gen, length_opts, opts)
 
       true ->
-        additional_properties_with_min(schema, current_gen, length_opts)
+        additional_properties_with_min(schema, current_gen, length_opts, opts)
     end
   end
 
-  defp additional_properties_with_min(schema, current_gen, length_opts) do
+  defp additional_properties_with_min(schema, current_gen, length_opts, opts) do
     additional_props = Map.get(schema, "additionalProperties", true)
 
     pattern_properties =
@@ -425,18 +427,18 @@ defmodule RockSolid.Strategy do
       Enum.uniq(Map.keys(Map.get(schema, "properties", %{})) ++ Map.keys(current_gen))
 
     StreamData.map_of(
-      from_json_schema(property_names)
+      from_json_schema(property_names, opts)
       |> StreamData.filter(fn name ->
         not (name in existing_keys or matches_any_regex?(name, pattern_properties))
       end),
-      from_json_schema(additional_props),
+      from_json_schema(additional_props, opts),
       length_opts
     )
     |> scale_log(length_opts)
     |> StreamData.map(fn additional_props -> Map.merge(additional_props, current_gen) end)
   end
 
-  defp additional_properties_no_min(schema, current_gen, length_opts) do
+  defp additional_properties_no_min(schema, current_gen, length_opts, opts) do
     additional_props = Map.get(schema, "additionalProperties", true)
 
     pattern_properties =
@@ -448,7 +450,7 @@ defmodule RockSolid.Strategy do
     property_names =
       Map.get(schema, "propertyNames", Map.new()) |> Map.put_new("type", "string")
 
-    {from_json_schema(property_names), from_json_schema(additional_props)}
+    {from_json_schema(property_names, opts), from_json_schema(additional_props, opts)}
     |> StreamData.tuple()
     |> StreamData.list_of(length_opts)
     |> scale_log()
