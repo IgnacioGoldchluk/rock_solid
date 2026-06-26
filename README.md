@@ -3,11 +3,7 @@
 [![Version](https://img.shields.io/hexpm/v/rock_solid.svg)](https://hex.pm/packages/rock_solid)
 [![Docs](https://img.shields.io/badge/documentation-gray.svg)](https://rock-solid.hexdocs.pm)
 
-Data generation tool from JSON schemas.
-
-> [!IMPORTANT]
-> This project is still in experimental stage. See [Known bugs and issues](#knwon-bugs-and-issues) and the [roadmap](./ROADMAP.md)
-
+Data generation from JSON schema. Supports JSON Schema draft 04 to draft 2020-12.
 
 ## Usage
 Add to your list of dependencies
@@ -75,54 +71,9 @@ iex(2)> specs |> RockSolid.from_schema() |> Enum.take(3)
 ]
 ```
 
-## Overview and Architecture
-This library is inspired by [hypothesis-jsonschema](https://github.com/python-jsonschema/hypothesis-jsonschema), [this paper](https://arxiv.org/abs/1911.12651) and [schemathesis](https://github.com/schemathesis/schemathesis). However, the existing libraries contain several issues and bugs, and do not support many common patterns in existing JSON Schemas found in the wild.
-
-As described in the paper, the goal is to transform a given JSON schema such that every subschema can be used to generate random valid data. For this to happen, a valid subschema is one of:
-- `anyOf` with no additional keywords
-- A map with `type` + keywords applying only to its type, plus `not`
-- A map with `"enum"` or `"const"` and no extra keywords
-- `$ref` to a valid subschema
-- `true`
-
-Given that JSON schema supports more keywords that cannot be used to generate data, the schema must be transformed accordingly.
-
-The entire process consists of three main steps: Migration, Transformation, Generation
-
-### Migration
-The input schema, and all the remote schemas referenced are transformed to `draft-2020-12` compliant schemas. Additionally, `$ref` to `$anchor` are replaced by the JSON pointer instead, and all `$ref` to paths that have been modified are updated accordingly. All relative pointers are replaced by their absolute value so that they can be fetched and referenced unambiguously from any schema. The schemas are then saved in local cache directory and in process memory.
-
-### Transformation
-The migrated input schema is recursively transformed into a subschema valid for generation by expanding and intersecting subschemas. Remote schemas are only transformed on-demand, and the transformed result is stored in process memory.
-
-### Generation
-The transformed schema is used to generate valid data using `StreamData` and `MoreStreamData` libraries.
-
-
 ## Knwon bugs and issues
 The library can generate valid payloads for most schemas, with a 87% passing rate when testing the entire catalog from [Schemastore](https://github.com/SchemaStore/schemastore). The following are a list of known bugs, limitations and issues, ordered from most common to least common.
-
-### Too many elements filtered out
-When reaching the data generation step, `StreamData` throws an error because too many elements have been filtered out. This happens mostly for `"string"` type when `pattern` or `format` are specified, along with `maxLength` and/or `minLength`. Since the underlying `from_regex` and `from_format` lack options to set min/max length, we first have to generate the string and then filter them. The solution requires generating from regex or from format that are length-aware.
-
-Another case are schemas containing a `not` clause that overlaps with most elements generated. Aside from implementing a smarter `not` intersection there is not much to do.
-
-### Timeout
-Usually due to heavy recursive definitions where the recursive schemas also contain many fields and options to generate from. One possible solution is to peek at the next value, if it is a `$ref` then geenrate with "less chance" if it's a property, or if it's an array of `$ref` scale down the generation size even further.
-
-### Recursive intersection
-In order to perform intersection of recurisve schemas, we create a placeholder, and when we reach it again we return it and create a new schema on demand. The problem is that sometimes recursive schemas are reached from different branches, the code tries to return the placeholder but it doesn't exist yet because we are in the process of creating it.
-
-### "$dynamicRef" and "$dynamicAnchor"
-Unsupported, might be supported in the future
-
-### "unevaluatedItems" and "unevaluatedProperties"
-Unsupported when not `false`, and not planning to support it.
-
-### "contains" keyword
-The contains keyword is transformed by adding a `prefixItem` or intersecting with the first `prefixItem` that matches the `contains` condition. Additionally, `maxContains` is not supported. This current implementation is a quick workaround and causes failures. It must be rewritten.
-
-### dependentSchemas and oneOf
-Both keywords can often cause timeouts if the number of elements is too large:
-- For `dependentSchemas` we compute the power set of all the keys and then calculate each intersection. This is fine when there are few `dependentSchemas` but the number grows exponentially, the number of combinations is `2**length`, meaning that for 8 keys there will be 256 schemas. There is no current solution or alternative to this.
-- For `oneOf`, since it behaves as a XOR, we have to intersect each clause with the negation of the rest. Prefer `anyOf` instead which performs a single-pass intersection between all the schemas.
+- Failing to generate data when possible value set is too narrow. For example strings with `"pattern"` and `minLength`/`maxLength`, or a `not` clause that overlaps with many of the positive cases. To prevent this issue, encode the string length as part of the `"pattern"` keyword, and try to be specific when using `"not"` keywords. 
+- Timemouts. Caused when defining multiple `"if"/"then"/"else"`, `"dependentSchemas"`, and `"oneOf"`. To prevent timeouts, express branching logic as `"anyOf"` instead.
+- Recursive schemas. While recursive schemas are supported, the algorithm often needs to find the intersection of a recursive schema and another subschema, which might throw an error. There is no workaround for this issue at the moment.
+- `"$dynamicRef"`, `"$dynamicAnchor"`, `"unevaluatedItems"`, `"unevaluatedProperties"`, `"maxContains"` keywords are not supported currently, since their behavior is defined at runtime.
