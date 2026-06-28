@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.0.12 [2026-06-28]
+- Generate better extreme cases for "number", "integer" and "string" types
+
 ## 0.0.11 [2026-06-26]
 - Add `:string_kind` option to `RockSolid.from_schema/2`
 

@@ -66,7 +66,7 @@ defmodule RockSolid do
 
   @opts_schema [
     resolver: [type: :mod_arg, required: true],
-    string_kind: [type: :atom, default: :printable]
+    string_kind: [type: :atom, default: nil]
   ]
 
   @doc """
@@ -76,7 +76,8 @@ defmodule RockSolid do
 
   - `:resolver` - Either a module or a tuple {module, args} that implements the
   `RockSolid.Resolution.Resolver` behaviour. Defaults to [`DummyResolver`](`RockSolid.Resolution.Resolvers.DummyResolver`).
-  - `:string_kind` - The kind of strings to generate. See `StreamData.string/2`. Defaults to `:printable`
+  - `:string_kind` - The kind of strings to generate. See `StreamData.string/2`. Defaults to
+  generating `:utf8` strings
   """
   def from_schema(json_schema, opts \\ []) do
     opts = opts |> parse_resolver() |> NimbleOptions.validate!(@opts_schema)

@@ -54,21 +54,20 @@ defmodule RockSolid.Strategy do
   end
 
   defp gen(%{"type" => "integer"} = schema, _) do
-    [min: Schemas.Number.min_value(schema), max: Schemas.Number.max_value(schema)]
-    |> Keyword.filter(fn {_, v} -> not is_nil(v) end)
-    |> MoreStreamData.more_integer()
+    StreamData.frequency([
+      {90, regular_integer(schema)},
+      {5, close_to_max(schema)},
+      {5, close_to_min(schema)}
+    ])
     |> filter_value(schema["exclusiveMinimum"])
     |> filter_value(schema["exclusiveMaximum"])
   end
 
-  defp gen(%{"type" => "number"} = schema, _) do
-    [
-      min: Schemas.Number.min_value(schema),
-      max: Schemas.Number.max_value(schema),
-      exclude_min?: Map.has_key?(schema, "exclusiveMinimum"),
-      exclude_max?: Map.has_key?(schema, "exclusiveMaximum")
-    ]
-    |> MoreStreamData.more_float()
+  defp gen(%{"type" => "number"} = schema, opts) do
+    StreamData.frequency([
+      {50, gen(float_to_int(schema), opts)},
+      {50, gen_float(schema)}
+    ])
   end
 
   # pattern always takes priority above format, because format is not stanarized
@@ -91,10 +90,17 @@ defmodule RockSolid.Strategy do
   end
 
   defp gen(%{"type" => "string"} = schema, opts) do
-    StreamData.string(
-      Keyword.fetch!(opts, :string_kind),
-      to_keyword(schema, min_length: "minLength", max_length: "maxLength")
-    )
+    string_opts = to_keyword(schema, min_length: "minLength", max_length: "maxLength")
+
+    case Keyword.fetch!(opts, :string_kind) do
+      nil ->
+        [:utf8, :printable, :ascii]
+        |> Enum.map(fn codepoints -> {1, StreamData.string(codepoints, string_opts)} end)
+        |> StreamData.frequency()
+
+      kind ->
+        StreamData.string(kind, string_opts)
+    end
     |> filter_min_length(schema["minLength"])
   end
 
@@ -500,6 +506,73 @@ defmodule RockSolid.Strategy do
         {0, min, _max} -> min
         {size, min, nil} -> ceil(:math.log(size)) + min
         {size, min, max} -> min(ceil(:math.log(size)) + min, max)
+      end
+    end)
+  end
+
+  defp regular_integer(schema) do
+    [min: Schemas.Number.min_value(schema), max: Schemas.Number.max_value(schema)]
+    |> Keyword.filter(fn {_, v} -> not is_nil(v) end)
+    |> MoreStreamData.more_integer()
+  end
+
+  defp close_to_max(schema) do
+    max = Schemas.Number.max_value(schema) || 2_147_483_647
+    min = Schemas.Number.min_value(schema) || -2_147_483_648
+
+    StreamData.integer(0..(max - min))
+    |> StreamData.map(fn val -> max - val end)
+  end
+
+  defp close_to_min(schema) do
+    max = Schemas.Number.max_value(schema) || 2_147_483_647
+    min = Schemas.Number.min_value(schema) || -2_147_483_648
+
+    StreamData.integer(0..(max - min))
+    |> StreamData.map(fn val -> val + min end)
+  end
+
+  defp gen_float(schema) do
+    StreamData.frequency([
+      {90, regular_float(schema)},
+      {5, close_to_max_float(schema)},
+      {5, close_to_min_float(schema)}
+    ])
+  end
+
+  defp regular_float(schema) do
+    [
+      min: Schemas.Number.min_value(schema),
+      max: Schemas.Number.max_value(schema),
+      exclude_min?: Map.has_key?(schema, "exclusiveMinimum"),
+      exclude_max?: Map.has_key?(schema, "exclusiveMaximum")
+    ]
+    |> MoreStreamData.more_float()
+  end
+
+  defp close_to_max_float(schema) do
+    max = Schemas.Number.max_value(schema) || 8.94e307
+    min = Schemas.Number.min_value(schema) || -8.94e307
+
+    StreamData.float(min: 0, max: max - min)
+    |> StreamData.map(fn val -> max - val end)
+  end
+
+  defp close_to_min_float(schema) do
+    max = Schemas.Number.max_value(schema) || 8.94e307
+    min = Schemas.Number.min_value(schema) || -8.94e307
+
+    StreamData.float(min: 0, max: max - min)
+    |> StreamData.map(fn val -> val + min end)
+  end
+
+  defp float_to_int(%{"type" => "number"} = schema) do
+    ["minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum"]
+    |> Enum.reduce(Map.put(schema, "type", "integer"), fn key, acc_schema ->
+      if Map.has_key?(acc_schema, key) do
+        Map.update!(acc_schema, key, &trunc/1)
+      else
+        acc_schema
       end
     end)
   end

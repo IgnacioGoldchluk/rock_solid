@@ -5,6 +5,14 @@ defmodule RockSolid.StrategyTest do
   alias RockSolid.Schemas.Vocabulary
 
   describe "from_json_schema/1" do
+    property "number generates both integers and floats" do
+      schema = %{"type" => "number", "minimum" => -1.0, "maximum" => 250.5}
+
+      check all num <- RockSolid.from_schema(schema) do
+        assert num >= -1.0 and num <= 250.5
+      end
+    end
+
     property "generates strings of the specified codepoints" do
       schema = %{
         "type" => "object",
