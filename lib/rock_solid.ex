@@ -1,64 +1,24 @@
 defmodule RockSolid do
   @moduledoc """
-  Data generation from JSON schema.
+  Builds `StreamData` generators from JSON Schemas.
 
-  `RockSolid` exposes a single function: `from_schema/2`.
+  Use `from_schema/2` when a test, fixture, or sample payload should follow the
+  same schema as the system boundary it exercises. Pass schemas as decoded JSON
+  maps with string keys; generated values are JSON-compatible Elixir terms.
 
-  You can use it inside a [`property`](`ExUnitProperties.property/3`) test
-  ```elixir
-  defmodule MyTest do
-    use ExUnit.Case
-    use ExUnitProperties
+  RockSolid is a generator, not a validator. It attempts to produce values that
+  satisfy the schema after resolving references and normalizing supported JSON
+  Schema drafts into its internal representation.
 
-    property "generates valid user profiles" do
-      schema = %{
-        "type" => "object",
-        "additionalProperties" => false,
-        "properties" => %{
-          "birthDate" => %{"type" => "string", "format" => "date"},
-          "name" => %{"type" => "string", "pattern" => "^[A-Z][a-z]+$"},
-          "email" => %{"type" => "string", "format" => "email"}
-        },
-        "required" => ["birthDate", "name", "email"]
-      }
+  ## Choosing Schemas
 
-      check all user_data <- RockSolid.from_schema(schema) do
-        assert Regex.match?(~r/^[A-Z][a-z]+$/, user_data["name"])
-        assert %Date{} = Date.from_iso8601!(user_data["birthDate"])
-        assert String.split(user_data["email"], "@") |> length() == 2
-      end
-    end
-  end
-  ```
+  Generation works best when schemas describe the value space directly: include
+  explicit `"type"` fields, keep branches narrow, and prefer positive
+  constraints over broad exclusions. Use a custom `:resolver` when schemas
+  contain references that cannot be handled by the default dummy resolver.
 
-  or as a generator, since `RockSolid.from_schema/2` returns elements of type `t:StreamData.t/1`
-
-  ```elixir
-  iex(1)> specs = %{
-  "type" => "object",
-  "properties" => %{
-    "serverIPs" => %{
-      "type" => "array",
-      "items" => %{"type" => "string", "format" => "ipv4"},
-      "uniqueItems" => true,
-      "minItems" => 1
-    },
-    "serverName" => %{"pattern" => "^[a-z][a-z_0-9]{2,255}$", "type" => "string"},
-  },
-  "required" => ["serverIPs", "serverName"],
-  "additionalProperties" => false
-  }
-
-  iex(2)> specs |> RockSolid.from_schema() |> Enum.take(3)
-  [
-    %{"serverIPs" => ["148.50.92.205"], "serverName" => "a5l"},
-    %{"serverIPs" => ["230.26.166.121"], "serverName" => "y_w"},
-    %{
-      "serverIPs" => ["144.154.111.248", "155.134.134.38"],
-      "serverName" => "v2_5"
-    }
-  ]
-  ```
+  See `from_schema/2` for options and the README for installation, examples,
+  and broader guidance.
   """
   alias RockSolid.Strategy
 

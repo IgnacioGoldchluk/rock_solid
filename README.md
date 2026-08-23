@@ -3,10 +3,30 @@
 [![Version](https://img.shields.io/hexpm/v/rock_solid.svg)](https://hex.pm/packages/rock_solid)
 [![Docs](https://img.shields.io/badge/documentation-gray.svg)](https://rock-solid.hexdocs.pm)
 
-Data generation from JSON schema. Supports JSON Schema draft 04 to draft 2020-12.
+# RockSolid
 
-## Usage
-Add to your list of dependencies
+RockSolid is an Elixir library that turns a JSON Schema into a `StreamData` generator.
+
+Use it when you want property tests, examples, fixtures, or sample payloads that follow the same JSON Schema used by your API, configuration file, event, or document format. Supports JSON Schema draft 04 through draft 2020-12 and exposes one main API: `RockSolid.from_schema/2`.
+
+## When to Use RockSolid
+
+RockSolid is useful when you already have a JSON Schema and want generated data instead of hand-written fixtures.
+
+Common use cases:
+
+- Generate input data inside `ExUnitProperties` property tests.
+- Produce JSON-compatible maps, lists, strings, numbers, booleans, and `nil` values from schema definitions.
+- Check that code paths accept a wider range of valid payloads than a small
+  fixture set would cover.
+- Generate realistic samples for schemas that use constraints such as `required`, `properties`, `items`, `enum`, `const`, `pattern`, `format`, `minimum`, `maximum`, `oneOf`, `anyOf`, `allOf`, and `not`.
+
+RockSolid is not a JSON Schema validator. It generates values that should match the schema. Use a validator when you need to check external input.
+
+## Install
+
+Add `rock_solid` to your dependencies:
+
 ```elixir
 def deps do
   [
@@ -15,7 +35,10 @@ def deps do
 end
 ```
 
-Inside a `property` test
+## Usage
+
+Starting from a JSON Schema represented as a map with string keys
+
 ```elixir
 defmodule MyTest do
   use ExUnit.Case
@@ -42,25 +65,32 @@ defmodule MyTest do
 end
 ```
 
-or as a generator, since `RockSolid.from_schema/2` returns elements of `StreamData.t()`
+`RockSolid.from_schema/2` returns a `StreamData.t()`, so the result can be used anywhere a StreamData generator is accepted.
+
+## Sample values
+
+You can also use RockSolid directly take a few sample values from a schema.
 
 ```elixir
-iex(1)> specs = %{
-  "type" => "object",
-  "properties" => %{
-    "serverIPs" => %{
-      "type" => "array",
-      "items" => %{"type" => "string", "format" => "ipv4"},
-      "uniqueItems" => true,
-      "minItems" => 1
-    },
-    "serverName" => %{"pattern" => "^[a-z][a-z_0-9]{2,255}$", "type" => "string"},
-  },
-  "required" => ["serverIPs", "serverName"],
-  "additionalProperties" => false
-}
+iex> schema = %{
+   "type" => "object",
+   "properties" => %{
+     "serverIPs" => %{
+       "type" => "array",
+       "items" => %{"type" => "string", "format" => "ipv4"},
+       "uniqueItems" => true,
+       "minItems" => 1
+     },
+     "serverName" => %{
+       "type" => "string",
+       "pattern" => "^[a-z][a-z_0-9]{2,255}$"
+     }
+   },
+   "required" => ["serverIPs", "serverName"],
+   "additionalProperties" => false
+ }
 
-iex(2)> specs |> RockSolid.from_schema() |> Enum.take(3)
+iex> schema |> RockSolid.from_schema() |> Enum.take(3)
 [
   %{"serverIPs" => ["148.50.92.205"], "serverName" => "a5l"},
   %{"serverIPs" => ["230.26.166.121"], "serverName" => "y_w"},
@@ -71,9 +101,30 @@ iex(2)> specs |> RockSolid.from_schema() |> Enum.take(3)
 ]
 ```
 
-## Known bugs and issues
-The library can generate valid payloads for most schemas, with a 87% passing rate when testing the entire catalog from [Schemastore](https://github.com/SchemaStore/schemastore). The following are a list of known bugs, limitations and issues, ordered from most common to least common.
-- Failing to generate data when possible value set is too narrow. For example strings with `"pattern"` and `minLength`/`maxLength`, or a `not` clause that overlaps with many of the positive cases. To prevent this issue, encode the string length as part of the `"pattern"` keyword, and try to be specific when using `"not"` keywords. 
-- Timeouts. Caused when defining multiple `"if"/"then"/"else"`, `"dependentSchemas"`, and `"oneOf"`. To prevent timeouts, express branching logic as `"anyOf"` instead.
-- Recursive schemas. While recursive schemas are supported, the algorithm often needs to find the intersection of a recursive schema and another subschema, which might throw an error. There is no workaround for this issue at the moment.
-- `"$dynamicRef"`, `"$dynamicAnchor"`, `"unevaluatedItems"`, `"unevaluatedProperties"`, `"maxContains"` keywords are not supported currently, since their behavior is defined at runtime.
+## How Generation Works
+
+RockSolid simplifies and migrates supported JSON Schema drafts into an internal format, resolves schema references through the configured resolver, and builds a generator that tries to emit only values accepted by the schema.
+
+The more precise the schema is, the easier it is for RockSolid to generate useful values quickly. In practice, schemas that specify `"type"`, keep branching logic simple, avoid very narrow negative constraints, and restrict unexpected object keys with `"additionalProperties": false` are easier to generate from.
+
+See [guides/recommendations.md](guides/recommendations.md) for schema-writing
+recommendations that improve generation quality and performance.
+
+## Known Limitations
+
+RockSolid can generate valid payloads for most schemas, with an 87% passing
+rate when tested against the SchemaStore catalog. The main known limitations
+are:
+
+- Very narrow value spaces can fail to generate even when valid values exist.
+  This is common with combinations of `"pattern"` and `minLength`/`maxLength`,
+  or with broad `"not"` clauses. Prefer encoding string length directly in the
+  regex pattern, and keep `"not"` clauses specific.
+- Complex branching can time out, especially with repeated
+  `"if"`/`"then"`/`"else"`, `"dependentSchemas"`, and `"oneOf"`. Prefer
+  `"anyOf"` when it expresses the same intent.
+- Recursive schemas are supported, but intersections between recursive schemas
+  and other subschemas can still fail.
+- `"$dynamicRef"`, `"$dynamicAnchor"`, `"unevaluatedItems"`,
+  `"unevaluatedProperties"`, and `"maxContains"` are not currently supported
+  because their behavior is defined at runtime.
