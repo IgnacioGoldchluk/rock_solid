@@ -99,7 +99,7 @@ defmodule RockSolid.Intersection.Object do
     additional_properties = Map.get(to_compare, "additionalProperties", true)
     property_names = Map.get(to_compare, "propertyNames", %{"type" => "string"})
 
-    with {:ok, _} <- JSV.validate(prop_name, Context.build!(property_names)),
+    with true <- JSV.valid?(prop_name, Context.build!(property_names)),
          {:ok, value} when value != false <-
            Intersection.intersection(prop_schema, additional_properties) do
       {prop_name, value}

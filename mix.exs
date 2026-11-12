@@ -45,13 +45,13 @@ defmodule RockSolid.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:zoi, "~> 0.17"},
-      {:jsv, "~> 0.19"},
+      {:zoi, "~> 0.19"},
+      {:jsv, "~> 0.27"},
       {:regex_solver, "~> 0.1"},
       {:nimble_options, "~> 1.1"},
       {:req, "~> 0.5.0", only: [:dev, :test]},
       # Data generation
-      {:stream_data, "~> 1.0"},
+      {:stream_data, "~> 1.4"},
       {:more_stream_data, "~> 0.8"},
       {:plug, "~> 1.0", only: :test},
       {:excoveralls, "~> 0.18", only: :test},

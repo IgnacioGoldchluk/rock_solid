@@ -278,7 +278,7 @@ defmodule RockSolid.Transformation do
 
     enums
     |> Enum.filter(fn enum ->
-      Enum.all?(j_schemas, fn j_schema -> match?({:ok, _}, JSV.validate(enum, j_schema)) end)
+      Enum.all?(j_schemas, fn j_schema -> JSV.valid?(enum, j_schema) end)
     end)
     |> case do
       [] -> {:error, "no enum in #{inspect(enums)} matches schemas: #{inspect(schemas)}"}

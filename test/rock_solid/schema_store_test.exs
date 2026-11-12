@@ -839,7 +839,7 @@ defmodule RockSolid.SchemaStoreTest do
     root = JSV.build!(schema, resolver: [RockSolid.Resolver])
 
     check all generated <- RockSolid.from_schema(schema), max_runs: 20 do
-      assert {:ok, _} = JSV.validate(generated, root)
+      assert JSV.valid?(generated, root)
     end
   end
 end

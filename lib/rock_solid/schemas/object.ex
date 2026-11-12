@@ -158,9 +158,8 @@ defmodule RockSolid.Schemas.Object do
     property_names = Map.get(schema, "propertyNames", %{"type" => "string"})
     additional_properties = Map.get(schema, "additionalProperties", true)
 
-    case JSV.validate(property_name, Context.build!(property_names)) do
-      {:ok, ^property_name} -> {property_name, additional_properties}
-      _ -> nil
+    if JSV.valid?(property_name, Context.build!(property_names)) do
+      {property_name, additional_properties}
     end
   end
 

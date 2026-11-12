@@ -118,7 +118,7 @@ defmodule RockSolid.Strategy do
 
   defp filter_not(generator, clauses) do
     not_schema = Context.build!(%{"not" => clauses})
-    StreamData.filter(generator, &match?({:ok, _}, JSV.validate(&1, not_schema)))
+    StreamData.filter(generator, &JSV.valid?(&1, not_schema))
   end
 
   def to_keyword(schema, mappings) do

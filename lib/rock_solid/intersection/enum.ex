@@ -13,12 +13,7 @@ defmodule RockSolid.Intersection.Enum do
     json_schema = Context.build!(schema)
 
     values
-    |> Enum.filter(fn value ->
-      case JSV.validate(value, json_schema) do
-        {:ok, _} -> true
-        _ -> false
-      end
-    end)
+    |> Enum.filter(fn value -> JSV.valid?(value, json_schema) end)
     |> case do
       [] -> {:error, "no matching values in #{inspect(values)} for #{inspect(schema)}"}
       matching_vals -> {:ok, %{"enum" => matching_vals}}

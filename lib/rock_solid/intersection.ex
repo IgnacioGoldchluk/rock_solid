@@ -224,11 +224,11 @@ defmodule RockSolid.Intersection do
         Enum.any?(clauses, &(safe_intersection(&1, s) == s))
 
       {not_, %{"const" => value}} ->
-        match?({:ok, _}, JSV.validate(value, Context.build!(not_)))
+        JSV.valid?(value, Context.build!(not_))
 
       {not_, %{"enum" => values}} ->
         jsv_schema = Context.build!(not_)
-        Enum.all?(values, fn value -> match?({:ok, _}, JSV.validate(value, jsv_schema)) end)
+        Enum.all?(values, fn value -> JSV.valid?(value, jsv_schema) end)
 
       {not_, s} ->
         safe_intersection(not_, s) == s

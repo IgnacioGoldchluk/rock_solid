@@ -27,7 +27,7 @@ defmodule RockSolid.StrategyTest do
       root = JSV.build!(schema, resolver: [RockSolid.Resolver])
 
       check all generated <- RockSolid.from_schema(schema, string_kind: :ascii) do
-        assert {:ok, _} = JSV.validate(generated, root)
+        assert JSV.valid?(generated, root)
         assert Enum.all?(to_charlist(generated["password"]), &(&1 in 32..126))
       end
     end
@@ -545,7 +545,7 @@ defmodule RockSolid.StrategyTest do
     root = JSV.build!(schema, resolver: [RockSolid.Resolver])
 
     check all generated <- RockSolid.from_schema(schema) do
-      assert {:ok, _} = JSV.validate(generated, root)
+      assert JSV.valid?(generated, root)
     end
   end
 end
